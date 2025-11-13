@@ -6,7 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
-const MENSAGEM_BEM_VINDO = { text: 'Olá! Eu sou o Finassistant. Como posso te ajudar hoje?', sender: 'bot' };
+const MENSAGEM_BEM_VINDO = { text: 'Olá! Eu sou o FortunAI. Como posso te ajudar hoje?', sender: 'bot' };
 
 const Chat = () => {
     const { user } = useAuth();
