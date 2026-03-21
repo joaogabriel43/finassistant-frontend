@@ -5,6 +5,7 @@ import SendIcon from '@mui/icons-material/Send';
 import DeleteIcon from '@mui/icons-material/Delete';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { formatCurrencyInText } from '../utils/formatters';
 
 const MENSAGEM_BEM_VINDO = { text: 'Olá! Eu sou o Fortunai. Como posso te ajudar hoje?', sender: 'bot' };
 // Preserve legacy welcome texts for migration from localStorage
@@ -179,7 +180,7 @@ const Chat = () => {
                                 }}
                             >
                                 <Typography component="span" sx={{ whiteSpace: 'pre-wrap' }}>
-                                    {msg.typing ? 'Assistente está digitando...' : msg.text}
+                                    {msg.typing ? 'Assistente está digitando...' : (msg.sender === 'bot' ? formatCurrencyInText(msg.text) : msg.text)}
                                 </Typography>
                             </Paper>
                         </ListItem>
