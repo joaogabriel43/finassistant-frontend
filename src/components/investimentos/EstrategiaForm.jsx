@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import {
     Box,
     Button,
+    Collapse,
     FormControl,
     IconButton,
     InputLabel,
@@ -13,6 +14,7 @@ import {
     Typography,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import RebalanceamentoPanel from './RebalanceamentoPanel';
 
 const TIPOS = [
     { key: 'ACAO', label: 'Ações' },
@@ -26,7 +28,7 @@ export default function EstrategiaForm() {
     const [linhas, setLinhas] = useState([]);
     const [salvando, setSalvando] = useState(false);
     const [mensagem, setMensagem] = useState(null);
-    const [analise, setAnalise] = useState([]);
+    const [showRebalanceamento, setShowRebalanceamento] = useState(false);
 
     const soma = useMemo(() => linhas.reduce((acc, l) => acc + (Number(l.pct) || 0), 0), [linhas]);
     const valido = Math.abs(soma - 100) <= 0.5 && linhas.length > 0 && linhas.every(l => l.pct >= 0 && l.pct <= 100);
@@ -63,7 +65,6 @@ export default function EstrategiaForm() {
     const salvar = async () => {
         if (!user?.id) return;
         setMensagem(null);
-        setAnalise([]);
         if (!valido) {
             setMensagem('A soma deve ser 100% e todos valores entre 0 e 100.');
             return;
@@ -82,18 +83,8 @@ export default function EstrategiaForm() {
         }
     };
 
-    const executarAnalise = async () => {
-        if (!user?.id) return;
-        setAnalise([]);
-        try {
-            // Atualizado para endpoint legacy
-            const res = await api.get(`/investimentos/estrategia-legacy/analise`);
-            const mensagens = Array.isArray(res.data) ? res.data : (res.data?.mensagens || []);
-            setAnalise(mensagens);
-        } catch (e) {
-            console.error(e);
-            setAnalise(['Não foi possível gerar a análise agora.']);
-        }
+    const toggleRebalanceamento = () => {
+        setShowRebalanceamento(prev => !prev);
     };
 
     return (
@@ -160,8 +151,8 @@ export default function EstrategiaForm() {
                 >
                     {salvando ? 'Salvando...' : 'Salvar Estratégia'}
                 </Button>
-                <Button variant="outlined" onClick={executarAnalise}>
-                    Analisar Rebalanceamento
+                <Button variant="outlined" onClick={toggleRebalanceamento}>
+                    {showRebalanceamento ? 'Ocultar Análise' : 'Analisar Rebalanceamento'}
                 </Button>
             </Box>
 
@@ -171,20 +162,14 @@ export default function EstrategiaForm() {
                 </Typography>
             )}
 
-            {analise.length > 0 && (
+            <Collapse in={showRebalanceamento} unmountOnExit>
                 <Box sx={{ mt: 2 }}>
                     <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-                        Sugestões de Rebalanceamento
+                        Análise de Rebalanceamento
                     </Typography>
-                    <Box component="ul" sx={{ pl: 2, m: 0 }}>
-                        {analise.map((m, i) => (
-                            <Typography key={i} component="li" variant="body2" sx={{ color: 'text.secondary', mb: 0.5 }}>
-                                {m}
-                            </Typography>
-                        ))}
-                    </Box>
+                    <RebalanceamentoPanel />
                 </Box>
-            )}
+            </Collapse>
         </Box>
     );
 }
