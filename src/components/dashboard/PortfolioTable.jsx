@@ -3,7 +3,17 @@ import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
-import IconButton from '@mui/material/IconButton';
+import {
+    Box,
+    IconButton,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Typography,
+} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 const PortfolioTable = ({ onSellRequest = () => {}, refreshKey = 0 }) => {
@@ -47,78 +57,86 @@ const PortfolioTable = ({ onSellRequest = () => {}, refreshKey = 0 }) => {
     if (loading) {
         return (
             <SkeletonTheme baseColor="#202020" highlightColor="#444">
-                <div style={{ marginTop: '40px' }}>
-                    <h3 style={{ textAlign: 'center' }}><Skeleton width={300} /></h3>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
-                        <thead>
-                            <tr style={{ borderBottom: '2px solid #00C49F' }}>
-                                <th style={{ padding: '10px', textAlign: 'left' }}><Skeleton width={50} /></th>
-                                <th style={{ padding: '10px', textAlign: 'right' }}><Skeleton width={30} /></th>
-                                <th style={{ padding: '10px', textAlign: 'right' }}><Skeleton width={80} /></th>
-                                <th style={{ padding: '10px', textAlign: 'right' }}><Skeleton width={80} /></th>
-                                <th style={{ padding: '10px', textAlign: 'right' }}><Skeleton width={80} /></th>
-                                <th style={{ padding: '10px', textAlign: 'right' }}><Skeleton width={100} /></th>
-                                <th style={{ padding: '10px', textAlign: 'right' }}><Skeleton width={60} /></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {Array.from({ length: 3 }).map((_, index) => (
-                                <tr key={index} style={{ borderBottom: '1px solid #444' }}>
-                                    <td style={{ padding: '10px' }}><Skeleton /></td>
-                                    <td style={{ padding: '10px' }}><Skeleton /></td>
-                                    <td style={{ padding: '10px' }}><Skeleton /></td>
-                                    <td style={{ padding: '10px' }}><Skeleton /></td>
-                                    <td style={{ padding: '10px' }}><Skeleton /></td>
-                                    <td style={{ padding: '10px' }}><Skeleton /></td>
-                                    <td style={{ padding: '10px' }}><Skeleton /></td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                <Box sx={{ mt: 2 }}>
+                    {Array.from({ length: 3 }).map((_, index) => (
+                        <Skeleton key={index} height={40} style={{ marginBottom: 8 }} />
+                    ))}
+                </Box>
             </SkeletonTheme>
         );
     }
 
-    if (error) return <p style={{ color: 'red' }}>{error}</p>;
-    if (!portfolio || portfolio.length === 0) return <p>Você ainda não possui ativos no seu portfólio.</p>;
+    if (error) {
+        return (
+            <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+                {error}
+            </Typography>
+        );
+    }
+
+    if (!portfolio || portfolio.length === 0) {
+        return (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Você ainda não possui ativos no seu portfólio.
+            </Typography>
+        );
+    }
 
     return (
-        <div style={{ marginTop: '40px' }}>
-            <h3 style={{ textAlign: 'center' }}>Meu Portfólio de Investimentos</h3>
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
-                <thead>
-                    <tr style={{ borderBottom: '2px solid #00C49F' }}>
-                        <th style={{ padding: '10px', textAlign: 'left' }}>Ativo</th>
-                        <th style={{ padding: '10px', textAlign: 'right' }}>Qtd.</th>
-                        <th style={{ padding: '10px', textAlign: 'right' }}>Preço Médio</th>
-                        <th style={{ padding: '10px', textAlign: 'right' }}>Preço Atual</th>
-                        <th style={{ padding: '10px', textAlign: 'right' }}>Total</th>
-                        <th style={{ padding: '10px', textAlign: 'right' }}>Lucro/Prejuízo</th>
-                        <th style={{ padding: '10px', textAlign: 'right' }}>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {portfolio.map((ativo) => (
-                        <tr key={ativo.ticker} style={{ borderBottom: '1px solid #444' }}>
-                            <td style={{ padding: '10px', textAlign: 'left' }}>{ativo.ticker}</td>
-                            <td style={{ padding: '10px', textAlign: 'right' }}>{ativo.quantidade}</td>
-                            <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(ativo.precoMedio)}</td>
-                            <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(ativo.precoAtual)}</td>
-                            <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(ativo.totalAtual)}</td>
-                            <td style={{ padding: '10px', textAlign: 'right', color: (ativo.lucroPrejuizo ?? 0) >= 0 ? '#00C49F' : '#FF8042' }}>
-                                {formatCurrency(ativo.lucroPrejuizo)} ({formatPercent(ativo.variacaoPercentual)})
-                            </td>
-                            <td style={{ padding: '10px', textAlign: 'right' }}>
-                                <IconButton color="error" aria-label="vender ativo" onClick={() => onSellRequest(ativo)}>
-                                    <DeleteIcon />
-                                </IconButton>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
+        <TableContainer sx={{ mt: 1 }}>
+            <Table size="small">
+                <TableHead>
+                    <TableRow sx={{ '& th': { borderBottom: '1px solid rgba(255,255,255,0.12)', color: 'text.secondary', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' } }}>
+                        <TableCell>Ticker</TableCell>
+                        <TableCell>Tipo</TableCell>
+                        <TableCell align="right">Qtd</TableCell>
+                        <TableCell align="right">Preço Médio</TableCell>
+                        <TableCell align="right">Valor Atual</TableCell>
+                        <TableCell align="right">Lucro/Prejuízo</TableCell>
+                        <TableCell align="right">Ações</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {portfolio.map((ativo) => {
+                        const lucro = ativo.lucroPrejuizo ?? 0;
+                        return (
+                            <TableRow
+                                key={ativo.ticker}
+                                sx={{
+                                    '& td': { borderBottom: '1px solid rgba(255,255,255,0.06)', py: 1.25 },
+                                    '&:hover': { bgcolor: 'rgba(255,255,255,0.03)' },
+                                }}
+                            >
+                                <TableCell sx={{ fontWeight: 600 }}>{ativo.ticker}</TableCell>
+                                <TableCell sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>{ativo.tipoAtivo || '—'}</TableCell>
+                                <TableCell align="right">{ativo.quantidade}</TableCell>
+                                <TableCell align="right">{formatCurrency(ativo.precoMedio)}</TableCell>
+                                <TableCell align="right">{formatCurrency(ativo.totalAtual)}</TableCell>
+                                <TableCell
+                                    align="right"
+                                    sx={{
+                                        color: lucro >= 0 ? 'success.main' : 'error.main',
+                                        fontWeight: 600,
+                                    }}
+                                >
+                                    {formatCurrency(lucro)} ({formatPercent(ativo.variacaoPercentual)})
+                                </TableCell>
+                                <TableCell align="right">
+                                    <IconButton
+                                        color="error"
+                                        aria-label="vender ativo"
+                                        size="small"
+                                        onClick={() => onSellRequest(ativo)}
+                                    >
+                                        <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                </TableCell>
+                            </TableRow>
+                        );
+                    })}
+                </TableBody>
+            </Table>
+        </TableContainer>
     );
 };
 

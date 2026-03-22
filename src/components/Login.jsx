@@ -58,6 +58,7 @@ const Login = () => {
 
         <Box component="form" onSubmit={handleSubmit}>
           <TextField
+            variant="outlined"
             margin="normal"
             required
             fullWidth
@@ -68,8 +69,21 @@ const Login = () => {
             autoFocus
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            sx={{
+              '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
+              '& .MuiInputLabel-root.Mui-focused': { color: '#7C6AF7' },
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: 'rgba(255,255,255,0.05)',
+                '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
+                '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' },
+                '&.Mui-focused fieldset': { borderColor: '#7C6AF7' },
+              },
+              '& .MuiOutlinedInput-input': { color: '#fff' },
+            }}
           />
           <TextField
+            variant="outlined"
             margin="normal"
             required
             fullWidth
@@ -80,6 +94,18 @@ const Login = () => {
             autoComplete="current-password"
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            sx={{
+              '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
+              '& .MuiInputLabel-root.Mui-focused': { color: '#7C6AF7' },
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: 'rgba(255,255,255,0.05)',
+                '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
+                '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' },
+                '&.Mui-focused fieldset': { borderColor: '#7C6AF7' },
+              },
+              '& .MuiOutlinedInput-input': { color: '#fff' },
+            }}
           />
 
           {error && (
