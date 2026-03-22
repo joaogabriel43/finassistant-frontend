@@ -70,6 +70,11 @@ const Registro = () => {
                             '&.Mui-focused fieldset': { borderColor: '#7c3aed' },
                           },
                           '& .MuiInputBase-input': { color: '#ffffff' },
+                          '& .MuiInputBase-input:-webkit-autofill': {
+                            WebkitBoxShadow: '0 0 0 1000px #1a1a2e inset',
+                            WebkitTextFillColor: '#ffffff',
+                            caretColor: '#ffffff',
+                          },
                           '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.6)' },
                           '& .MuiInputLabel-root.Mui-focused': { color: '#a78bfa' },
                         }}
@@ -92,6 +97,11 @@ const Registro = () => {
                             '&.Mui-focused fieldset': { borderColor: '#7c3aed' },
                           },
                           '& .MuiInputBase-input': { color: '#ffffff' },
+                          '& .MuiInputBase-input:-webkit-autofill': {
+                            WebkitBoxShadow: '0 0 0 1000px #1a1a2e inset',
+                            WebkitTextFillColor: '#ffffff',
+                            caretColor: '#ffffff',
+                          },
                           '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.6)' },
                           '& .MuiInputLabel-root.Mui-focused': { color: '#a78bfa' },
                         }}
