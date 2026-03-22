@@ -63,15 +63,15 @@ const Registro = () => {
                         required
                         InputLabelProps={{ shrink: true }}
                         sx={{
-                          '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
-                          '& .MuiInputLabel-root.Mui-focused': { color: '#7C6AF7' },
                           '& .MuiOutlinedInput-root': {
                             backgroundColor: 'rgba(255,255,255,0.05)',
                             '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
                             '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' },
-                            '&.Mui-focused fieldset': { borderColor: '#7C6AF7' },
+                            '&.Mui-focused fieldset': { borderColor: '#7c3aed' },
                           },
-                          '& .MuiOutlinedInput-input': { color: '#fff' },
+                          '& .MuiInputBase-input': { color: '#ffffff' },
+                          '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.6)' },
+                          '& .MuiInputLabel-root.Mui-focused': { color: '#a78bfa' },
                         }}
                     />
                     <TextField
@@ -85,15 +85,15 @@ const Registro = () => {
                         required
                         InputLabelProps={{ shrink: true }}
                         sx={{
-                          '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
-                          '& .MuiInputLabel-root.Mui-focused': { color: '#7C6AF7' },
                           '& .MuiOutlinedInput-root': {
                             backgroundColor: 'rgba(255,255,255,0.05)',
                             '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
                             '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' },
-                            '&.Mui-focused fieldset': { borderColor: '#7C6AF7' },
+                            '&.Mui-focused fieldset': { borderColor: '#7c3aed' },
                           },
-                          '& .MuiOutlinedInput-input': { color: '#fff' },
+                          '& .MuiInputBase-input': { color: '#ffffff' },
+                          '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.6)' },
+                          '& .MuiInputLabel-root.Mui-focused': { color: '#a78bfa' },
                         }}
                     />
 
