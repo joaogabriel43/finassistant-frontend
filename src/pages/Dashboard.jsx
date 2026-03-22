@@ -161,7 +161,7 @@ const Dashboard = () => {
       </Paper>
 
       {/* SEÇÃO TÁTICA — Evolução do Saldo (md=8) + Composição do Portfólio (md=4) */}
-      <Grid container spacing={3} sx={{ mt: 3 }}>
+      <Grid container spacing={3} sx={{ mt: 3, width: '100%', ml: 0 }}>
         <Grid item xs={12} md={8}>
           <Paper sx={{ p: { xs: 1.5, md: 3 }, height: '100%', overflow: 'hidden', ...paperStyle }}>
             <Typography variant="h6" fontWeight={600} mb={1.5}>
@@ -202,7 +202,7 @@ const Dashboard = () => {
       </Grid>
 
       {/* SEÇÃO OPERACIONAL — Últimas Transações (md=6) + Dividendos placeholder (md=6) */}
-      <Grid container spacing={3} sx={{ mt: 0 }}>
+      <Grid container spacing={3} sx={{ mt: 3, width: '100%', ml: 0 }}>
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 3, overflow: 'hidden', ...paperStyle }}>
             <Typography variant="h6" fontWeight={600} mb={2}>
