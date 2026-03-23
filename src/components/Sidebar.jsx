@@ -4,10 +4,11 @@ import { Box, Button, Typography } from '@mui/material'
 import { useAuth } from '../contexts/AuthContext'
 
 const NAV_LINKS = [
-  { to: '/dashboard',    label: 'Dashboard' },
-  { to: '/chat',         label: 'Chat' },
-  { to: '/orcamento',    label: 'Orçamento' },
-  { to: '/investimentos', label: 'Investimentos' },
+  { to: '/dashboard',       label: 'Dashboard' },
+  { to: '/chat',            label: 'Chat' },
+  { to: '/orcamento',       label: 'Orçamento' },
+  { to: '/investimentos',   label: 'Investimentos' },
+  { to: '/fire-calculator', label: 'FIRE Calculator' },
 ]
 
 const Sidebar = () => {

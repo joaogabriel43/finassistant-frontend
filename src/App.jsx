@@ -8,6 +8,7 @@ import Chat from './pages/Chat';
 import Orcamento from './pages/Orcamento';
 import Investimentos from './pages/Investimentos';
 import Questionario from './pages/Questionario';
+import FireCalculator from './pages/FireCalculator';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Componente para redirecionamento de rotas não encontradas
@@ -34,6 +35,7 @@ function App() {
                             <Route path="/investimentos" element={<Investimentos />} />
                             <Route path="/questionario" element={<Questionario />} />
                             <Route path="/questionario-perfil" element={<Questionario />} />
+                            <Route path="/fire-calculator" element={<FireCalculator />} />
                         </Route>
 
                         {/* Rota Catch-all para caminhos não encontrados */}
