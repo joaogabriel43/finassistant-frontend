@@ -13,6 +13,7 @@ import DashboardSkeleton from '../components/dashboard/DashboardSkeleton'
 import GastosPorCategoriaChart from '../components/dashboard/GastosPorCategoriaChart'
 import DividendosCard from '../components/dashboard/DividendosCard'
 import ScoreSaudeCard from '../components/dashboard/ScoreSaudeCard'
+import ExportarRelatorioButton from '../components/dashboard/ExportarRelatorioButton'
 
 const formatBRL = (value) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value ?? 0)
@@ -105,17 +106,20 @@ const Dashboard = () => {
               height: '100%',
             }}
           >
-            <Typography
-              variant="caption"
-              sx={{
-                color: 'text.secondary',
-                fontSize: 11,
-                textTransform: 'uppercase',
-                letterSpacing: 0.8,
-              }}
-            >
-              Patrimônio Total
-            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: 'text.secondary',
+                  fontSize: 11,
+                  textTransform: 'uppercase',
+                  letterSpacing: 0.8,
+                }}
+              >
+                Patrimônio Total
+              </Typography>
+              <ExportarRelatorioButton />
+            </Box>
 
             <Typography
               variant="h3"
