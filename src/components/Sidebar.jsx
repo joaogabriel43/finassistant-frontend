@@ -11,6 +11,7 @@ const NAV_LINKS = [
   { to: '/fire-calculator', label: 'FIRE Calculator' },
   { to: '/fluxo-caixa',    label: 'Fluxo de Caixa' },
   { to: '/metas',          label: 'Metas' },
+  { to: '/status',         label: 'Status' },
 ]
 
 const Sidebar = () => {

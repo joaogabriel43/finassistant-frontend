@@ -11,22 +11,21 @@ import Questionario from './pages/Questionario';
 import FireCalculator from './pages/FireCalculator';
 import FluxoCaixa from './pages/FluxoCaixa';
 import Metas from './pages/Metas';
+import StatusPage from './pages/StatusPage';
+import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
-
-// Componente para redirecionamento de rotas não encontradas
-const NotFoundRedirect = () => {
-    const { isAuthenticated } = useAuth();
-    return isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />;
-};
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
     return (
         <Router>
             <AuthProvider>
+              <ErrorBoundary>
                 <Routes>
                         {/* Rotas Públicas */}
                         <Route path="/login" element={<LoginPage />} />
                         <Route path="/registrar" element={<Registro />} />
+                        <Route path="/status" element={<StatusPage />} />
 
                         {/* Rotas Protegidas aninhadas sob o ProtectedRoute */}
                         <Route element={<ProtectedRoute />}>
@@ -43,8 +42,9 @@ function App() {
                         </Route>
 
                         {/* Rota Catch-all para caminhos não encontrados */}
-                        <Route path="*" element={<NotFoundRedirect />} />
+                        <Route path="*" element={<NotFound />} />
                 </Routes>
+              </ErrorBoundary>
             </AuthProvider>
         </Router>
     );
