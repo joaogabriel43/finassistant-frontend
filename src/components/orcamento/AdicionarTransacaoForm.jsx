@@ -1,17 +1,58 @@
 import React, { useState, useEffect } from 'react';
+import {
+    Box,
+    Button,
+    FormControl,
+    InputLabel,
+    MenuItem,
+    Select,
+    TextField,
+    Typography,
+    Alert,
+} from '@mui/material';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 import CreatableSelect from 'react-select/creatable';
 
+const selectStyles = {
+    control: (base, state) => ({
+        ...base,
+        backgroundColor: 'transparent',
+        borderColor: state.isFocused ? '#7C6AF7' : 'rgba(255,255,255,0.12)',
+        borderRadius: 8,
+        boxShadow: 'none',
+        minHeight: 40,
+        ':hover': { borderColor: 'rgba(255,255,255,0.24)' },
+    }),
+    menu: (base) => ({
+        ...base,
+        backgroundColor: '#1A1A2E',
+        border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: 8,
+        zIndex: 9999,
+    }),
+    option: (base, state) => ({
+        ...base,
+        backgroundColor: state.isFocused ? 'rgba(124,106,247,0.12)' : 'transparent',
+        color: '#fff',
+        ':active': { backgroundColor: 'rgba(124,106,247,0.2)' },
+    }),
+    singleValue: (base) => ({ ...base, color: '#fff' }),
+    input: (base) => ({ ...base, color: '#fff' }),
+    placeholder: (base) => ({ ...base, color: '#8B8BA8' }),
+    clearIndicator: (base) => ({ ...base, color: '#8B8BA8', ':hover': { color: '#fff' } }),
+    dropdownIndicator: (base) => ({ ...base, color: '#8B8BA8', ':hover': { color: '#fff' } }),
+    indicatorSeparator: (base) => ({ ...base, backgroundColor: 'rgba(255,255,255,0.12)' }),
+};
+
 const AdicionarTransacaoForm = ({ onTransacaoAdicionada }) => {
     const { user } = useAuth();
     const [valor, setValor] = useState('');
-    const [categoria, setCategoria] = useState(null); // { value, label }
+    const [categoria, setCategoria] = useState(null);
     const [descricao, setDescricao] = useState('');
     const [tipo, setTipo] = useState('SAIDA');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-
     const [categoriasExistentes, setCategoriasExistentes] = useState([]);
     const [isLoadingCategorias, setIsLoadingCategorias] = useState(true);
 
@@ -32,25 +73,16 @@ const AdicionarTransacaoForm = ({ onTransacaoAdicionada }) => {
         setError('');
         setSuccess('');
         try {
-            if (!user || !user.id) {
-                setError('Usuário não autenticado.');
-                return;
-            }
-            if (!categoria || !categoria.value) {
-                setError('Selecione ou informe uma categoria.');
-                return;
-            }
+            if (!user || !user.id) { setError('Usuário não autenticado.'); return; }
+            if (!categoria || !categoria.value) { setError('Selecione ou informe uma categoria.'); return; }
             const requestData = { valor, categoria: categoria.value, descricao, tipo };
             await api.post(`/orcamento/transacao/${user.id}`, requestData);
             setSuccess('Transação adicionada com sucesso!');
-            // Limpa o formulário
             setValor('');
             setCategoria(null);
             setDescricao('');
             setTipo('SAIDA');
-            // Atualiza a lista/gráfico
             if (onTransacaoAdicionada) onTransacaoAdicionada();
-            // Se criou uma categoria nova, adiciona à lista de opções
             if (!categoriasExistentes.find((opt) => opt.value === requestData.categoria)) {
                 setCategoriasExistentes((prev) => [...prev, { value: requestData.categoria, label: requestData.categoria }]);
             }
@@ -59,65 +91,67 @@ const AdicionarTransacaoForm = ({ onTransacaoAdicionada }) => {
         }
     };
 
-    // Estilos do formulário (tema escuro)
-    const formStyle = { display: 'grid', gap: 12, gridTemplateColumns: '1fr 1fr', background: '#2d3748', padding: 16, borderRadius: 8, marginBottom: 16, color: '#e2e8f0' };
-    const inputStyle = { padding: 10, borderRadius: 6, border: '1px solid #4a5568', background: '#1a202c', color: '#e2e8f0' };
-    const fullRow = { gridColumn: '1 / -1' };
-    const buttonStyle = { ...inputStyle, background: '#00C49F', border: 'none', color: '#0b1513', fontWeight: 700, cursor: 'pointer' };
-
-    // Estilos do react-select para combinar com tema escuro
-    const selectStyles = {
-        control: (base, state) => ({
-            ...base,
-            backgroundColor: '#1a202c',
-            borderColor: state.isFocused ? '#00C49F' : '#4a5568',
-            boxShadow: 'none',
-            ':hover': { borderColor: '#00C49F' },
-            color: '#e2e8f0',
-        }),
-        menu: (base) => ({ ...base, backgroundColor: '#1a202c', color: '#e2e8f0' }),
-        option: (base, state) => ({
-            ...base,
-            backgroundColor: state.isFocused ? '#2d3748' : '#1a202c',
-            color: '#e2e8f0',
-            ':active': { backgroundColor: '#2d3748' },
-        }),
-        singleValue: (base) => ({ ...base, color: '#e2e8f0' }),
-        input: (base) => ({ ...base, color: '#e2e8f0' }),
-        placeholder: (base) => ({ ...base, color: '#a0aec0' }),
-        clearIndicator: (base) => ({ ...base, color: '#a0aec0' }),
-        dropdownIndicator: (base) => ({ ...base, color: '#a0aec0' }),
-    };
-
     return (
-        <form onSubmit={handleSubmit} style={formStyle}>
-            <h4 style={{ margin: 0, ...fullRow }}>Adicionar Nova Transação</h4>
-            <input type="number" step="0.01" placeholder="Valor (ex: 50.75)" value={valor} onChange={(e) => setValor(e.target.value)} required style={inputStyle} />
+        <Box component="form" onSubmit={handleSubmit}>
+            <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
+                Adicionar Nova Transação
+            </Typography>
 
-            <select value={tipo} onChange={(e) => setTipo(e.target.value)} style={inputStyle}>
-                <option value="SAIDA">Despesa</option>
-                <option value="ENTRADA">Receita</option>
-            </select>
+            <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: '1fr 1fr' }}>
+                <TextField
+                    type="number"
+                    label="Valor (R$)"
+                    size="small"
+                    value={valor}
+                    onChange={(e) => setValor(e.target.value)}
+                    required
+                    inputProps={{ step: '0.01', min: 0 }}
+                />
 
-            <CreatableSelect
-                isClearable
-                isDisabled={isLoadingCategorias}
-                isLoading={isLoadingCategorias}
-                onChange={(newValue) => setCategoria(newValue)}
-                options={categoriasExistentes}
-                value={categoria}
-                placeholder="Selecione ou digite uma categoria..."
-                styles={selectStyles}
-            />
+                <FormControl size="small">
+                    <InputLabel>Tipo</InputLabel>
+                    <Select value={tipo} label="Tipo" onChange={(e) => setTipo(e.target.value)}>
+                        <MenuItem value="SAIDA">Despesa</MenuItem>
+                        <MenuItem value="ENTRADA">Receita</MenuItem>
+                    </Select>
+                </FormControl>
 
-            <input type="text" placeholder="Descrição (ex: Almoço com amigos)" value={descricao} onChange={(e) => setDescricao(e.target.value)} required style={inputStyle} />
+                <Box sx={{ gridColumn: '1 / -1' }}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}>
+                        Categoria
+                    </Typography>
+                    <CreatableSelect
+                        isClearable
+                        isDisabled={isLoadingCategorias}
+                        isLoading={isLoadingCategorias}
+                        onChange={(newValue) => setCategoria(newValue)}
+                        options={categoriasExistentes}
+                        value={categoria}
+                        placeholder="Selecione ou digite uma categoria..."
+                        styles={selectStyles}
+                    />
+                </Box>
 
-            <div style={fullRow}>
-                <button type="submit" style={buttonStyle}>Adicionar</button>
-            </div>
-            {success && <p style={{ color: '#00C49F', ...fullRow }}>{success}</p>}
-            {error && <p style={{ color: '#FF8042', ...fullRow }}>{error}</p>}
-        </form>
+                <TextField
+                    label="Descrição"
+                    size="small"
+                    value={descricao}
+                    onChange={(e) => setDescricao(e.target.value)}
+                    required
+                    placeholder="Ex: Almoço com amigos"
+                    sx={{ gridColumn: '1 / -1' }}
+                />
+
+                <Box sx={{ gridColumn: '1 / -1' }}>
+                    <Button type="submit" variant="contained" fullWidth>
+                        Adicionar
+                    </Button>
+                </Box>
+            </Box>
+
+            {success && <Alert severity="success" sx={{ mt: 1.5 }}>{success}</Alert>}
+            {error && <Alert severity="error" sx={{ mt: 1.5 }}>{error}</Alert>}
+        </Box>
     );
 };
 

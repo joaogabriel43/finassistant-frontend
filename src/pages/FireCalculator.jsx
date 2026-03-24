@@ -81,21 +81,33 @@ const FireCalculator = () => {
         idadeAtual:      '',
     });
 
+    const CURRENCY_FIELDS = ['patrimonioAtual', 'aporteMensal', 'despesaMensal'];
+
+    const applyMask = (value) =>
+        value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+    const stripMask = (value) =>
+        Number(String(value).replace(/\./g, '')) || 0;
+
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setForm((prev) => ({ ...prev, [name]: value }));
+        if (CURRENCY_FIELDS.includes(name)) {
+            setForm((prev) => ({ ...prev, [name]: applyMask(value) }));
+        } else {
+            setForm((prev) => ({ ...prev, [name]: value }));
+        }
     };
 
     const handleSubmit = () => {
         calcular({
-            patrimonioAtual: Number(form.patrimonioAtual) || 0,
-            aporteMensal:    Number(form.aporteMensal) || 0,
-            despesaMensal:   Number(form.despesaMensal) || 0,
+            patrimonioAtual: stripMask(form.patrimonioAtual),
+            aporteMensal:    stripMask(form.aporteMensal),
+            despesaMensal:   stripMask(form.despesaMensal),
             idadeAtual:      Number(form.idadeAtual) || 0,
         });
     };
 
-    const dadosGrafico = gerarDadosGrafico(form.patrimonioAtual, form.aporteMensal, resultado);
+    const dadosGrafico = gerarDadosGrafico(stripMask(form.patrimonioAtual), stripMask(form.aporteMensal), resultado);
 
     return (
         <Box sx={{ p: { xs: 2, md: 3 } }}>
@@ -125,11 +137,11 @@ const FireCalculator = () => {
                                 id="patrimonioAtual"
                                 name="patrimonioAtual"
                                 label="Patrimônio Atual"
-                                type="number"
+                                type="text"
+                                inputMode="numeric"
                                 size="small"
                                 value={form.patrimonioAtual}
                                 onChange={handleChange}
-                                inputProps={{ min: 0 }}
                                 helperText="Total investido hoje (R$)"
                             />
                         </Grid>
@@ -139,11 +151,11 @@ const FireCalculator = () => {
                                 id="aporteMensal"
                                 name="aporteMensal"
                                 label="Aporte Mensal"
-                                type="number"
+                                type="text"
+                                inputMode="numeric"
                                 size="small"
                                 value={form.aporteMensal}
                                 onChange={handleChange}
-                                inputProps={{ min: 0 }}
                                 helperText="Quanto você investe por mês (R$)"
                             />
                         </Grid>
@@ -153,11 +165,11 @@ const FireCalculator = () => {
                                 id="despesaMensal"
                                 name="despesaMensal"
                                 label="Despesa Mensal"
-                                type="number"
+                                type="text"
+                                inputMode="numeric"
                                 size="small"
                                 value={form.despesaMensal}
                                 onChange={handleChange}
-                                inputProps={{ min: 0.01 }}
                                 helperText="Seus gastos mensais atuais (R$)"
                             />
                         </Grid>
@@ -182,7 +194,7 @@ const FireCalculator = () => {
                             variant="contained"
                             size="large"
                             onClick={handleSubmit}
-                            disabled={loading || !form.despesaMensal || Number(form.despesaMensal) <= 0}
+                            disabled={loading || !form.despesaMensal || stripMask(form.despesaMensal) <= 0}
                             startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <RocketLaunchIcon />}
                             sx={{ borderRadius: '10px', px: 4 }}
                         >

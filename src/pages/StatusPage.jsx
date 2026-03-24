@@ -1,6 +1,8 @@
 import React from 'react'
-import { Box, Card, CardContent, Chip, CircularProgress, Grid, Typography, IconButton } from '@mui/material'
+import { useNavigate } from 'react-router-dom'
+import { Box, Button, Card, CardContent, Chip, CircularProgress, Grid, Typography, IconButton } from '@mui/material'
 import RefreshIcon from '@mui/icons-material/Refresh'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import WarningIcon from '@mui/icons-material/Warning'
 import ErrorIcon from '@mui/icons-material/Error'
@@ -13,6 +15,7 @@ const statusConfig = {
 }
 
 const StatusPage = () => {
+  const navigate = useNavigate()
   const { servicos, loading, error, refetch } = useStatusPage()
 
   const allOperational = servicos.length > 0 && servicos.every(s => s.status === 'OPERACIONAL')
@@ -20,6 +23,13 @@ const StatusPage = () => {
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#111118', p: { xs: 2, md: 4 } }}>
       <Box sx={{ maxWidth: 800, mx: 'auto' }}>
+        <Button
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate('/dashboard')}
+          sx={{ mb: 2, color: 'text.secondary', textTransform: 'none', pl: 0 }}
+        >
+          Voltar ao Dashboard
+        </Button>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4 }}>
           <Box>
             <Typography variant="h4" fontWeight={700} sx={{ color: '#fff' }}>

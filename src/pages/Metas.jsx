@@ -28,8 +28,16 @@ const Metas = () => {
   const [form, setForm] = useState({ titulo: '', valorAlvo: '', prazo: '', tipo: 'LIVRE' })
   const [submitting, setSubmitting] = useState(false)
 
+  const applyMask = (value) =>
+    value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+
   const handleChange = (e) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+    const { name, value } = e.target
+    if (name === 'valorAlvo') {
+      setForm((prev) => ({ ...prev, valorAlvo: applyMask(value) }))
+    } else {
+      setForm((prev) => ({ ...prev, [name]: value }))
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -39,7 +47,7 @@ const Metas = () => {
     try {
       await criarMeta({
         titulo: form.titulo,
-        valorAlvo: parseFloat(form.valorAlvo),
+        valorAlvo: parseFloat(String(form.valorAlvo).replace(/\./g, '')),
         prazo: form.prazo,
         tipo: form.tipo,
       })
@@ -87,12 +95,12 @@ const Metas = () => {
             <TextField
               label="Valor Alvo (R$)"
               name="valorAlvo"
-              type="number"
+              type="text"
+              inputMode="numeric"
               value={form.valorAlvo}
               onChange={handleChange}
               size="small"
               required
-              inputProps={{ min: 0, step: 0.01 }}
               sx={{ minWidth: 150 }}
             />
             <TextField

@@ -6,6 +6,7 @@ import {
     Button,
     Collapse,
     FormControl,
+    Grid,
     IconButton,
     InputLabel,
     MenuItem,
@@ -94,41 +95,49 @@ export default function EstrategiaForm() {
             </Typography>
 
             {linhas.map((l, idx) => (
-                <Box key={idx} sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 1.5 }}>
-                    <FormControl size="small" sx={{ minWidth: 180 }}>
-                        <InputLabel>Classe</InputLabel>
-                        <Select
-                            value={l.tipo}
-                            label="Classe"
-                            onChange={(e) => changeTipo(idx, e.target.value)}
+                <Grid key={idx} container spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                    <Grid size={{ xs: 6 }}>
+                        <FormControl size="small" fullWidth>
+                            <InputLabel>Classe</InputLabel>
+                            <Select
+                                value={l.tipo}
+                                label="Classe"
+                                onChange={(e) => changeTipo(idx, e.target.value)}
+                            >
+                                {TIPOS.map(t => (
+                                    <MenuItem key={t.key} value={t.key}>{t.label}</MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Grid>
+
+                    <Grid size={{ xs: 3 }}>
+                        <TextField
+                            type="number"
+                            size="small"
+                            label="%"
+                            fullWidth
+                            inputProps={{ min: 0, max: 100, step: 0.5 }}
+                            value={l.pct}
+                            onChange={(e) => changePct(idx, e.target.value)}
+                        />
+                    </Grid>
+
+                    <Grid size={{ xs: 1 }} sx={{ display: 'flex', justifyContent: 'center' }}>
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>%</Typography>
+                    </Grid>
+
+                    <Grid size={{ xs: 2 }} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <IconButton
+                            color="error"
+                            aria-label="remover linha"
+                            onClick={() => rmLinha(idx)}
+                            size="small"
                         >
-                            {TIPOS.map(t => (
-                                <MenuItem key={t.key} value={t.key}>{t.label}</MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
-
-                    <TextField
-                        type="number"
-                        size="small"
-                        label="%"
-                        inputProps={{ min: 0, max: 100, step: 0.5 }}
-                        value={l.pct}
-                        onChange={(e) => changePct(idx, e.target.value)}
-                        sx={{ width: 90 }}
-                    />
-
-                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>%</Typography>
-
-                    <IconButton
-                        color="error"
-                        aria-label="remover linha"
-                        onClick={() => rmLinha(idx)}
-                        size="small"
-                    >
-                        <DeleteIcon />
-                    </IconButton>
-                </Box>
+                            <DeleteIcon />
+                        </IconButton>
+                    </Grid>
+                </Grid>
             ))}
 
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>

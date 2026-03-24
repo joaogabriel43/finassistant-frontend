@@ -1,7 +1,10 @@
 import React from 'react'
+import { MemoryRouter } from 'react-router-dom'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import StatusPage from '../StatusPage'
+
+const renderWithRouter = (ui) => render(<MemoryRouter>{ui}</MemoryRouter>)
 
 vi.mock('../../hooks/useStatusPage', () => ({
   useStatusPage: vi.fn(),
@@ -23,7 +26,7 @@ describe('StatusPage', () => {
 
   it('deve renderizar todos os servicos operacionais', () => {
     useStatusPage.mockReturnValue({ servicos: mockServicos, loading: false, error: null, refetch: mockRefetch })
-    render(<StatusPage />)
+    renderWithRouter(<StatusPage />)
 
     expect(screen.getByText('Gemini AI')).toBeInTheDocument()
     expect(screen.getByText('Database')).toBeInTheDocument()
@@ -37,7 +40,7 @@ describe('StatusPage', () => {
       { nome: 'Database', status: 'OPERACIONAL', latenciaMs: 12, ultimaVerificacao: '14:30:00', mensagem: 'Conexao OK' },
     ]
     useStatusPage.mockReturnValue({ servicos: degraded, loading: false, error: null, refetch: mockRefetch })
-    render(<StatusPage />)
+    renderWithRouter(<StatusPage />)
 
     expect(screen.getByText('Alguns servicos com problemas')).toBeInTheDocument()
     expect(screen.getByText('Degradado')).toBeInTheDocument()
@@ -45,7 +48,7 @@ describe('StatusPage', () => {
 
   it('deve exibir latencia dos servicos', () => {
     useStatusPage.mockReturnValue({ servicos: mockServicos, loading: false, error: null, refetch: mockRefetch })
-    render(<StatusPage />)
+    renderWithRouter(<StatusPage />)
 
     expect(screen.getByText('320ms')).toBeInTheDocument()
     expect(screen.getByText('12ms')).toBeInTheDocument()
@@ -53,7 +56,7 @@ describe('StatusPage', () => {
 
   it('deve chamar refetch ao clicar em refresh', () => {
     useStatusPage.mockReturnValue({ servicos: mockServicos, loading: false, error: null, refetch: mockRefetch })
-    render(<StatusPage />)
+    renderWithRouter(<StatusPage />)
 
     fireEvent.click(screen.getByTestId('refresh-btn'))
     expect(mockRefetch).toHaveBeenCalledTimes(1)
