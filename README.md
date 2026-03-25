@@ -2,11 +2,19 @@
   <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white" />
   <img src="https://img.shields.io/badge/MUI-7-007FFF?logo=mui&logoColor=white" />
   <img src="https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white" />
-  <img src="https://img.shields.io/badge/Tests-66_passing-brightgreen?logo=vitest&logoColor=white" />
-  <img src="https://img.shields.io/github/actions/workflow/status/joaogabriel43/finassistant-frontend/ci.yml?label=CI&logo=githubactions&logoColor=white" />
+  <img src="https://img.shields.io/badge/Tests-71_passing-brightgreen?logo=vitest&logoColor=white" />
+  <img src="https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel&logoColor=white" />
+  <img src="https://github.com/joaogabriel43/finassistant-frontend/actions/workflows/ci.yml/badge.svg" />
 </p>
 
 # FortunAI Frontend
+
+## 🚀 Demo
+
+| | URL |
+|---|---|
+| **App** | https://finassistant-frontend.vercel.app |
+| **API** | https://finassistant-production.up.railway.app |
 
 Interface React do **FortunAI**, assistente financeiro pessoal inteligente. Dashboard premium com tema dark fintech, chat com IA, gestao de orcamento, portfolio de investimentos, FIRE Calculator e mais.
 
