@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import AlocacaoAtivosChart from '../components/investimentos/AlocacaoAtivosChart';
 import BenchmarkChart from '../components/investimentos/BenchmarkChart';
+import MarkowitzPanel from '../components/investimentos/MarkowitzPanel';
 import PortfolioTable from '../components/dashboard/PortfolioTable';
 import EstrategiaForm from '../components/investimentos/EstrategiaForm';
 import { useAuth } from '../contexts/AuthContext';
@@ -156,7 +157,16 @@ const Investimentos = () => {
                 </Grid>
             </Grid>
 
-            {/* LINHA 4 — Strategy card (xs=12) */}
+            {/* LINHA 4 — Markowitz Optimization (xs=12) */}
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+                <Grid size={{ xs: 12 }}>
+                    <Paper sx={cardStyle}>
+                        <MarkowitzPanel />
+                    </Paper>
+                </Grid>
+            </Grid>
+
+            {/* LINHA 5 — Strategy card (xs=12) */}
             <Grid container spacing={3}>
                 <Grid size={{ xs: 12 }}>
                     <Paper sx={cardStyle}>
