@@ -4,6 +4,10 @@ import react from '@vitejs/plugin-react'
 // Vite configuration with explicit proxy to Spring Boot backend on port 3333
 export default defineConfig({
   plugins: [react()],
+  define: {
+    // sockjs-client uses Node.js `global` — map it to browser globalThis
+    global: 'globalThis',
+  },
   server: {
     port: 5173,
     proxy: {
