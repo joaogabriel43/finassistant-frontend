@@ -11,6 +11,7 @@ import Questionario from './pages/Questionario';
 import FireCalculator from './pages/FireCalculator';
 import FluxoCaixa from './pages/FluxoCaixa';
 import Metas from './pages/Metas';
+import Configuracoes from './pages/Configuracoes';
 import StatusPage from './pages/StatusPage';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -39,6 +40,7 @@ function App() {
                             <Route path="/fire-calculator" element={<FireCalculator />} />
                             <Route path="/fluxo-caixa" element={<FluxoCaixa />} />
                             <Route path="/metas" element={<Metas />} />
+                            <Route path="/configuracoes" element={<Configuracoes />} />
                         </Route>
 
                         {/* Rota Catch-all para caminhos não encontrados */}
