@@ -22,6 +22,7 @@ import {
     YAxis,
 } from 'recharts';
 import { useFireCalculator } from '../hooks/useFireCalculator';
+import { formatCurrency } from '../utils/formatCurrency';
 
 const cardStyle = {
     p: 3,
@@ -29,9 +30,6 @@ const cardStyle = {
     borderRadius: '16px',
     boxShadow: 'none',
 };
-
-const formatCurrency = (value) =>
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value ?? 0);
 
 const PERFIS = [
     { key: 'conservador', label: 'Conservador', taxa: '6% aa',  color: '#64B5F6', anosKey: 'anosAteFireConservador', idadeKey: 'idadeFireConservador' },

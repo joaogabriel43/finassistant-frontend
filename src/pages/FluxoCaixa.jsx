@@ -30,6 +30,7 @@ import {
     YAxis,
 } from 'recharts';
 import { useFluxoCaixa } from '../hooks/useFluxoCaixa';
+import { formatCurrency } from '../utils/formatCurrency';
 
 const cardStyle = {
     p: 3,
@@ -37,9 +38,6 @@ const cardStyle = {
     borderRadius: '16px',
     boxShadow: 'none',
 };
-
-const formatCurrency = (value) =>
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value ?? 0);
 
 const formatDate = (isoDate) => {
     if (!isoDate) return '';
