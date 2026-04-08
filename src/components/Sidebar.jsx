@@ -1,7 +1,8 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
-import { Box, Button, Typography } from '@mui/material'
-import { useAuth } from '../contexts/AuthContext'
+import { Box, Typography } from '@mui/material'
+import NotificacoesBadge from './notificacoes/NotificacoesBadge'
+import UserMenu from './layout/UserMenu'
 
 const NAV_LINKS = [
   { to: '/dashboard',       label: 'Dashboard' },
@@ -16,8 +17,6 @@ const NAV_LINKS = [
 ]
 
 const Sidebar = () => {
-  const { logout } = useAuth()
-
   return (
     <Box
       component="aside"
@@ -29,25 +28,43 @@ const Sidebar = () => {
         overflow: 'hidden',
       }}
     >
-      {/* TOPO: Logo */}
+      {/* TOPO: Logo + controles de usuário */}
       <Box
         sx={{
           px: 2.5,
-          py: 3,
+          py: 2,
           borderBottom: '1px solid rgba(255,255,255,0.06)',
           flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 1,
         }}
       >
-        <Typography
-          variant="h6"
-          fontWeight={700}
-          sx={{ color: '#7C6AF7', letterSpacing: '-0.5px', lineHeight: 1.2 }}
+        <Box sx={{ minWidth: 0 }}>
+          <Typography
+            variant="h6"
+            fontWeight={700}
+            sx={{ color: '#7C6AF7', letterSpacing: '-0.5px', lineHeight: 1.2 }}
+          >
+            FortunAI
+          </Typography>
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 11 }}>
+            Assistente Financeiro
+          </Typography>
+        </Box>
+
+        {/* Notificações + Avatar — visível apenas em desktop (md+) */}
+        <Box
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+            alignItems: 'center',
+            flexShrink: 0,
+          }}
         >
-          FortunAI
-        </Typography>
-        <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 11 }}>
-          Assistente Financeiro
-        </Typography>
+          <NotificacoesBadge />
+          <UserMenu />
+        </Box>
       </Box>
 
       {/* MEIO: Navegação */}
@@ -75,7 +92,7 @@ const Sidebar = () => {
         ))}
       </Box>
 
-      {/* RODAPÉ: Ambiente + Sair */}
+      {/* RODAPÉ: Ambiente */}
       <Box
         sx={{
           px: 1.5,
@@ -86,20 +103,10 @@ const Sidebar = () => {
       >
         <Typography
           variant="caption"
-          sx={{ color: 'text.disabled', display: 'block', mb: 1, fontSize: 10, textAlign: 'center' }}
+          sx={{ color: 'text.disabled', display: 'block', fontSize: 10, textAlign: 'center' }}
         >
           Ambiente: {import.meta.env.MODE.toUpperCase()}
         </Typography>
-        <Button
-          fullWidth
-          variant="contained"
-          color="error"
-          size="small"
-          onClick={logout}
-          sx={{ borderRadius: '6px', textTransform: 'none' }}
-        >
-          Sair
-        </Button>
       </Box>
     </Box>
   )
