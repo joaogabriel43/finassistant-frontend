@@ -38,6 +38,14 @@ const UserMenu = () => {
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         slotProps={{ paper: { sx: { minWidth: 200, mt: 0.5 } } }}
+        sx={{
+          '& .MuiPaper-root': {
+            backgroundColor: 'background.default',
+            backgroundImage: 'none',
+            border: '1px solid',
+            borderColor: 'divider',
+          },
+        }}
       >
         <Box sx={{ px: 2, py: 1 }}>
           <Typography variant="body2" fontWeight={600} noWrap>{displayName}</Typography>
