@@ -32,6 +32,13 @@ const TIPO_COLORS = {
   LIVRE: 'default',
 }
 
+const TIPO_LABELS = {
+  POUPANCA:    'Poupança',
+  INVESTIMENTO:'Investimento',
+  EMERGENCIA:  'Emergência',
+  LIVRE:       'Livre',
+}
+
 const Metas = () => {
   const { metas, loading, error, criarMeta, excluirMeta } = useMetas()
   const [form, setForm] = useState({ titulo: '', valorAlvo: '', prazo: '', tipo: 'LIVRE' })
@@ -151,7 +158,7 @@ const Metas = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
                   <Box>
                     <Typography variant="h6" fontWeight={600}>{meta.titulo}</Typography>
-                    <Chip label={meta.tipo} size="small" color={TIPO_COLORS[meta.tipo] || 'default'} sx={{ mt: 0.5 }} />
+                    <Chip label={TIPO_LABELS[meta.tipo] ?? meta.tipo} size="small" color={TIPO_COLORS[meta.tipo] || 'default'} sx={{ mt: 0.5 }} />
                   </Box>
                   <IconButton onClick={() => handleDelete(meta.id)} size="small" aria-label="excluir meta">
                     <DeleteIcon fontSize="small" />

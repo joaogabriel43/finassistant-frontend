@@ -11,6 +11,9 @@ import { useComparativoMensal } from '../../hooks/useComparativoMensal'
 const formatBRL = (v) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v ?? 0)
 
+const capitalize = (str) =>
+  str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : ''
+
 function VariacaoChip({ valor, inverter = false }) {
   const positivo = valor > 0
   const cor = inverter ? (positivo ? 'error.main' : 'success.main') : (positivo ? 'success.main' : 'error.main')
@@ -42,7 +45,7 @@ const ComparativoCard = () => {
   if (!data || !data.categorias?.length) {
     return (
       <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
-        Sem dados para comparacao.
+        Sem dados para comparação.
       </Typography>
     )
   }
@@ -81,7 +84,7 @@ const ComparativoCard = () => {
             {data.categorias.map((c) => (
               <TableRow key={c.categoria}>
                 <TableCell>
-                  {c.categoria}
+                  {capitalize(c.categoria)}
                   {c.categoria === data.maiorAlta && (
                     <TrendingUpIcon sx={{ fontSize: 14, ml: 0.5, color: 'error.main', verticalAlign: 'middle' }} />
                   )}
