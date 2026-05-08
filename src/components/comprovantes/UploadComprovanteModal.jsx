@@ -93,7 +93,7 @@ const UploadComprovanteModal = ({ open, onClose, file }) => {
         )}
 
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-        {success && <Alert severity="success" sx={{ mb: 2 }}>Transacao salva com sucesso!</Alert>}
+        {success && <Alert severity="success" sx={{ mb: 2 }}>Transação salva com sucesso!</Alert>}
 
         {loading && (
           <Box sx={{ textAlign: 'center', py: 3 }}>

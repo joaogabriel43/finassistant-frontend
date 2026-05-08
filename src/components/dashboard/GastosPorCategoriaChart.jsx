@@ -8,6 +8,9 @@ import 'react-loading-skeleton/dist/skeleton.css';
 // Cores para as fatias do gráfico
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF19AF'];
 
+const capitalize = (str) =>
+    str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : ''
+
 const GastosPorCategoriaChart = ({ showTitle = true }) => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -25,10 +28,10 @@ const GastosPorCategoriaChart = ({ showTitle = true }) => {
                 let formatted = [];
                 if (Array.isArray(response.data)) {
                     // Caso ainda venha no formato antigo (lista de objetos com categoria/total)
-                    formatted = response.data.map(item => ({ name: item.categoria, value: Number(item.total) }));
+                    formatted = response.data.map(item => ({ name: capitalize(item.categoria), value: Number(item.total) }));
                 } else if (response.data && typeof response.data === 'object') {
                     // Novo formato: mapa categoria -> total
-                    formatted = Object.entries(response.data).map(([categoria, total]) => ({ name: categoria, value: Number(total) }));
+                    formatted = Object.entries(response.data).map(([categoria, total]) => ({ name: capitalize(categoria), value: Number(total) }));
                 }
                 setData(formatted);
                 setError(null);

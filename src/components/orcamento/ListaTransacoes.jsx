@@ -21,6 +21,9 @@ import { formatCurrency } from '../../utils/formatters';
 
 const formatBRL = (value) => formatCurrency(value);
 
+const capitalize = (str) =>
+    str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : ''
+
 const ListaTransacoes = ({ refreshKey, onChanged }) => {
     const { user } = useAuth();
     const [transacoes, setTransacoes] = useState([]);
@@ -104,7 +107,7 @@ const ListaTransacoes = ({ refreshKey, onChanged }) => {
                             <TableRow key={t.id} hover>
                                 <TableCell>{formatarDataLocal(t.data)}</TableCell>
                                 <TableCell>{t.descricao}</TableCell>
-                                <TableCell>{t.categoria}</TableCell>
+                                <TableCell>{capitalize(t.categoria)}</TableCell>
                                 <TableCell
                                     align="right"
                                     sx={{

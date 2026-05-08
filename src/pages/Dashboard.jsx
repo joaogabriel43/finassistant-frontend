@@ -103,7 +103,6 @@ const Dashboard = () => {
               border: '1px solid rgba(124,106,247,0.3)',
               borderRadius: '16px',
               boxShadow: 'none',
-              height: '100%',
             }}
           >
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

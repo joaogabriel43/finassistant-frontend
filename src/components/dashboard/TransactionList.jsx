@@ -19,6 +19,9 @@ const formatBRL = (value) =>
 const formatDate = (dateStr) =>
   new Date(`${dateStr}T00:00:00`).toLocaleDateString('pt-BR')
 
+const capitalize = (str) =>
+  str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : ''
+
 export default function TransactionList({ transacoes }) {
   return (
     <List disablePadding>
@@ -69,7 +72,7 @@ export default function TransactionList({ transacoes }) {
               secondary={
                 <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.25 }}>
                   <Chip
-                    label={t.categoria}
+                    label={capitalize(t.categoria)}
                     size="small"
                     sx={{
                       fontSize: 10,

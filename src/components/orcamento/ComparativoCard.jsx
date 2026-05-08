@@ -74,7 +74,7 @@ const ComparativoCard = () => {
               <TableCell>Categoria</TableCell>
               <TableCell align="right">Anterior</TableCell>
               <TableCell align="right">Atual</TableCell>
-              <TableCell align="right">Variacao</TableCell>
+              <TableCell align="right">Variação</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

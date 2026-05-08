@@ -83,7 +83,7 @@ const PortfolioTable = ({ onSellRequest = () => {}, refreshKey = 0 }) => {
     }
 
     return (
-        <TableContainer sx={{ mt: 1 }}>
+        <TableContainer sx={{ mt: 1, overflowX: 'auto' }}>
             <Table size="small">
                 <TableHead>
                     <TableRow sx={{ '& th': { borderBottom: '1px solid rgba(255,255,255,0.12)', color: 'text.secondary', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' } }}>

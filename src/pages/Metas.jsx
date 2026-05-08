@@ -10,11 +10,20 @@ const formatBRL = (v) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v ?? 0)
 
 const TIPO_OPTIONS = [
-  { value: 'POUPANCA', label: 'Poupanca' },
+  { value: 'POUPANCA', label: 'Poupança' },
   { value: 'INVESTIMENTO', label: 'Investimento' },
-  { value: 'EMERGENCIA', label: 'Emergencia' },
+  { value: 'EMERGENCIA', label: 'Emergência' },
   { value: 'LIVRE', label: 'Livre' },
 ]
+
+const formatarData = (str) => {
+  if (!str) return '—'
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str))
+    return new Date(str + 'T00:00:00').toLocaleDateString('pt-BR')
+  if (/^\d{4}-\d{2}$/.test(str))
+    return new Date(str + '-01T00:00:00').toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })
+  return str
+}
 
 const TIPO_COLORS = {
   POUPANCA: 'primary',
@@ -84,7 +93,7 @@ const Metas = () => {
           </Typography>
           <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'flex-end' }}>
             <TextField
-              label="Titulo"
+              label="Título"
               name="titulo"
               value={form.titulo}
               onChange={handleChange}
@@ -169,10 +178,10 @@ const Metas = () => {
                   Faltam: {formatBRL(meta.valorFaltante)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Prazo: {meta.prazo}
+                  Prazo: {formatarData(meta.prazo)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Previsao: {meta.previsaoConclusao}
+                  Previsão: {formatarData(meta.previsaoConclusao)}
                 </Typography>
               </CardContent>
             </Card>

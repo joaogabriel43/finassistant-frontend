@@ -44,7 +44,7 @@ describe('MetasPage', () => {
     mockCriarMeta.mockResolvedValue()
     render(<Metas />)
 
-    fireEvent.change(screen.getByLabelText(/Titulo/), { target: { value: 'Carro novo' } })
+    fireEvent.change(screen.getByLabelText(/Título/), { target: { value: 'Carro novo' } })
     fireEvent.change(screen.getByLabelText(/Valor Alvo/), { target: { value: '50000' } })
     fireEvent.change(screen.getByLabelText(/Prazo/), { target: { value: '2028-01-01' } })
 
