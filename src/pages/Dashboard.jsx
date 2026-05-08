@@ -3,6 +3,7 @@ import { Alert, Box, Divider, Grid, Paper, Typography } from '@mui/material'
 import PieChartIcon from '@mui/icons-material/PieChart'
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
+import { Area, AreaChart, ResponsiveContainer, Tooltip } from 'recharts'
 
 import { useDashboardData } from '../hooks/useDashboardData'
 import TransactionList from '../components/dashboard/TransactionList'
@@ -47,6 +48,56 @@ function MiniStat({ label, value }) {
       <Typography variant="h6" fontWeight={700} sx={{ mt: 0.5, fontSize: { xs: '0.95rem', md: '1.1rem' } }}>
         {formatBRL(value)}
       </Typography>
+    </Box>
+  )
+}
+
+// Sparkline compacto de evolução patrimonial — só renderiza com >= 2 pontos
+function PatrimonioSparkline({ data }) {
+  if (!data || data.length < 2) return null
+
+  const formatBRLShort = (v) =>
+    new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      notation: 'compact',
+      maximumFractionDigits: 1,
+    }).format(v ?? 0)
+
+  return (
+    <Box sx={{ mt: 2, mx: -1 }}>
+      <ResponsiveContainer width="100%" height={80}>
+        <AreaChart data={data} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
+          <defs>
+            <linearGradient id="patrimonioGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%"  stopColor="#7C3AED" stopOpacity={0.4} />
+              <stop offset="95%" stopColor="#7C3AED" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <Tooltip
+            contentStyle={{
+              background: '#1a1a2e',
+              border: '1px solid rgba(124,58,237,0.4)',
+              borderRadius: 8,
+              fontSize: 12,
+            }}
+            labelFormatter={(label) => {
+              const d = new Date(label + 'T00:00:00')
+              return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
+            }}
+            formatter={(value) => [formatBRLShort(value), 'Saldo']}
+          />
+          <Area
+            type="monotone"
+            dataKey="saldo"
+            stroke="#7C3AED"
+            strokeWidth={2}
+            fill="url(#patrimonioGrad)"
+            dot={false}
+            activeDot={{ r: 4, fill: '#7C3AED' }}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
     </Box>
   )
 }
@@ -162,6 +213,8 @@ const Dashboard = () => {
 
               <MiniStat label="Maior Gasto" value={maiorGasto?.valor ?? 0} />
             </Box>
+
+            <PatrimonioSparkline data={evolucaoSaldo} />
           </Paper>
         </Grid>
 
