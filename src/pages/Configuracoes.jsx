@@ -275,7 +275,7 @@ export default function Configuracoes() {
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 680, mx: 'auto' }}>
       <Typography variant="h5" fontWeight={700} gutterBottom>
-        Configuracoes
+        Configurações
       </Typography>
 
       <Paper sx={{ mt: 2 }}>

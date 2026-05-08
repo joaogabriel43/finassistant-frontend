@@ -10,9 +10,9 @@ const NAV_LINKS = [
   { to: '/orcamento',       label: 'Orçamento' },
   { to: '/investimentos',   label: 'Investimentos' },
   { to: '/calculadoras',    label: 'Calculadoras' },
-  { to: '/fire-calculator', label: 'FIRE Calculator' },
   { to: '/fluxo-caixa',    label: 'Fluxo de Caixa' },
   { to: '/metas',          label: 'Metas' },
+  { to: '/configuracoes',  label: 'Configurações' },
   { to: '/status',         label: 'Status' },
 ]
 
@@ -92,22 +92,24 @@ const Sidebar = () => {
         ))}
       </Box>
 
-      {/* RODAPÉ: Ambiente */}
-      <Box
-        sx={{
-          px: 1.5,
-          py: 2,
-          borderTop: '1px solid rgba(255,255,255,0.06)',
-          flexShrink: 0,
-        }}
-      >
-        <Typography
-          variant="caption"
-          sx={{ color: 'text.disabled', display: 'block', fontSize: 10, textAlign: 'center' }}
+      {/* RODAPÉ: Ambiente — visível apenas em development */}
+      {import.meta.env.MODE === 'development' && (
+        <Box
+          sx={{
+            px: 1.5,
+            py: 2,
+            borderTop: '1px solid rgba(255,255,255,0.06)',
+            flexShrink: 0,
+          }}
         >
-          Ambiente: {import.meta.env.MODE.toUpperCase()}
-        </Typography>
-      </Box>
+          <Typography
+            variant="caption"
+            sx={{ color: 'text.disabled', display: 'block', fontSize: 10, textAlign: 'center' }}
+          >
+            AMBIENTE: {import.meta.env.MODE.toUpperCase()}
+          </Typography>
+        </Box>
+      )}
     </Box>
   )
 }

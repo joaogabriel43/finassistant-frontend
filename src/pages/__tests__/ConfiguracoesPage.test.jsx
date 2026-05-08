@@ -48,7 +48,7 @@ describe('Configuracoes — pagina de configuracoes', () => {
 
   it('renderiza o titulo e as 4 abas', () => {
     render(<Configuracoes />)
-    expect(screen.getByText('Configuracoes')).toBeInTheDocument()
+    expect(screen.getByText('Configurações')).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Perfil' })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Seguranca' })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Notificacoes' })).toBeInTheDocument()

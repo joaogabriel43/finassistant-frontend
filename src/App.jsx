@@ -12,7 +12,6 @@ const Chat            = lazy(() => import('./pages/Chat'));
 const Orcamento       = lazy(() => import('./pages/Orcamento'));
 const Investimentos   = lazy(() => import('./pages/Investimentos'));
 const Questionario    = lazy(() => import('./pages/Questionario'));
-const FireCalculator  = lazy(() => import('./pages/FireCalculator'));
 const FluxoCaixa      = lazy(() => import('./pages/FluxoCaixa'));
 const Metas           = lazy(() => import('./pages/Metas'));
 const Configuracoes   = lazy(() => import('./pages/Configuracoes'));
@@ -41,7 +40,7 @@ function App() {
                           <Route path="/investimentos" element={<Investimentos />} />
                           <Route path="/questionario" element={<Questionario />} />
                           <Route path="/questionario-perfil" element={<Questionario />} />
-                          <Route path="/fire-calculator" element={<FireCalculator />} />
+                          <Route path="/fire-calculator" element={<Navigate to="/calculadoras" replace />} />
                           <Route path="/fluxo-caixa" element={<FluxoCaixa />} />
                           <Route path="/metas" element={<Metas />} />
                           <Route path="/configuracoes" element={<Configuracoes />} />
