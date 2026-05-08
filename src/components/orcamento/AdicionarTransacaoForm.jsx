@@ -14,6 +14,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 import CreatableSelect from 'react-select/creatable';
 
+const hoje = () => new Date().toISOString().split('T')[0]; // "yyyy-MM-dd"
+
 const selectStyles = {
     control: (base, state) => ({
         ...base,
@@ -51,6 +53,7 @@ const AdicionarTransacaoForm = ({ onTransacaoAdicionada }) => {
     const [categoria, setCategoria] = useState(null);
     const [descricao, setDescricao] = useState('');
     const [tipo, setTipo] = useState('SAIDA');
+    const [data, setData] = useState(hoje());
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [categoriasExistentes, setCategoriasExistentes] = useState([]);
@@ -72,16 +75,21 @@ const AdicionarTransacaoForm = ({ onTransacaoAdicionada }) => {
         e.preventDefault();
         setError('');
         setSuccess('');
+        if (data > hoje()) {
+            setError('A data da transação não pode ser futura.');
+            return;
+        }
         try {
             if (!user || !user.id) { setError('Usuário não autenticado.'); return; }
             if (!categoria || !categoria.value) { setError('Selecione ou informe uma categoria.'); return; }
-            const requestData = { valor, categoria: categoria.value, descricao, tipo };
+            const requestData = { valor, categoria: categoria.value, descricao, tipo, data };
             await api.post(`/orcamento/transacao/${user.id}`, requestData);
             setSuccess('Transação adicionada com sucesso!');
             setValor('');
             setCategoria(null);
             setDescricao('');
             setTipo('SAIDA');
+            setData(hoje());
             if (onTransacaoAdicionada) onTransacaoAdicionada();
             if (!categoriasExistentes.find((opt) => opt.value === requestData.categoria)) {
                 setCategoriasExistentes((prev) => [...prev, { value: requestData.categoria, label: requestData.categoria }]);
@@ -139,6 +147,17 @@ const AdicionarTransacaoForm = ({ onTransacaoAdicionada }) => {
                     onChange={(e) => setDescricao(e.target.value)}
                     required
                     placeholder="Ex: Almoço com amigos"
+                    sx={{ gridColumn: '1 / -1' }}
+                />
+
+                <TextField
+                    type="date"
+                    label="Data da transação"
+                    size="small"
+                    value={data}
+                    onChange={(e) => setData(e.target.value)}
+                    inputProps={{ max: hoje() }}
+                    slotProps={{ inputLabel: { shrink: true } }}
                     sx={{ gridColumn: '1 / -1' }}
                 />
 
