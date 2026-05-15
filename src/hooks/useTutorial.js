@@ -63,6 +63,10 @@ const useTutorial = () => {
     setStep((s) => Math.min(s + 1, STEPS.length - 1))
   }, [])
 
+  const voltarStep = useCallback(() => {
+    setStep((s) => Math.max(s - 1, 0))
+  }, [])
+
   return {
     visible,
     step,
@@ -72,6 +76,7 @@ const useTutorial = () => {
     concluirTutorial,
     pularTutorial,
     proximoStep,
+    voltarStep,
   }
 }
 

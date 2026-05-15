@@ -83,6 +83,7 @@ const TutorialOnboarding = () => {
     concluirTutorial,
     pularTutorial,
     proximoStep,
+    voltarStep,
   } = useTutorial()
 
   const [targetRect, setTargetRect] = useState(null)
@@ -184,6 +185,7 @@ const TutorialOnboarding = () => {
         <Box sx={{ height: '1px', backgroundColor: 'rgba(255,255,255,0.06)', mb: 2 }} />
 
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {/* Left side: Pular on step 1, empty spacer on steps 2-5 */}
           {step === 0 ? (
             <Button
               size="small"
@@ -192,23 +194,37 @@ const TutorialOnboarding = () => {
             >
               Pular
             </Button>
-          ) : <Box />}
+          ) : (
+            <Box />
+          )}
 
-          <Button
-            variant="contained"
-            size="small"
-            onClick={isLastStep ? concluirTutorial : proximoStep}
-            sx={{
-              backgroundColor: '#7C3AED',
-              '&:hover': { backgroundColor: '#6D28D9' },
-              borderRadius: '8px',
-              textTransform: 'none',
-              fontWeight: 600,
-              px: 2.5,
-            }}
-          >
-            {isLastStep ? 'Começar' : 'Próximo'}
-          </Button>
+          {/* Right side: Voltar (steps 2+) + Próximo/Começar */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {step > 0 && (
+              <Button
+                size="small"
+                onClick={voltarStep}
+                sx={{ color: 'rgba(255,255,255,0.45)', fontSize: 12, textTransform: 'none' }}
+              >
+                Voltar
+              </Button>
+            )}
+            <Button
+              variant="contained"
+              size="small"
+              onClick={isLastStep ? concluirTutorial : proximoStep}
+              sx={{
+                backgroundColor: '#7C3AED',
+                '&:hover': { backgroundColor: '#6D28D9' },
+                borderRadius: '8px',
+                textTransform: 'none',
+                fontWeight: 600,
+                px: 2.5,
+              }}
+            >
+              {isLastStep ? 'Começar' : 'Próximo'}
+            </Button>
+          </Box>
         </Box>
       </Paper>
     </>

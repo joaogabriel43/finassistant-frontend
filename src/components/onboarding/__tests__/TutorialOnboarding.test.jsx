@@ -27,6 +27,7 @@ const mockUseTutorial = vi.fn(() => ({
   concluirTutorial: vi.fn(),
   pularTutorial: vi.fn(),
   proximoStep: vi.fn(),
+  voltarStep: vi.fn(),
 }))
 
 vi.mock('../../../hooks/useTutorial', () => ({
@@ -50,6 +51,7 @@ beforeEach(() => {
     concluirTutorial: vi.fn(),
     pularTutorial: vi.fn(),
     proximoStep: vi.fn(),
+    voltarStep: vi.fn(),
   })
 })
 
@@ -73,6 +75,7 @@ describe('TutorialOnboarding — RED phase (stub renders null)', () => {
       concluirTutorial: vi.fn(),
       pularTutorial: vi.fn(),
       proximoStep: vi.fn(),
+      voltarStep: vi.fn(),
     })
 
     render(<TutorialOnboarding />)
@@ -97,6 +100,7 @@ describe('TutorialOnboarding — RED phase (stub renders null)', () => {
       concluirTutorial: vi.fn(),
       pularTutorial: vi.fn(),
       proximoStep: vi.fn(),
+      voltarStep: vi.fn(),
     })
 
     render(<TutorialOnboarding />)
@@ -125,6 +129,7 @@ describe('TutorialOnboarding — RED phase (stub renders null)', () => {
       concluirTutorial: vi.fn(),
       pularTutorial: vi.fn(),
       proximoStep: proximoStepMock,
+      voltarStep: vi.fn(),
     })
 
     render(<TutorialOnboarding />)
@@ -150,6 +155,7 @@ describe('TutorialOnboarding — RED phase (stub renders null)', () => {
       concluirTutorial: concluirMock,
       pularTutorial: vi.fn(),
       proximoStep: vi.fn(),
+      voltarStep: vi.fn(),
     })
 
     render(<TutorialOnboarding />)
@@ -174,6 +180,7 @@ describe('TutorialOnboarding — RED phase (stub renders null)', () => {
       concluirTutorial: vi.fn(),
       pularTutorial: pularMock,
       proximoStep: vi.fn(),
+      voltarStep: vi.fn(),
     })
 
     render(<TutorialOnboarding />)
@@ -198,6 +205,7 @@ describe('TutorialOnboarding — RED phase (stub renders null)', () => {
       concluirTutorial: vi.fn(),
       pularTutorial: vi.fn(),
       proximoStep: vi.fn(),
+      voltarStep: vi.fn(),
     })
 
     render(<TutorialOnboarding />)
@@ -205,5 +213,47 @@ describe('TutorialOnboarding — RED phase (stub renders null)', () => {
     // Nenhum backdrop deve existir após conclusão
     expect(document.querySelector('[data-testid="tutorial-backdrop"]')).toBeNull()
     expect(screen.queryByRole('button', { name: /próximo|proximo/i })).toBeNull()
+  })
+
+  /**
+   * Voltar button must NOT appear on step 0 (first step).
+   */
+  it('nao exibe botao Voltar no step 1', () => {
+    mockUseTutorial.mockReturnValue({
+      visible: true,
+      step: 0,
+      totalSteps: 5,
+      currentStep: undefined,
+      concluirTutorial: vi.fn(),
+      pularTutorial: vi.fn(),
+      proximoStep: vi.fn(),
+      voltarStep: vi.fn(),
+    })
+
+    render(<TutorialOnboarding />)
+    expect(screen.queryByRole('button', { name: /voltar/i })).not.toBeInTheDocument()
+  })
+
+  /**
+   * Voltar button must be visible on step 2+ and call voltarStep when clicked.
+   */
+  it('clique em Voltar no step 2 chama voltarStep', () => {
+    const voltarStep = vi.fn()
+    mockUseTutorial.mockReturnValue({
+      visible: true,
+      step: 1,
+      totalSteps: 5,
+      currentStep: undefined,
+      concluirTutorial: vi.fn(),
+      pularTutorial: vi.fn(),
+      proximoStep: vi.fn(),
+      voltarStep,
+    })
+
+    render(<TutorialOnboarding />)
+    const botaoVoltar = screen.getByRole('button', { name: /voltar/i })
+    expect(botaoVoltar).toBeInTheDocument()
+    fireEvent.click(botaoVoltar)
+    expect(voltarStep).toHaveBeenCalledTimes(1)
   })
 })
