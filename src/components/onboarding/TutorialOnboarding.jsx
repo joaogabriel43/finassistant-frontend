@@ -1,6 +1,78 @@
 import React, { useEffect, useState } from 'react'
-import { Backdrop, Box, Paper, Typography, Button } from '@mui/material'
+import { Box, Paper, Typography, Button } from '@mui/material'
 import useTutorial from '../../hooks/useTutorial'
+
+const FullDarkOverlay = () => (
+  <div style={{
+    position: 'fixed', zIndex: 10000,
+    top: 0, left: 0, right: 0, bottom: 0,
+    background: 'rgba(0,0,0,0.75)',
+    backdropFilter: 'blur(2px)',
+  }} />
+)
+
+const SpotlightOverlay = ({ targetRect }) => {
+  if (!targetRect) return <FullDarkOverlay />
+
+  const { top, left, width, height } = targetRect
+  const pad = 8
+
+  return (
+    <>
+      {/* Top */}
+      <div style={{
+        position: 'fixed', zIndex: 10000,
+        top: 0, left: 0, right: 0,
+        height: Math.max(0, top - pad),
+        background: 'rgba(0,0,0,0.75)',
+        backdropFilter: 'blur(2px)',
+      }} />
+      {/* Left */}
+      <div style={{
+        position: 'fixed', zIndex: 10000,
+        top: top - pad, left: 0,
+        width: Math.max(0, left - pad),
+        height: height + pad * 2,
+        background: 'rgba(0,0,0,0.75)',
+        backdropFilter: 'blur(2px)',
+      }} />
+      {/* Right */}
+      <div style={{
+        position: 'fixed', zIndex: 10000,
+        top: top - pad,
+        left: left + width + pad,
+        right: 0,
+        height: height + pad * 2,
+        background: 'rgba(0,0,0,0.75)',
+        backdropFilter: 'blur(2px)',
+      }} />
+      {/* Bottom */}
+      <div style={{
+        position: 'fixed', zIndex: 10000,
+        top: top + height + pad,
+        left: 0, right: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.75)',
+        backdropFilter: 'blur(2px)',
+      }} />
+      {/* Purple border ring around target */}
+      <div
+        data-testid="tutorial-spotlight"
+        style={{
+          position: 'fixed', zIndex: 10001,
+          top: top - pad,
+          left: left - pad,
+          width: width + pad * 2,
+          height: height + pad * 2,
+          borderRadius: 8,
+          border: '2px solid rgba(124, 58, 237, 0.6)',
+          boxShadow: '0 0 0 4px rgba(124, 58, 237, 0.15)',
+          pointerEvents: 'none',
+          transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
+      />
+    </>
+  )
+}
 
 const TutorialOnboarding = () => {
   const {
@@ -13,44 +85,53 @@ const TutorialOnboarding = () => {
     proximoStep,
   } = useTutorial()
 
-  const [tooltipStyle, setTooltipStyle] = useState({ top: '50%', left: '50%' })
-  const [spotlightStyle, setSpotlightStyle] = useState(null)
+  const [targetRect, setTargetRect] = useState(null)
+  const [tooltipStyle, setTooltipStyle] = useState({})
 
   useEffect(() => {
     if (!visible || !currentStep) return
-    const el = document.querySelector(currentStep.target)
-    if (!el) return
-    const rect = el.getBoundingClientRect()
-    const placement = currentStep.placement || 'right'
 
-    setSpotlightStyle({
-      position: 'fixed',
-      top: rect.top - 8,
-      left: rect.left - 8,
-      width: rect.width + 16,
-      height: rect.height + 16,
-      borderRadius: 8,
-      boxShadow: '0 0 0 9999px rgba(0,0,0,0.75)',
-      zIndex: 10001,
-      pointerEvents: 'none',
-      transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)',
-    })
+    const updateRect = () => {
+      const el = document.querySelector(currentStep.target)
+      if (el) {
+        setTargetRect(el.getBoundingClientRect())
+      } else {
+        setTargetRect(null)
+      }
+    }
+
+    updateRect()
+    window.addEventListener('resize', updateRect)
+    return () => window.removeEventListener('resize', updateRect)
+  }, [visible, step, currentStep])
+
+  useEffect(() => {
+    if (!targetRect) return
 
     const TOOLTIP_WIDTH = 320
-    const TOOLTIP_HEIGHT = 220
+    const TOOLTIP_HEIGHT = 230
     const GAP = 16
+    const placement = currentStep?.placement || 'right'
+
     let top, left
+
     if (placement === 'right') {
-      top = rect.top + rect.height / 2 - TOOLTIP_HEIGHT / 2
-      left = rect.right + GAP
-    } else {
-      top = rect.top - TOOLTIP_HEIGHT - GAP
-      left = rect.left + rect.width / 2 - TOOLTIP_WIDTH / 2
+      top = targetRect.top + targetRect.height / 2 - TOOLTIP_HEIGHT / 2
+      left = targetRect.right + GAP
+    } else if (placement === 'bottom') {
+      top = targetRect.bottom + GAP
+      left = targetRect.left + targetRect.width / 2 - TOOLTIP_WIDTH / 2
+    } else { // top
+      top = targetRect.top - TOOLTIP_HEIGHT - GAP
+      left = targetRect.left + targetRect.width / 2 - TOOLTIP_WIDTH / 2
     }
+
+    // Clamp to viewport
     top = Math.max(16, Math.min(top, window.innerHeight - TOOLTIP_HEIGHT - 16))
     left = Math.max(16, Math.min(left, window.innerWidth - TOOLTIP_WIDTH - 16))
-    setTooltipStyle({ top, left, width: TOOLTIP_WIDTH })
-  }, [visible, step, currentStep])
+
+    setTooltipStyle({ position: 'fixed', top, left, width: TOOLTIP_WIDTH, zIndex: 10002 })
+  }, [targetRect, currentStep])
 
   if (!visible) return null
 
@@ -58,21 +139,12 @@ const TutorialOnboarding = () => {
 
   return (
     <>
-      <Backdrop
-        open={visible}
-        data-testid="tutorial-backdrop"
-        sx={{ zIndex: 10000, backgroundColor: 'transparent', backdropFilter: 'blur(1px)' }}
-      />
-
-      {spotlightStyle && (
-        <Box data-testid="tutorial-spotlight" sx={spotlightStyle} />
-      )}
+      <SpotlightOverlay targetRect={targetRect} />
 
       <Paper
         data-testid="tutorial-tooltip"
         elevation={0}
         sx={{
-          position: 'fixed',
           ...tooltipStyle,
           zIndex: 10002,
           background: '#1a1a2e',

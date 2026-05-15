@@ -31,7 +31,7 @@ const STEPS = [
     target: '[data-tutorial="patrimonio"]',
     title: 'Tudo em um só lugar',
     description: 'Seu patrimônio, score de saúde financeira e composição do portfólio atualizados em tempo real.',
-    placement: 'top',
+    placement: 'bottom',
   },
 ]
 

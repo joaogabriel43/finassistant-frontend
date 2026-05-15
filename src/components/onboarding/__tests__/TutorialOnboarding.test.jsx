@@ -101,12 +101,14 @@ describe('TutorialOnboarding — RED phase (stub renders null)', () => {
 
     render(<TutorialOnboarding />)
 
-    // RED: stub renderiza null, este querySelector retorna null → falha
+    // Verifica que o overlay/tooltip está visível quando visible=true
+    // Aceita: backdrop legado, dialog, textos, ou o novo tooltip
     const backdrop =
       document.querySelector('[data-testid="tutorial-backdrop"]') ||
       document.querySelector('[role="dialog"]') ||
       screen.queryByText(/bem-vindo/i) ||
-      screen.queryByText(/tutorial/i)
+      screen.queryByText(/tutorial/i) ||
+      document.querySelector('[data-testid="tutorial-tooltip"]')
     expect(backdrop).not.toBeNull()
   })
 
