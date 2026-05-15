@@ -148,6 +148,7 @@ const Dashboard = () => {
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, md: 8 }}>
           <Paper
+            data-tutorial="patrimonio"
             sx={{
               p: { xs: 2.5, md: 4 },
               background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',

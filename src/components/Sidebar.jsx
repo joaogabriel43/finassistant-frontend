@@ -6,10 +6,10 @@ import UserMenu from './layout/UserMenu'
 
 const NAV_LINKS = [
   { to: '/dashboard',       label: 'Dashboard' },
-  { to: '/chat',            label: 'Chat' },
-  { to: '/orcamento',       label: 'Orçamento' },
-  { to: '/investimentos',   label: 'Investimentos' },
-  { to: '/calculadoras',    label: 'Calculadoras' },
+  { to: '/chat',            label: 'Chat',            tutorial: 'chat' },
+  { to: '/orcamento',       label: 'Orçamento',       tutorial: 'orcamento' },
+  { to: '/investimentos',   label: 'Investimentos',   tutorial: 'investimentos' },
+  { to: '/calculadoras',    label: 'Calculadoras',    tutorial: 'calculadoras' },
   { to: '/fluxo-caixa',    label: 'Fluxo de Caixa' },
   { to: '/metas',          label: 'Metas' },
   { to: '/configuracoes',  label: 'Configurações' },
@@ -69,10 +69,11 @@ const Sidebar = () => {
 
       {/* MEIO: Navegação */}
       <Box component="nav" sx={{ flexGrow: 1, px: 1.5, py: 2, overflow: 'hidden' }}>
-        {NAV_LINKS.map(({ to, label }) => (
+        {NAV_LINKS.map(({ to, label, tutorial }) => (
           <NavLink
             key={to}
             to={to}
+            {...(tutorial ? { 'data-tutorial': tutorial } : {})}
             style={({ isActive }) => ({
               display: 'flex',
               alignItems: 'center',

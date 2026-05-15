@@ -77,11 +77,16 @@ export function AuthProvider({ children }) {
         navigate('/login');
     }, [navigate]);
 
-    const updateUser = useCallback(async () => {
-        try {
-            const me = await api.get('/auth/me');
-            setUser(me.data);
-        } catch {/* ignore */}
+    const updateUser = useCallback((partial) => {
+        if (partial && typeof partial === 'object' && !Array.isArray(partial)) {
+            // Merge parcial: updateUser({ tutorialConcluido: true })
+            setUser(prev => prev ? { ...prev, ...partial } : prev)
+        } else {
+            // Fallback: re-fetch completo (chamada legada sem argumento)
+            api.get('/auth/me')
+                .then(me => setUser(me.data))
+                .catch(() => {/* ignore */})
+        }
     }, []);
 
     const value = useMemo(() => ({

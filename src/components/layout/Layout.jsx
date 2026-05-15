@@ -8,6 +8,7 @@ import Sidebar from '../Sidebar'
 import { useAuth } from '../../contexts/AuthContext'
 import NotificacoesBadge from '../notificacoes/NotificacoesBadge'
 import UserMenu from './UserMenu'
+import TutorialOnboarding from '../onboarding/TutorialOnboarding'
 
 const DRAWER_WIDTH = 220
 
@@ -102,6 +103,8 @@ const Layout = () => {
       >
         <Outlet />
       </Box>
+
+      <TutorialOnboarding />
 
     </Box>
   )
