@@ -9,6 +9,8 @@ import { useAuth } from '../../contexts/AuthContext'
 import NotificacoesBadge from '../notificacoes/NotificacoesBadge'
 import UserMenu from './UserMenu'
 import TutorialOnboarding from '../onboarding/TutorialOnboarding'
+import PWAInstallBanner from '../pwa/PWAInstallBanner'
+import OfflinePage from '../pwa/OfflinePage'
 
 const DRAWER_WIDTH = 220
 
@@ -105,6 +107,8 @@ const Layout = () => {
       </Box>
 
       <TutorialOnboarding />
+      <PWAInstallBanner />
+      <OfflinePage />
 
     </Box>
   )
