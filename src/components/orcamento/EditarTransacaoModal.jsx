@@ -7,7 +7,7 @@ Modal.setAppElement('#root');
 
 const EditarTransacaoModal = ({ isOpen, onRequestClose, transacao, onUpdate }) => {
     const { user } = useAuth();
-    const [formData, setFormData] = useState({ valor: '', categoria: '', descricao: '', tipo: 'SAIDA' });
+    const [formData, setFormData] = useState({ valor: '', categoria: '', descricao: '', tipo: 'SAIDA', data: '' });
 
     useEffect(() => {
         if (transacao) {
@@ -16,6 +16,7 @@ const EditarTransacaoModal = ({ isOpen, onRequestClose, transacao, onUpdate }) =
                 categoria: transacao?.categoria ?? '',
                 descricao: transacao?.descricao ?? '',
                 tipo: transacao?.tipo === 'CREDIT' ? 'ENTRADA' : 'SAIDA',
+                data: transacao?.data ?? '',
             });
         }
     }, [transacao]);
@@ -66,6 +67,16 @@ const EditarTransacaoModal = ({ isOpen, onRequestClose, transacao, onUpdate }) =
                     <option value="SAIDA">Despesa</option>
                     <option value="ENTRADA">Receita</option>
                 </select>
+                <input
+                    type="text"
+                    name="data"
+                    value={formData.data}
+                    onChange={handleChange}
+                    placeholder="Data (AAAA-MM-DD)"
+                    pattern="\d{4}-\d{2}-\d{2}"
+                    style={inputStyle}
+                    aria-label="data"
+                />
                 <div style={actions}>
                     <button type="button" onClick={onRequestClose} style={cancelBtn}>Cancelar</button>
                     <button type="submit" style={saveBtn}>Salvar Alterações</button>
