@@ -15,12 +15,17 @@ describe('NotificacoesBadge', () => {
     vi.clearAllMocks()
   })
 
+  const baseReturn = {
+    naoLidas: 0,
+    notificacoes: [],
+    marcarComoLida: vi.fn(),
+    metaAtingidaOpen: false,
+    metaAtingidaMensagem: '',
+    fecharMetaAtingida: vi.fn(),
+  }
+
   it('exibe número correto de não lidas no badge', () => {
-    useNotificacoes.mockReturnValue({
-      naoLidas: 5,
-      notificacoes: [],
-      marcarComoLida: vi.fn(),
-    })
+    useNotificacoes.mockReturnValue({ ...baseReturn, naoLidas: 5 })
 
     render(<NotificacoesBadge />)
 
@@ -28,11 +33,7 @@ describe('NotificacoesBadge', () => {
   })
 
   it('não exibe badge vermelho quando há 0 não lidas', () => {
-    useNotificacoes.mockReturnValue({
-      naoLidas: 0,
-      notificacoes: [],
-      marcarComoLida: vi.fn(),
-    })
+    useNotificacoes.mockReturnValue(baseReturn)
 
     render(<NotificacoesBadge />)
 

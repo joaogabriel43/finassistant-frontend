@@ -10,6 +10,10 @@ export function useNotificacoes() {
   const [notificacoes, setNotificacoes] = useState([])
   const [naoLidas, setNaoLidas] = useState(0)
 
+  // Estado para o Snackbar especial de meta atingida
+  const [metaAtingidaOpen, setMetaAtingidaOpen] = useState(false)
+  const [metaAtingidaMensagem, setMetaAtingidaMensagem] = useState('')
+
   // Busca contagem inicial
   useEffect(() => {
     api.get('/notificacoes/count')
@@ -18,6 +22,14 @@ export function useNotificacoes() {
   }, [])
 
   const handleNovaNotificacao = useCallback((notificacao) => {
+    // META_ATINGIDA tem tratamento especial: exibe Snackbar de celebração
+    // e não entra na lista normal de notificações
+    if (notificacao.tipo === 'META_ATINGIDA') {
+      setMetaAtingidaMensagem(notificacao.mensagem || '🎉 Você atingiu uma meta financeira!')
+      setMetaAtingidaOpen(true)
+      return
+    }
+
     setNotificacoes(prev => [notificacao, ...prev])
     setNaoLidas(prev => prev + 1)
   }, [])
@@ -32,5 +44,12 @@ export function useNotificacoes() {
     setNaoLidas(prev => Math.max(0, prev - 1))
   }, [])
 
-  return { notificacoes, naoLidas, marcarComoLida }
+  return {
+    notificacoes,
+    naoLidas,
+    marcarComoLida,
+    metaAtingidaOpen,
+    metaAtingidaMensagem,
+    fecharMetaAtingida: () => setMetaAtingidaOpen(false),
+  }
 }
