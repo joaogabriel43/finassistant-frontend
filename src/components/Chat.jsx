@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Box, TextField, Button, Paper, List, ListItem, Typography, IconButton } from '@mui/material';
+import { Box, TextField, Button, Paper, List, ListItem, Typography, IconButton, Skeleton } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
@@ -10,17 +10,21 @@ import { formatCurrencyInText } from '../utils/formatters';
 import UploadComprovanteModal from './comprovantes/UploadComprovanteModal';
 
 const MENSAGEM_BEM_VINDO = { text: 'Olá! Eu sou o Fortunai. Como posso te ajudar hoje?', sender: 'bot' };
-// Preserve legacy welcome texts for migration from localStorage
-const LEGACY_WELCOME_TEXTS = [
-    'Olá! Eu sou o Finassistant. Como posso te ajudar hoje?',
-    'Olá! Eu sou o FinAssistant. Como posso te ajudar hoje?'
-];
+
+// API helpers para histórico de chat persistido no backend
+const buscarHistorico = async (limite = 50) => {
+    const res = await api.get(`/chat/historico?limite=${limite}`);
+    return res.data;
+};
+
+const limparHistoricoBackend = async () => {
+    await api.delete('/chat/historico');
+};
 
 const Chat = () => {
     const { user } = useAuth();
     const userKey = user?.id ?? user?.email ?? user?.username ?? 'anon';
 
-    const keyHistory = (k) => `chatHistory:${k}`;
     const keySession = (k) => `chatSessionId:${k}`;
 
     // Cleanup de chaves legadas sem escopo de usuário
@@ -31,7 +35,7 @@ const Chat = () => {
         } catch (_) { /* ignore */ }
     }, []);
 
-    // Helpers de reidratação por usuário
+    // Helper de reidratação de sessão por usuário (mantido em localStorage — é leve e efêmero)
     const loadSessionId = (k) => {
         try {
             return localStorage.getItem(keySession(k)) || uuidv4();
@@ -40,55 +44,58 @@ const Chat = () => {
         }
     };
 
-    const loadMessages = (k) => {
-        const welcome = [MENSAGEM_BEM_VINDO];
-        try {
-            const saved = localStorage.getItem(keyHistory(k));
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                if (Array.isArray(parsed)) {
-                    const normalized = parsed
-                        .map((m) => {
-                            if (m && typeof m === 'object') {
-                                if ('sender' in m) return m;
-                                if ('author' in m) {
-                                    return {
-                                        text: m.text,
-                                        sender: m.author === 'Você' ? 'user' : 'bot',
-                                    };
-                                }
-                            }
-                            return null;
-                        })
-                        .filter((m) => m && !m.typing && m.text && m.sender);
-                    // migration: update old welcome text(s) to new branding if present as the first bot message
-                    if (normalized.length && normalized[0]?.sender === 'bot' && LEGACY_WELCOME_TEXTS.includes(normalized[0]?.text)) {
-                        normalized[0] = { ...normalized[0], text: MENSAGEM_BEM_VINDO.text };
-                    }
-                    return normalized.length ? normalized : welcome;
-                }
-            }
-        } catch (error) {
-            console.error('Erro ao ler o histórico do chat do localStorage', error);
-        }
-        return welcome;
-    };
-
     // Estados
     const [sessionId, setSessionId] = useState(() => loadSessionId(userKey));
-    const skipNextPersistRef = useRef(false);
-    const [messages, setMessages] = useState(() => loadMessages(userKey));
+    const [messages, setMessages] = useState([MENSAGEM_BEM_VINDO]);
+    const [loading, setLoading] = useState(false);
     const [input, setInput] = useState('');
     const [uploadFile, setUploadFile] = useState(null);
     const [uploadModalOpen, setUploadModalOpen] = useState(false);
     const fileInputRef = useRef(null);
     const messagesEndRef = useRef(null);
 
-    // Reidrata quando trocar de usuário
+    // Carrega histórico do backend ao montar (ou quando o usuário mudar).
+    // Usa flag de cancelamento para não sobrescrever mensagens caso o usuário
+    // já tenha interagido com o chat enquanto o histórico carregava.
     useEffect(() => {
+        if (!user?.id) return;
+
         setSessionId(loadSessionId(userKey));
-        setMessages(loadMessages(userKey));
-    }, [userKey]);
+
+        let cancelado = false;
+
+        const carregarHistorico = async () => {
+            try {
+                setLoading(true);
+                const historico = await buscarHistorico(50);
+                if (cancelado) return;
+                // Mapeia ChatHistoricoDTO → formato local { text, sender }
+                const mensagens = historico.map((dto) => ({
+                    id: dto.id,
+                    text: dto.conteudo,
+                    sender: dto.role === 'user' ? 'user' : 'bot',
+                    timestamp: dto.criadoEm,
+                    sessaoId: dto.sessaoId,
+                }));
+                // Só sobrescreve se o usuário ainda não iniciou a conversa (evita race condition)
+                setMessages((prev) => {
+                    const apenasBoasVindas = prev.length === 1 && prev[0].text === MENSAGEM_BEM_VINDO.text;
+                    if (!apenasBoasVindas) return prev;
+                    return mensagens.length ? mensagens : [MENSAGEM_BEM_VINDO];
+                });
+            } catch (e) {
+                if (cancelado) return;
+                console.warn('Falha ao carregar histórico — iniciando chat vazio', e);
+                // Não altera estado em erro — a mensagem de boas-vindas já está lá como fallback
+            } finally {
+                if (!cancelado) setLoading(false);
+            }
+        };
+
+        carregarHistorico();
+
+        return () => { cancelado = true; };
+    }, [user?.id]);
 
     // Persiste sessionId por usuário
     useEffect(() => {
@@ -97,20 +104,10 @@ const Chat = () => {
         } catch (_) { /* ignore */ }
     }, [sessionId, userKey]);
 
-    // Salva histórico por usuário e faz scroll
+    // Scroll automático ao final quando mensagens mudam
     useEffect(() => {
-        try {
-            if (skipNextPersistRef.current) {
-                skipNextPersistRef.current = false;
-            } else {
-                const toSave = messages.filter((m) => !m.typing);
-                localStorage.setItem(keyHistory(userKey), JSON.stringify(toSave));
-            }
-        } catch (error) {
-            console.error('Erro ao salvar o histórico do chat no localStorage', error);
-        }
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages, userKey]);
+    }, [messages]);
 
     const handleSend = async (e) => {
         e.preventDefault();
@@ -150,10 +147,13 @@ const Chat = () => {
         e.target.value = '';
     };
 
-    const limparChat = () => {
+    const limparChat = async () => {
         try {
-            localStorage.removeItem(keyHistory(userKey));
-        } catch (_) { /* ignore */ }
+            await limparHistoricoBackend();
+        } catch (e) {
+            console.warn('Falha ao limpar histórico no backend', e);
+            // Continua — limpa estado local mesmo assim
+        }
         setMessages([MENSAGEM_BEM_VINDO]);
     };
 
@@ -183,6 +183,13 @@ const Chat = () => {
                     mb: 2,
                 }}
             >
+                {loading && (
+                    <Box sx={{ px: 2, py: 1 }}>
+                        <Skeleton variant="text" width="60%" height={24} sx={{ mb: 1 }} />
+                        <Skeleton variant="text" width="80%" height={24} sx={{ mb: 1 }} />
+                        <Skeleton variant="text" width="40%" height={24} />
+                    </Box>
+                )}
                 <List>
                     {messages.map((msg, index) => (
                         <ListItem key={index} sx={{ justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start' }}>

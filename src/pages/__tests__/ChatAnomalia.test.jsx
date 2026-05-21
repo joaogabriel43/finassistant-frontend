@@ -27,6 +27,8 @@ describe('Chat — integração anomalias', () => {
     vi.clearAllMocks()
     useAuth.mockReturnValue({ user: mockUser, loading: false })
     localStorage.clear()
+    // Histórico vazio por padrão — evita erro ao acessar res.data
+    api.get.mockResolvedValue({ data: [] })
   })
 
   it('exibe mensagem formatada com anomalias quando backend retorna dados', async () => {
