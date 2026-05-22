@@ -2,10 +2,12 @@ import React from 'react'
 import { Chip, Tooltip } from '@mui/material'
 import StarIcon from '@mui/icons-material/Star'
 import LockIcon from '@mui/icons-material/Lock'
+import { useNavigate } from 'react-router-dom'
 import usePlano from '../../hooks/usePlano'
 
 const PlanoBadge = () => {
   const { plano, isPremium, loading } = usePlano()
+  const navigate = useNavigate()
   if (loading) return null
 
   if (isPremium) {
@@ -15,6 +17,7 @@ const PlanoBadge = () => {
           icon={<StarIcon sx={{ fontSize: '14px !important', color: '#f59e0b !important' }} />}
           label="Premium"
           size="small"
+          onClick={() => navigate('/plano')}
           sx={{
             bgcolor: 'rgba(245,158,11,0.15)',
             color: '#f59e0b',
@@ -34,6 +37,7 @@ const PlanoBadge = () => {
         icon={<LockIcon sx={{ fontSize: '12px !important', color: 'rgba(255,255,255,0.4) !important' }} />}
         label="Free"
         size="small"
+        onClick={() => navigate('/plano')}
         sx={{
           bgcolor: 'rgba(255,255,255,0.06)',
           color: 'rgba(255,255,255,0.4)',

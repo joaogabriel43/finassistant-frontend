@@ -18,6 +18,7 @@ const Configuracoes   = lazy(() => import('./pages/Configuracoes'));
 const CalculadorasPage = lazy(() => import('./pages/CalculadorasPage'));
 const StatusPage      = lazy(() => import('./pages/StatusPage'));
 const NotFound        = lazy(() => import('./pages/NotFound'));
+const PlanoPage       = lazy(() => import('./pages/PlanoPage'));
 
 function App() {
     return (
@@ -45,6 +46,7 @@ function App() {
                           <Route path="/metas" element={<Metas />} />
                           <Route path="/configuracoes" element={<Configuracoes />} />
                           <Route path="/calculadoras" element={<CalculadorasPage />} />
+                          <Route path="/plano" element={<PlanoPage />} />
                       </Route>
 
                       {/* Rota Catch-all para caminhos não encontrados */}

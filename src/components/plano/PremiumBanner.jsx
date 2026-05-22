@@ -1,6 +1,7 @@
 import React from 'react'
 import { Box, Typography, Button, Chip } from '@mui/material'
 import StarIcon from '@mui/icons-material/Star'
+import { useNavigate } from 'react-router-dom'
 
 const MENSAGENS = {
   CHAT_MENSAGEM: {
@@ -31,6 +32,7 @@ const MENSAGENS = {
 }
 
 const PremiumBanner = ({ recurso, uso, onDismiss }) => {
+  const navigate = useNavigate()
   const info = MENSAGENS[recurso] ?? {
     titulo: 'Limite atingido',
     descricao: () => 'Faça upgrade para continuar usando este recurso.',
@@ -65,7 +67,7 @@ const PremiumBanner = ({ recurso, uso, onDismiss }) => {
           size="small"
           variant="contained"
           startIcon={<StarIcon />}
-          href="mailto:contato@fortunai.app?subject=Upgrade Premium"
+          onClick={() => navigate('/plano')}
           sx={{
             bgcolor: '#7C3AED', '&:hover': { bgcolor: '#6D28D9' },
             textTransform: 'none', fontSize: 12, borderRadius: '8px',
