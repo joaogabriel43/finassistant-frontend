@@ -9,6 +9,7 @@ import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { formatCurrencyInText } from '../utils/formatters';
 import UploadComprovanteModal from './comprovantes/UploadComprovanteModal';
+import PremiumBanner from './plano/PremiumBanner';
 
 const MENSAGEM_BEM_VINDO = { text: 'Olá! Eu sou o Fortunai. Como posso te ajudar hoje?', sender: 'bot' };
 
@@ -53,6 +54,7 @@ const Chat = () => {
     const [input, setInput] = useState('');
     const [uploadFile, setUploadFile] = useState(null);
     const [uploadModalOpen, setUploadModalOpen] = useState(false);
+    const [planoBloqueio, setPlanoBloqueio] = useState(null);
     const fileInputRef = useRef(null);
     const messagesEndRef = useRef(null);
 
@@ -157,6 +159,12 @@ const Chat = () => {
             setMessages((prev) => [...prev.filter((m) => !m.typing), botMessage]);
         } catch (error) {
             console.error('Falha ao enviar mensagem:', error);
+            if (error.response?.status === 429 || error.response?.status === 403) {
+                const data = error.response.data
+                setMessages((prev) => prev.filter((m) => !m.typing));
+                setPlanoBloqueio({ recurso: data.recurso, uso: null });
+                return;
+            }
             const errorMessage = { text: 'Desculpe, não consegui me conectar ao assistente.', sender: 'bot' };
             setMessages((prev) => [...prev.filter((m) => !m.typing), errorMessage]);
         } finally {
@@ -274,6 +282,16 @@ const Chat = () => {
                 </List>
                 <div ref={messagesEndRef} />
             </Paper>
+
+            {planoBloqueio && (
+                <Box sx={{ mb: 1.5, flexShrink: 0 }}>
+                    <PremiumBanner
+                        recurso={planoBloqueio.recurso}
+                        uso={planoBloqueio.uso}
+                        onDismiss={() => setPlanoBloqueio(null)}
+                    />
+                </Box>
+            )}
 
             <Box component="form" onSubmit={handleSend} sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
                 <TextField

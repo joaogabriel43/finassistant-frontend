@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom'
 import { Box, Typography } from '@mui/material'
 import NotificacoesBadge from './notificacoes/NotificacoesBadge'
 import UserMenu from './layout/UserMenu'
+import PlanoBadge from './plano/PlanoBadge'
 
 const NAV_LINKS = [
   { to: '/dashboard',       label: 'Dashboard' },
@@ -49,9 +50,12 @@ const Sidebar = () => {
           >
             FortunAI
           </Typography>
-          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 11 }}>
-            Assistente Financeiro
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.25 }}>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 11 }}>
+              Assistente Financeiro
+            </Typography>
+            <PlanoBadge />
+          </Box>
         </Box>
 
         {/* Notificações + Avatar — visível apenas em desktop (md+) */}
