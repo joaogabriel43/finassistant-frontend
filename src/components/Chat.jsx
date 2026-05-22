@@ -47,7 +47,8 @@ const Chat = () => {
     // Estados
     const [sessionId, setSessionId] = useState(() => loadSessionId(userKey));
     const [messages, setMessages] = useState([MENSAGEM_BEM_VINDO]);
-    const [loading, setLoading] = useState(false);
+    const [loadingHistorico, setLoadingHistorico] = useState(true);
+    const [loadingResposta, setLoadingResposta] = useState(false);
     const [input, setInput] = useState('');
     const [uploadFile, setUploadFile] = useState(null);
     const [uploadModalOpen, setUploadModalOpen] = useState(false);
@@ -66,7 +67,7 @@ const Chat = () => {
 
         const carregarHistorico = async () => {
             try {
-                setLoading(true);
+                setLoadingHistorico(true);
                 const historico = await buscarHistorico(50);
                 if (cancelado) return;
                 // Mapeia ChatHistoricoDTO → formato local { text, sender }
@@ -88,7 +89,7 @@ const Chat = () => {
                 console.warn('Falha ao carregar histórico — iniciando chat vazio', e);
                 // Não altera estado em erro — a mensagem de boas-vindas já está lá como fallback
             } finally {
-                if (!cancelado) setLoading(false);
+                if (!cancelado) setLoadingHistorico(false);
             }
         };
 
@@ -119,6 +120,7 @@ const Chat = () => {
 
         const typingMessage = { text: 'Assistente está digitando...', sender: 'bot', typing: true };
         setMessages((prev) => [...prev, typingMessage]);
+        setLoadingResposta(true);
 
         try {
             const response = await api.post('/chat/enviar', {
@@ -132,6 +134,8 @@ const Chat = () => {
             console.error('Falha ao enviar mensagem:', error);
             const errorMessage = { text: 'Desculpe, não consegui me conectar ao assistente.', sender: 'bot' };
             setMessages((prev) => [...prev.filter((m) => !m.typing), errorMessage]);
+        } finally {
+            setLoadingResposta(false);
         }
     };
 
@@ -183,7 +187,7 @@ const Chat = () => {
                     mb: 2,
                 }}
             >
-                {loading && (
+                {loadingHistorico && (
                     <Box sx={{ px: 2, py: 1 }}>
                         {Array.from({ length: 3 }).map((_, i) => (
                             <Box key={i} sx={{ display: 'flex', mb: 1.5,
@@ -236,7 +240,7 @@ const Chat = () => {
                     onChange={(e) => setInput(e.target.value)}
                     autoFocus
                 />
-                <Button type="submit" variant="contained" sx={{ ml: 1, p: '15px' }} endIcon={<SendIcon />}>
+                <Button type="submit" variant="contained" sx={{ ml: 1, p: '15px' }} endIcon={<SendIcon />} disabled={loadingResposta}>
                     Enviar
                 </Button>
                 <input
