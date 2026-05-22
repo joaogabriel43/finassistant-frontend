@@ -167,4 +167,87 @@ test.describe('Orçamento', () => {
     // Cleanup
     if (criada?.id) await deleteTransacao(userId, criada.id)
   })
+
+  // ─── Cenário 5 — Editar transação via UI ──────────────────────────────
+  test('Cenário 5 — Editar transação: alterar valor via modal', async ({ page }) => {
+    const userId = await getUserId()
+    const descricaoOriginal = `Editar E2E ${Date.now()}`
+
+    // Create transaction via API
+    const token = await getAuthToken(TEST_USER_EMAIL, TEST_USER_PASSWORD)
+    const ctx = await playwrightRequest.newContext({ baseURL: BACKEND_URL })
+    const createRes = await ctx.post(`/api/orcamento/transacao/${userId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      data: { valor: 100, categoria: 'Teste', descricao: descricaoOriginal, tipo: 'SAIDA' },
+    })
+    const criada = await createRes.json()
+    await ctx.dispose()
+
+    await page.goto('/orcamento')
+
+    // Wait for transaction to appear
+    await expect(page.getByText(descricaoOriginal)).toBeVisible({ timeout: 8_000 })
+
+    // Click edit icon on that row
+    const row = page.locator(`tr:has-text("${descricaoOriginal}")`)
+    await row.getByRole('button', { name: /editar/i }).click()
+
+    // Modal opens with data pre-filled
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5_000 })
+
+    // Change the description
+    const descricaoInput = page.getByRole('dialog').getByLabel(/Descrição/i)
+    await descricaoInput.clear()
+    const novaDescricao = `Editado E2E ${Date.now()}`
+    await descricaoInput.fill(novaDescricao)
+
+    // Save
+    await page.getByRole('dialog').getByRole('button', { name: /salvar|confirmar/i }).click()
+
+    // Modal closes and updated description appears
+    await expect(page.getByRole('dialog')).not.toBeVisible({ timeout: 5_000 })
+    await expect(page.getByText(novaDescricao)).toBeVisible({ timeout: 8_000 })
+
+    // Cleanup
+    if (criada?.id) await deleteTransacao(userId, criada.id)
+  })
+
+  // ─── Cenário 6 — Excluir transação via dialog de confirmação ──────────
+  test('Cenário 6 — Excluir transação: cancelar + confirmar', async ({ page }) => {
+    const userId = await getUserId()
+    const descricao = `Excluir E2E ${Date.now()}`
+
+    // Create via API
+    const token = await getAuthToken(TEST_USER_EMAIL, TEST_USER_PASSWORD)
+    const ctx = await playwrightRequest.newContext({ baseURL: BACKEND_URL })
+    const createRes = await ctx.post(`/api/orcamento/transacao/${userId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      data: { valor: 50, categoria: 'Teste', descricao, tipo: 'SAIDA' },
+    })
+    const criada = await createRes.json()
+    await ctx.dispose()
+
+    await page.goto('/orcamento')
+    await expect(page.getByText(descricao)).toBeVisible({ timeout: 8_000 })
+
+    // Click delete icon
+    const row = page.locator(`tr:has-text("${descricao}")`)
+    await row.getByRole('button', { name: /excluir/i }).click()
+
+    // Dialog appears
+    await expect(page.getByTestId('confirmar-exclusao-dialog')).toBeVisible({ timeout: 5_000 })
+
+    // Cancel — transaction remains
+    await page.getByRole('button', { name: /cancelar/i }).click()
+    await expect(page.getByTestId('confirmar-exclusao-dialog')).not.toBeVisible({ timeout: 3_000 })
+    await expect(page.getByText(descricao)).toBeVisible({ timeout: 5_000 })
+
+    // Delete again, confirm this time
+    await row.getByRole('button', { name: /excluir/i }).click()
+    await expect(page.getByTestId('confirmar-exclusao-dialog')).toBeVisible({ timeout: 5_000 })
+    await page.getByRole('button', { name: /^Excluir$/i }).click()
+
+    // Transaction disappears
+    await expect(page.getByText(descricao)).not.toBeVisible({ timeout: 8_000 })
+  })
 })
