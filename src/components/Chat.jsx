@@ -4,6 +4,7 @@ import { Box, TextField, Button, Paper, List, ListItem, Typography, IconButton, 
 import SendIcon from '@mui/icons-material/Send';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
+import DownloadIcon from '@mui/icons-material/Download';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { formatCurrencyInText } from '../utils/formatters';
@@ -110,6 +111,30 @@ const Chat = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
+    const handleDownloadAutenticado = async (url, label) => {
+        try {
+            const token = localStorage.getItem('authToken');
+            // url is like "/api/exportacao/extrato?mes=5&ano=2026"
+            const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3333/api';
+            const fullUrl = url.startsWith('http') ? url : `${baseUrl.replace(/\/api$/, '')}${url}`;
+            const response = await fetch(fullUrl, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!response.ok) throw new Error(`Download falhou: ${response.status}`);
+            const blob = await response.blob();
+            const objectUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = objectUrl;
+            a.download = label || 'download';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(objectUrl);
+        } catch (e) {
+            console.error('Falha no download autenticado:', e);
+        }
+    };
+
     const handleSend = async (e) => {
         e.preventDefault();
         if (!input.trim()) return;
@@ -128,7 +153,7 @@ const Chat = () => {
                 idSessao: sessionId,
             });
             const data = response.data;
-            const botMessage = { text: data.resposta, sender: 'bot' };
+            const botMessage = { text: data.resposta, sender: 'bot', acao: data.acao || null };
             setMessages((prev) => [...prev.filter((m) => !m.typing), botMessage]);
         } catch (error) {
             console.error('Falha ao enviar mensagem:', error);
@@ -224,6 +249,25 @@ const Chat = () => {
                                 <Typography component="span" sx={{ whiteSpace: 'pre-wrap' }}>
                                     {msg.typing ? 'Assistente está digitando...' : (msg.sender === 'bot' ? formatCurrencyInText(msg.text) : msg.text)}
                                 </Typography>
+                                {msg.acao?.tipo === 'DOWNLOAD' && (
+                                    <Box sx={{ mt: 1 }}>
+                                        <Button
+                                            variant="outlined"
+                                            size="small"
+                                            startIcon={<DownloadIcon />}
+                                            onClick={() => handleDownloadAutenticado(msg.acao.url, msg.acao.label)}
+                                            sx={{
+                                                borderColor: 'rgba(124,58,237,0.5)',
+                                                color: '#7C3AED',
+                                                textTransform: 'none',
+                                                fontSize: 12,
+                                                '&:hover': { borderColor: '#7C3AED', bgcolor: 'rgba(124,58,237,0.08)' },
+                                            }}
+                                        >
+                                            {msg.acao.label}
+                                        </Button>
+                                    </Box>
+                                )}
                             </Paper>
                         </ListItem>
                     ))}
