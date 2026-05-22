@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box, Grid, Card, CardContent, Typography, Button,
     Select, MenuItem, FormControl, InputLabel, Snackbar, Alert,
-    CircularProgress, Divider,
+    CircularProgress, Divider, Skeleton,
 } from '@mui/material';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
@@ -14,6 +14,8 @@ import ComparativoCard from '../components/orcamento/ComparativoCard';
 import AnomaliaAlert from '../components/orcamento/AnomaliaAlert';
 import ImportacaoExtratoModal from '../components/orcamento/ImportacaoExtratoModal';
 import { useExportacao } from '../hooks/useExportacao';
+import api from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 const MESES = [
     { value: 1, label: 'Janeiro' }, { value: 2, label: 'Fevereiro' },
@@ -28,12 +30,22 @@ const anoAtual = new Date().getFullYear();
 const ANOS = [anoAtual - 2, anoAtual - 1, anoAtual, anoAtual + 1];
 
 const Orcamento = () => {
+    const { user } = useAuth();
+    const [pageLoading, setPageLoading] = useState(true);
     const [refreshKey, setRefreshKey] = useState(0);
     const [extratoModalOpen, setExtratoModalOpen] = useState(false);
     const now = new Date();
     const [mesSelecionado, setMesSelecionado] = useState(now.getMonth() + 1);
     const [anoSelecionado, setAnoSelecionado] = useState(now.getFullYear());
     const { loading: exportLoading, error: exportError, downloadArquivo, clearError } = useExportacao();
+
+    // Skeleton de inicialização — mostra enquanto as transações iniciais carregam
+    useEffect(() => {
+        if (!user?.id) { setPageLoading(false); return; }
+        api.get(`/orcamento/transacoes/${user.id}`)
+            .catch(() => { /* silently ignore — child components handle their own errors */ })
+            .finally(() => setPageLoading(false));
+    }, [user?.id]);
 
     const handleTransacaoAdicionada = () => {
         setRefreshKey((k) => k + 1);
@@ -46,6 +58,21 @@ const Orcamento = () => {
     const handleExtratoImported = () => {
         setRefreshKey((k) => k + 1);
     };
+
+    if (pageLoading) {
+        return (
+            <Box sx={{ p: { xs: 1.5, md: 3 } }}>
+                {Array.from({ length: 5 }).map((_, i) => (
+                    <Skeleton key={i} animation="wave" variant="rectangular" height={48}
+                        sx={{ mb: 1, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 2 }} />
+                ))}
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                    <Skeleton animation="wave" variant="circular" width={180} height={180}
+                        sx={{ bgcolor: 'rgba(255,255,255,0.05)' }} />
+                </Box>
+            </Box>
+        );
+    }
 
     return (
         <Box sx={{ width: '100%', maxWidth: 1200, mx: 'auto', px: { xs: 1.5, md: 3 }, py: 2 }}>

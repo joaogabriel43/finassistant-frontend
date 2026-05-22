@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AlocacaoAtivosChart from '../components/investimentos/AlocacaoAtivosChart';
 import BenchmarkChart from '../components/investimentos/BenchmarkChart';
 import MarkowitzPanel from '../components/investimentos/MarkowitzPanel';
@@ -8,6 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { investimentoService } from '../services/investimentoService';
 import { useExportacao } from '../hooks/useExportacao';
+import api from '../services/api';
 import {
     Box,
     Button,
@@ -16,6 +17,7 @@ import {
     Grid,
     Modal,
     Paper,
+    Skeleton,
     Snackbar,
     Alert,
     TextField,
@@ -36,6 +38,15 @@ const Investimentos = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const { loading: exportLoading, error: exportError, downloadArquivo, clearError } = useExportacao();
+
+    // Skeleton de inicialização — mostra enquanto os dados iniciais carregam
+    const [pageLoading, setPageLoading] = useState(true);
+    useEffect(() => {
+        if (!user?.id) { setPageLoading(false); return; }
+        api.get(`/investimentos/portfolio`)
+            .catch(() => { /* silently ignore — child components handle their own errors */ })
+            .finally(() => setPageLoading(false));
+    }, [user?.id]);
 
     const [alertasModalOpen, setAlertasModalOpen] = useState(false);
 
@@ -91,6 +102,21 @@ const Investimentos = () => {
             setSelling(false);
         }
     };
+
+    if (pageLoading) {
+        return (
+            <Box sx={{ p: { xs: 1.5, md: 3 } }}>
+                {Array.from({ length: 3 }).map((_, i) => (
+                    <Skeleton key={i} animation="wave" variant="rectangular" height={52}
+                        sx={{ mb: 1, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 2 }} />
+                ))}
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                    <Skeleton animation="wave" variant="circular" width={200} height={200}
+                        sx={{ bgcolor: 'rgba(255,255,255,0.05)' }} />
+                </Box>
+            </Box>
+        );
+    }
 
     return (
         <Box sx={{ width: '100%', maxWidth: 1200, mx: 'auto', px: { xs: 1.5, md: 3 }, py: 2 }}>

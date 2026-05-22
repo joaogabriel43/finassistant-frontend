@@ -185,9 +185,23 @@ const Chat = () => {
             >
                 {loading && (
                     <Box sx={{ px: 2, py: 1 }}>
-                        <Skeleton variant="text" width="60%" height={24} sx={{ mb: 1 }} />
-                        <Skeleton variant="text" width="80%" height={24} sx={{ mb: 1 }} />
-                        <Skeleton variant="text" width="40%" height={24} />
+                        {Array.from({ length: 3 }).map((_, i) => (
+                            <Box key={i} sx={{ display: 'flex', mb: 1.5,
+                                justifyContent: i % 2 === 0 ? 'flex-end' : 'flex-start' }}>
+                                <Skeleton
+                                    animation="wave"
+                                    variant="rectangular"
+                                    height={60}
+                                    width={`${55 + (i * 10)}%`}
+                                    sx={{
+                                        bgcolor: 'rgba(255,255,255,0.05)',
+                                        borderRadius: i % 2 === 0
+                                            ? '18px 18px 4px 18px'
+                                            : '18px 18px 18px 4px',
+                                    }}
+                                />
+                            </Box>
+                        ))}
                     </Box>
                 )}
                 <List>
