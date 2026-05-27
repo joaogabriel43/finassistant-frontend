@@ -70,4 +70,49 @@ describe('useNotificacoes', () => {
 
     expect(result.current.naoLidas).toBe(1)
   })
+
+  it('DIGEST_SEMANAL abre Snackbar e adiciona à lista de notificações', async () => {
+    api.get.mockResolvedValueOnce({ data: { naoLidas: 0 } })
+
+    const { result } = renderHook(() => useNotificacoes())
+    await waitFor(() => expect(result.current.naoLidas).toBe(0))
+
+    act(() => {
+      global.__testOnNotificacao?.({
+        id: 'digest-1',
+        tipo: 'DIGEST_SEMANAL',
+        titulo: 'Resumo Semanal',
+        mensagem: 'Receitas: R$ 1000',
+      })
+    })
+
+    expect(result.current.digestSemanalOpen).toBe(true)
+    expect(result.current.digestSemanalMensagem).toBe('Receitas: R$ 1000')
+    expect(result.current.naoLidas).toBe(1)
+    expect(result.current.notificacoes).toHaveLength(1)
+  })
+
+  it('fecharDigestSemanal() fecha o Snackbar', async () => {
+    api.get.mockResolvedValueOnce({ data: { naoLidas: 0 } })
+
+    const { result } = renderHook(() => useNotificacoes())
+    await waitFor(() => expect(result.current.naoLidas).toBe(0))
+
+    act(() => {
+      global.__testOnNotificacao?.({
+        id: 'digest-2',
+        tipo: 'DIGEST_SEMANAL',
+        titulo: 'Resumo',
+        mensagem: 'msg',
+      })
+    })
+
+    expect(result.current.digestSemanalOpen).toBe(true)
+
+    act(() => {
+      result.current.fecharDigestSemanal()
+    })
+
+    expect(result.current.digestSemanalOpen).toBe(false)
+  })
 })

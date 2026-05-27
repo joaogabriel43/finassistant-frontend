@@ -14,6 +14,10 @@ export function useNotificacoes() {
   const [metaAtingidaOpen, setMetaAtingidaOpen] = useState(false)
   const [metaAtingidaMensagem, setMetaAtingidaMensagem] = useState('')
 
+  // Estado para o Snackbar especial de digest semanal
+  const [digestSemanalOpen, setDigestSemanalOpen] = useState(false)
+  const [digestSemanalMensagem, setDigestSemanalMensagem] = useState('')
+
   // Busca contagem inicial
   useEffect(() => {
     api.get('/notificacoes/count')
@@ -27,6 +31,16 @@ export function useNotificacoes() {
     if (notificacao.tipo === 'META_ATINGIDA') {
       setMetaAtingidaMensagem(notificacao.mensagem || '🎉 Você atingiu uma meta financeira!')
       setMetaAtingidaOpen(true)
+      return
+    }
+
+    // DIGEST_SEMANAL tem Snackbar especial com botão "Ver resumo", mas
+    // também entra na lista para acesso posterior no drawer
+    if (notificacao.tipo === 'DIGEST_SEMANAL') {
+      setDigestSemanalMensagem(notificacao.mensagem || '📊 Seu resumo semanal chegou!')
+      setDigestSemanalOpen(true)
+      setNotificacoes(prev => [notificacao, ...prev])
+      setNaoLidas(prev => prev + 1)
       return
     }
 
@@ -51,5 +65,8 @@ export function useNotificacoes() {
     metaAtingidaOpen,
     metaAtingidaMensagem,
     fecharMetaAtingida: () => setMetaAtingidaOpen(false),
+    digestSemanalOpen,
+    digestSemanalMensagem,
+    fecharDigestSemanal: () => setDigestSemanalOpen(false),
   }
 }

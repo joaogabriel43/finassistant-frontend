@@ -7,14 +7,15 @@ import NotificationsIcon from '@mui/icons-material/Notifications'
 import TrendingUpIcon from '@mui/icons-material/TrendingUp'
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
 import BarChartIcon from '@mui/icons-material/BarChart'
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
+import InsightsIcon from '@mui/icons-material/Insights'
 import CloseIcon from '@mui/icons-material/Close'
 
 const TIPO_ICONE = {
   PRECO: <TrendingUpIcon fontSize="small" sx={{ color: '#00bcd4' }} />,
   GASTO: <AccountBalanceWalletIcon fontSize="small" sx={{ color: '#ff9800' }} />,
-  PORTFOLIO: <BarChartIcon fontSize="small" sx={{ color: '#9c27b0' }} />,
-  DIGEST_SEMANAL: <CalendarTodayIcon fontSize="small" sx={{ color: '#4caf50' }} />,
+  PORTFOLIO: <InsightsIcon fontSize="small" sx={{ color: '#9c27b0' }} />,
+  DIGEST_SEMANAL: <BarChartIcon fontSize="small" sx={{ color: '#4caf50' }} />,
+  META_ATINGIDA: <TrendingUpIcon fontSize="small" sx={{ color: '#4ade80' }} />,
 }
 
 function tempoRelativo(criadaEm) {

@@ -22,6 +22,9 @@ describe('NotificacoesBadge', () => {
     metaAtingidaOpen: false,
     metaAtingidaMensagem: '',
     fecharMetaAtingida: vi.fn(),
+    digestSemanalOpen: false,
+    digestSemanalMensagem: '',
+    fecharDigestSemanal: vi.fn(),
   }
 
   it('exibe número correto de não lidas no badge', () => {
@@ -39,5 +42,26 @@ describe('NotificacoesBadge', () => {
 
     // Badge com 0 não deve renderizar texto "0"
     expect(screen.queryByText('0')).not.toBeInTheDocument()
+  })
+
+  it('exibe Snackbar de digest semanal com botão "Ver resumo" quando digestSemanalOpen=true', () => {
+    useNotificacoes.mockReturnValue({
+      ...baseReturn,
+      digestSemanalOpen: true,
+      digestSemanalMensagem: 'Receitas: R$ 1000',
+    })
+
+    render(<NotificacoesBadge />)
+
+    expect(screen.getByText('📊 Seu resumo semanal chegou!')).toBeInTheDocument()
+    expect(screen.getByText('Ver resumo')).toBeInTheDocument()
+  })
+
+  it('não exibe Snackbar de digest semanal quando digestSemanalOpen=false', () => {
+    useNotificacoes.mockReturnValue(baseReturn)
+
+    render(<NotificacoesBadge />)
+
+    expect(screen.queryByText('Ver resumo')).not.toBeInTheDocument()
   })
 })
