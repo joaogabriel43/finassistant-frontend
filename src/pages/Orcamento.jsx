@@ -13,6 +13,7 @@ import ListaTransacoes from '../components/orcamento/ListaTransacoes';
 import ComparativoCard from '../components/orcamento/ComparativoCard';
 import AnomaliaAlert from '../components/orcamento/AnomaliaAlert';
 import ImportacaoExtratoModal from '../components/orcamento/ImportacaoExtratoModal';
+import RecorrenciasCard from '../components/orcamento/RecorrenciasCard';
 import { useExportacao } from '../hooks/useExportacao';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -38,6 +39,8 @@ const Orcamento = () => {
     const [mesSelecionado, setMesSelecionado] = useState(now.getMonth() + 1);
     const [anoSelecionado, setAnoSelecionado] = useState(now.getFullYear());
     const { loading: exportLoading, error: exportError, downloadArquivo, clearError } = useExportacao();
+    const [recorrencias, setRecorrencias] = useState([]);
+    const [loadingRecorrencias, setLoadingRecorrencias] = useState(true);
 
     // Skeleton de inicialização — mostra enquanto as transações iniciais carregam
     useEffect(() => {
@@ -45,6 +48,16 @@ const Orcamento = () => {
         api.get(`/orcamento/transacoes/${user.id}`)
             .catch(() => { /* silently ignore — child components handle their own errors */ })
             .finally(() => setPageLoading(false));
+    }, [user?.id]);
+
+    // Carrega assinaturas recorrentes detectadas automaticamente
+    useEffect(() => {
+        if (!user?.id) { setLoadingRecorrencias(false); return; }
+        setLoadingRecorrencias(true);
+        api.get('/orcamento/recorrencias')
+            .then((res) => setRecorrencias(res.data ?? []))
+            .catch(() => setRecorrencias([]))
+            .finally(() => setLoadingRecorrencias(false));
     }, [user?.id]);
 
     const handleTransacaoAdicionada = () => {
@@ -122,6 +135,11 @@ const Orcamento = () => {
                     <ComparativoCard />
                 </CardContent>
             </Card>
+
+            {/* Assinaturas Recorrentes */}
+            <Box sx={{ mb: 3 }}>
+                <RecorrenciasCard recorrencias={recorrencias} loading={loadingRecorrencias} />
+            </Box>
 
             {/* Exportar */}
             <Card sx={{ mb: 3 }}>
