@@ -19,6 +19,7 @@ const CalculadorasPage = lazy(() => import('./pages/CalculadorasPage'));
 const StatusPage      = lazy(() => import('./pages/StatusPage'));
 const NotFound        = lazy(() => import('./pages/NotFound'));
 const PlanoPage       = lazy(() => import('./pages/PlanoPage'));
+const IrPage          = lazy(() => import('./pages/IrPage'));
 
 function App() {
     return (
@@ -47,6 +48,7 @@ function App() {
                           <Route path="/configuracoes" element={<Configuracoes />} />
                           <Route path="/calculadoras" element={<CalculadorasPage />} />
                           <Route path="/plano" element={<PlanoPage />} />
+                          <Route path="/ir" element={<IrPage />} />
                       </Route>
 
                       {/* Rota Catch-all para caminhos não encontrados */}

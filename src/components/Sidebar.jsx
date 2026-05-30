@@ -1,9 +1,10 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
-import { Box, Typography } from '@mui/material'
+import { Box, Chip, Typography } from '@mui/material'
 import NotificacoesBadge from './notificacoes/NotificacoesBadge'
 import UserMenu from './layout/UserMenu'
 import PlanoBadge from './plano/PlanoBadge'
+import usePlano from '../hooks/usePlano'
 
 const NAV_LINKS = [
   { to: '/dashboard',       label: 'Dashboard' },
@@ -13,11 +14,14 @@ const NAV_LINKS = [
   { to: '/calculadoras',    label: 'Calculadoras',    tutorial: 'calculadoras' },
   { to: '/fluxo-caixa',    label: 'Fluxo de Caixa' },
   { to: '/metas',          label: 'Metas' },
+  { to: '/ir',             label: 'IR Investimentos', premiumOnly: true },
   { to: '/configuracoes',  label: 'Configurações' },
   { to: '/status',         label: 'Status' },
 ]
 
 const Sidebar = () => {
+  const { isPremium } = usePlano()
+
   return (
     <Box
       component="aside"
@@ -73,7 +77,7 @@ const Sidebar = () => {
 
       {/* MEIO: Navegação */}
       <Box component="nav" sx={{ flexGrow: 1, px: 1.5, py: 2, overflow: 'hidden' }}>
-        {NAV_LINKS.map(({ to, label, tutorial }) => (
+        {NAV_LINKS.map(({ to, label, tutorial, premiumOnly }) => (
           <NavLink
             key={to}
             to={to}
@@ -81,6 +85,7 @@ const Sidebar = () => {
             style={({ isActive }) => ({
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'space-between',
               padding: '10px 14px',
               borderRadius: '8px',
               marginBottom: '4px',
@@ -92,7 +97,22 @@ const Sidebar = () => {
               transition: 'background-color 0.15s, color 0.15s',
             })}
           >
-            {label}
+            <span>{label}</span>
+            {premiumOnly && !isPremium && (
+              <Chip
+                label="Premium"
+                size="small"
+                sx={{
+                  height: 16,
+                  fontSize: 9,
+                  fontWeight: 700,
+                  bgcolor: 'rgba(255,215,0,0.15)',
+                  color: '#FFD700',
+                  border: '1px solid rgba(255,215,0,0.3)',
+                  '& .MuiChip-label': { px: 0.75 },
+                }}
+              />
+            )}
           </NavLink>
         ))}
       </Box>
