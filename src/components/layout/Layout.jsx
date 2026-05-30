@@ -58,8 +58,11 @@ const Layout = () => {
             <MenuIcon />
           </IconButton>
           <Box sx={{ flexGrow: 1 }} />
-          <NotificacoesBadge />
-          <UserMenu />
+          {/* gap: 0.5 evita sobreposição entre sino e avatar no AppBar mobile */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <NotificacoesBadge />
+            <UserMenu />
+          </Box>
         </Toolbar>
       </AppBar>
 

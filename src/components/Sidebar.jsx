@@ -68,6 +68,7 @@ const Sidebar = () => {
             display: { xs: 'none', md: 'flex' },
             alignItems: 'center',
             flexShrink: 0,
+            gap: 0.5,   // 4px — evita sobreposição entre sino, PlanoBadge e avatar
           }}
         >
           <NotificacoesBadge />
