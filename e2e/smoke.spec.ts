@@ -99,4 +99,38 @@ test.describe('Smoke Tests — Produção', () => {
     expect(response.status()).not.toBe(404)
     await ctx.dispose()
   })
+
+  // ─── 9–12. Sprints A-E: novos endpoints não retornam 404 ──────────────
+
+  test('9. GET /api/orcamento/recorrencias → existe (401 sem token)', async () => {
+    const ctx = await playwrightRequest.newContext({ baseURL: API_URL })
+    const response = await ctx.get('/api/orcamento/recorrencias')
+    expect(response.status()).not.toBe(404)
+    await ctx.dispose()
+  })
+
+  test('10. GET /api/compartilhamento/status → existe (401 sem token)', async () => {
+    const ctx = await playwrightRequest.newContext({ baseURL: API_URL })
+    const response = await ctx.get('/api/compartilhamento/status')
+    expect(response.status()).not.toBe(404)
+    await ctx.dispose()
+  })
+
+  test('11. GET /api/insights/atual → existe (401 sem token)', async () => {
+    const ctx = await playwrightRequest.newContext({ baseURL: API_URL })
+    const response = await ctx.get('/api/insights/atual')
+    expect(response.status()).not.toBe(404)
+    await ctx.dispose()
+  })
+
+  test('12. GET /api/ir/apuracao → existe (401 ou 403 sem token ou plano)', async () => {
+    const ctx = await playwrightRequest.newContext({ baseURL: API_URL })
+    const response = await ctx.get('/api/ir/apuracao', {
+      params: { mes: '5', ano: '2026' },
+    })
+    // 401 = sem token, 403 = sem plano Premium — ambos indicam endpoint ativo
+    // 404 = endpoint ausente — falha
+    expect(response.status()).not.toBe(404)
+    await ctx.dispose()
+  })
 })
