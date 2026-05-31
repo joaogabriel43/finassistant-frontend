@@ -33,50 +33,48 @@ const Sidebar = () => {
         overflow: 'hidden',
       }}
     >
-      {/* TOPO: Logo + controles de usuário */}
+      {/* TOPO: Layout em 2 linhas para caber nos 220px da sidebar
+           Linha 1: [FortunAI]  →  [🔔] [J]
+           Linha 2: [Assistente Financeiro] [Free/Premium]         */}
       <Box
         sx={{
           px: 2.5,
-          py: 2,
+          pt: 2,
+          pb: 1.5,
           borderBottom: '1px solid rgba(255,255,255,0.06)',
           flexShrink: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 1,
         }}
       >
-        {/* Esquerda: logo + subtítulo apenas — sem badge aqui */}
-        <Box sx={{ minWidth: 0, overflow: 'hidden' }}>
+        {/* Linha 1: Logo ←→ Controles */}
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Typography
             variant="h6"
             fontWeight={700}
-            noWrap
             sx={{ color: '#7C6AF7', letterSpacing: '-0.5px', lineHeight: 1.2 }}
           >
             FortunAI
           </Typography>
-          <Typography
-            variant="caption"
-            noWrap
-            sx={{ color: 'text.secondary', fontSize: 11, display: 'block' }}
+
+          {/* Notificações + Avatar — visíveis apenas em desktop */}
+          <Box
+            sx={{
+              display: { xs: 'none', md: 'flex' },
+              alignItems: 'center',
+              gap: 0.5,
+              flexShrink: 0,
+            }}
           >
-            Assistente Financeiro
-          </Typography>
+            <NotificacoesBadge />
+            <UserMenu />
+          </Box>
         </Box>
 
-        {/* Direita: [PlanoBadge] [Notificações] [Avatar] — alinhados em linha */}
-        <Box
-          sx={{
-            display: { xs: 'none', md: 'flex' },
-            alignItems: 'center',
-            flexShrink: 0,
-            gap: 0.75,
-          }}
-        >
+        {/* Linha 2: Subtítulo + Badge de plano */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.25 }}>
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 11 }}>
+            Assistente Financeiro
+          </Typography>
           <PlanoBadge />
-          <NotificacoesBadge />
-          <UserMenu />
         </Box>
       </Box>
 
