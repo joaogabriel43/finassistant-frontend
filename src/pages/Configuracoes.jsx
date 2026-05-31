@@ -7,6 +7,7 @@ import CameraAltIcon from '@mui/icons-material/CameraAlt'
 import { useAuth } from '../contexts/AuthContext'
 import { useColorMode } from '../contexts/ColorModeContext'
 import { configuracaoService } from '../services/configuracaoService'
+import ExclusaoContaModal from '../components/ExclusaoContaModal'
 
 function TabPanel({ children, value, index }) {
   if (value !== index) return null
@@ -215,49 +216,44 @@ function TabNotificacoes({ onSuccess }) {
   )
 }
 
-// ── Aba Conta ────────────────────────────────────────────────────────────────
+// ── Aba Conta — Zona de Perigo (LGPD Art. 18) ───────────────────────────────
 
 function TabConta() {
-  const { logout } = useAuth()
-  const [confirm, setConfirm] = useState(false)
-  const [loading, setLoading] = useState(false)
-
-  const handleDesativar = async () => {
-    setLoading(true)
-    try {
-      await configuracaoService.desativarConta()
-      logout()
-    } catch {
-      setLoading(false)
-    }
-  }
+  const [exclusaoModalOpen, setExclusaoModalOpen] = useState(false)
 
   return (
     <Stack spacing={3}>
-      <Paper sx={{ p: 3, borderColor: 'error.main' }}>
-        <Typography variant="subtitle1" fontWeight={600} color="error" gutterBottom>
-          Zona de perigo
+      {/* Zona de Perigo com borda vermelha */}
+      <Box
+        sx={{
+          border: '1px solid',
+          borderColor: 'error.main',
+          borderRadius: 2,
+          p: 3,
+        }}
+      >
+        <Typography variant="subtitle1" fontWeight={700} color="error" gutterBottom>
+          Zona de Perigo
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Ao desativar sua conta, todos os seus dados serao anonimizados e voce perdera acesso ao FortunAI.
-          Esta acao e irreversivel.
+          A exclusão da conta é <strong>permanente</strong> e remove todos os seus dados —
+          transações, investimentos, metas, histórico de chat e configurações.
+          Esta ação não pode ser desfeita.
         </Typography>
-        {!confirm ? (
-          <Button variant="outlined" color="error" onClick={() => setConfirm(true)}>
-            Desativar minha conta
-          </Button>
-        ) : (
-          <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" gap={1}>
-            <Typography variant="body2" color="error" fontWeight={600}>
-              Tem certeza? Isso nao pode ser desfeito.
-            </Typography>
-            <Button variant="contained" color="error" onClick={handleDesativar} disabled={loading}>
-              {loading ? <CircularProgress size={20} color="inherit" /> : 'Confirmar desativacao'}
-            </Button>
-            <Button onClick={() => setConfirm(false)}>Cancelar</Button>
-          </Stack>
-        )}
-      </Paper>
+        <Button
+          variant="outlined"
+          color="error"
+          onClick={() => setExclusaoModalOpen(true)}
+        >
+          Excluir minha conta
+        </Button>
+      </Box>
+
+      {/* Modal de exclusão com confirmação "EXCLUIR" */}
+      <ExclusaoContaModal
+        open={exclusaoModalOpen}
+        onClose={() => setExclusaoModalOpen(false)}
+      />
     </Stack>
   )
 }

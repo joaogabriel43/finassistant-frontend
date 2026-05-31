@@ -1,26 +1,67 @@
 import React, { useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { Box, Paper, Typography, TextField, Button, Alert, Link } from '@mui/material';
+import {
+    Box, Paper, Typography, TextField, Button, Alert, Link,
+    Checkbox, FormControlLabel,
+} from '@mui/material';
 import authService from '../services/authService';
+import api from '../services/api';
+
+const VERSAO_TERMOS = '1.0';
+const VERSAO_PRIVACIDADE = '1.0';
 
 const Registro = () => {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
+    const [aceitouTermos, setAceitouTermos] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const navigate = useNavigate();
 
     const handleRegister = async (e) => {
         e.preventDefault();
+        if (!aceitouTermos) return;
         setError('');
         setSuccess('');
         try {
             await authService.registrar(email, senha);
+
+            // LGPD: registrar consentimento logo após criar a conta
+            try {
+                const loginRes = await api.post('/auth/login', { username: email, password: senha });
+                const { token } = loginRes.data;
+                if (token) {
+                    await api.post('/conta/consentimento',
+                        { versaoTermos: VERSAO_TERMOS, versaoPrivacidade: VERSAO_PRIVACIDADE },
+                        { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                }
+            } catch {
+                // Falha silenciosa — consentimento pode ser registrado no próximo login via modal
+            }
+
             setSuccess('Usuário registrado com sucesso! Redirecionando para o login...');
             setTimeout(() => navigate('/login'), 2000);
         } catch (err) {
             setError(err.response?.data || 'Erro ao registrar. Tente novamente.');
         }
+    };
+
+    const inputSx = {
+        '& .MuiOutlinedInput-root': {
+            backgroundColor: 'rgba(255,255,255,0.05)',
+            '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
+            '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' },
+            '&.Mui-focused fieldset': { borderColor: '#7c3aed' },
+        },
+        '& .MuiInputBase-input': { color: '#ffffff' },
+        '& .MuiInputBase-input:-webkit-autofill': {
+            WebkitBoxShadow: '0 0 0 1000px #1a1a2e inset',
+            WebkitTextFillColor: '#ffffff',
+            caretColor: '#ffffff',
+        },
+        '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.6)' },
+        '& .MuiInputLabel-root.Mui-focused': { color: '#a78bfa' },
     };
 
     return (
@@ -62,22 +103,7 @@ const Registro = () => {
                         onChange={(e) => setEmail(e.target.value)}
                         required
                         InputLabelProps={{ shrink: true }}
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            backgroundColor: 'rgba(255,255,255,0.05)',
-                            '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
-                            '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' },
-                            '&.Mui-focused fieldset': { borderColor: '#7c3aed' },
-                          },
-                          '& .MuiInputBase-input': { color: '#ffffff' },
-                          '& .MuiInputBase-input:-webkit-autofill': {
-                            WebkitBoxShadow: '0 0 0 1000px #1a1a2e inset',
-                            WebkitTextFillColor: '#ffffff',
-                            caretColor: '#ffffff',
-                          },
-                          '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.6)' },
-                          '& .MuiInputLabel-root.Mui-focused': { color: '#a78bfa' },
-                        }}
+                        sx={inputSx}
                     />
                     <TextField
                         variant="outlined"
@@ -89,22 +115,43 @@ const Registro = () => {
                         onChange={(e) => setSenha(e.target.value)}
                         required
                         InputLabelProps={{ shrink: true }}
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            backgroundColor: 'rgba(255,255,255,0.05)',
-                            '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
-                            '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' },
-                            '&.Mui-focused fieldset': { borderColor: '#7c3aed' },
-                          },
-                          '& .MuiInputBase-input': { color: '#ffffff' },
-                          '& .MuiInputBase-input:-webkit-autofill': {
-                            WebkitBoxShadow: '0 0 0 1000px #1a1a2e inset',
-                            WebkitTextFillColor: '#ffffff',
-                            caretColor: '#ffffff',
-                          },
-                          '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.6)' },
-                          '& .MuiInputLabel-root.Mui-focused': { color: '#a78bfa' },
-                        }}
+                        sx={inputSx}
+                    />
+
+                    {/* LGPD: aceite obrigatório dos Termos de Uso e Política de Privacidade */}
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={aceitouTermos}
+                                onChange={(e) => setAceitouTermos(e.target.checked)}
+                                sx={{ color: 'rgba(255,255,255,0.4)', '&.Mui-checked': { color: '#7C6AF7' } }}
+                            />
+                        }
+                        label={
+                            <Typography variant="body2" color="text.secondary">
+                                Li e aceito os{' '}
+                                <Link
+                                    component={RouterLink}
+                                    to="/termos"
+                                    target="_blank"
+                                    rel="noopener"
+                                    sx={{ color: '#7C6AF7' }}
+                                >
+                                    Termos de Uso
+                                </Link>
+                                {' '}e a{' '}
+                                <Link
+                                    component={RouterLink}
+                                    to="/privacidade"
+                                    target="_blank"
+                                    rel="noopener"
+                                    sx={{ color: '#7C6AF7' }}
+                                >
+                                    Política de Privacidade
+                                </Link>
+                            </Typography>
+                        }
+                        sx={{ mt: 1.5, mb: 0.5, alignItems: 'flex-start' }}
                     />
 
                     {error && (
@@ -118,8 +165,14 @@ const Registro = () => {
                         </Alert>
                     )}
 
-                    <Button type="submit" variant="contained" fullWidth sx={{ mt: 2, py: 1.5 }}>
-                        Registrar
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        fullWidth
+                        disabled={!aceitouTermos}
+                        sx={{ mt: 2, py: 1.5, bgcolor: '#7C6AF7', '&:hover': { bgcolor: '#6355d4' } }}
+                    >
+                        Criar conta
                     </Button>
 
                     <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', mt: 2 }}>

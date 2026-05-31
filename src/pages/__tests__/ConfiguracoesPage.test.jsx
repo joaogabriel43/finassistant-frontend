@@ -31,6 +31,16 @@ vi.mock('../../services/configuracaoService', () => ({
   configuracaoService: mockService,
 }))
 
+// ExclusaoContaModal usa useNavigate
+vi.mock('react-router-dom', () => ({
+  useNavigate: vi.fn(() => vi.fn()),
+  Link: ({ children, to }) => <a href={to}>{children}</a>,
+}))
+
+vi.mock('../../services/api', () => ({
+  default: { delete: vi.fn().mockResolvedValue({ data: null }) },
+}))
+
 // ── Setup ──────────────────────────────────────────────────────────────────
 
 beforeEach(() => {
@@ -144,31 +154,37 @@ describe('Configuracoes — pagina de configuracoes', () => {
     expect(screen.getByText(/tema escuro/i)).toBeInTheDocument()
   })
 
-  it('aba Conta exibe botao de desativacao', () => {
+  // Testes atualizados para o novo fluxo LGPD (ExclusaoContaModal com "EXCLUIR")
+
+  it('aba Conta exibe seção Zona de Perigo com botão de exclusão', () => {
     render(<Configuracoes />)
     fireEvent.click(screen.getByRole('tab', { name: 'Conta' }))
-    expect(screen.getByRole('button', { name: /desativar minha conta/i })).toBeInTheDocument()
+
+    // Nova LGPD: "Zona de Perigo" + botão "Excluir minha conta"
+    expect(screen.getByText(/zona de perigo/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /excluir minha conta/i })).toBeInTheDocument()
   })
 
-  it('aba Conta: confirmacao dupla antes de desativar', async () => {
+  it('aba Conta: clicar em "Excluir minha conta" abre ExclusaoContaModal', () => {
     render(<Configuracoes />)
     fireEvent.click(screen.getByRole('tab', { name: 'Conta' }))
 
-    // Primeiro clique mostra confirmação
-    fireEvent.click(screen.getByRole('button', { name: /desativar minha conta/i }))
-    expect(screen.getByRole('button', { name: /confirmar desativacao/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /cancelar/i })).toBeInTheDocument()
-    expect(mockService.desativarConta).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: /excluir minha conta/i }))
+
+    // ExclusaoContaModal exige "EXCLUIR" — campo de confirmação deve aparecer
+    expect(screen.getByTestId('exclusao-titulo')).toBeInTheDocument()
   })
 
-  it('aba Conta: cancelar volta ao estado inicial', () => {
+  it('aba Conta: ExclusaoContaModal pode ser fechado com Cancelar', () => {
     render(<Configuracoes />)
     fireEvent.click(screen.getByRole('tab', { name: 'Conta' }))
 
-    fireEvent.click(screen.getByRole('button', { name: /desativar minha conta/i }))
+    // Abrir modal
+    fireEvent.click(screen.getByRole('button', { name: /excluir minha conta/i }))
+    expect(screen.getByTestId('exclusao-titulo')).toBeInTheDocument()
+
+    // Fechar com Cancelar
     fireEvent.click(screen.getByRole('button', { name: /cancelar/i }))
-
-    expect(screen.getByRole('button', { name: /desativar minha conta/i })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /confirmar desativacao/i })).not.toBeInTheDocument()
+    expect(screen.queryByTestId('exclusao-titulo')).not.toBeInTheDocument()
   })
 })
