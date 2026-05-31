@@ -1,0 +1,330 @@
+import React, { useState } from 'react'
+import {
+  Alert, Box, Button, Checkbox, Chip, CircularProgress,
+  Dialog, DialogContent, DialogTitle, FormControlLabel,
+  IconButton, LinearProgress, Switch, TextField, Typography,
+} from '@mui/material'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import CloseIcon from '@mui/icons-material/Close'
+import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner'
+import api from '../../services/api'
+
+// ── Cores por categoria de item NFC-e ────────────────────────────────────────
+
+const COR_CATEGORIA = {
+  Alimentação: '#10B981',
+  Higiene:     '#3B82F6',
+  Limpeza:     '#F59E0B',
+  Pet:         '#8B5CF6',
+  Bebidas:     '#EF4444',
+  Eletrônicos: '#0EA5E9',
+  Vestuário:   '#EC4899',
+  Saúde:       '#14B8A6',
+  Outros:      '#6B7280',
+}
+
+const formatBRL = (v) =>
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v ?? 0)
+
+const formatData = (iso) => {
+  if (!iso) return ''
+  try {
+    return new Date(iso + 'T00:00:00').toLocaleDateString('pt-BR')
+  } catch { return iso }
+}
+
+// ── Componente principal ──────────────────────────────────────────────────────
+
+/**
+ * Modal de escaneamento de NFC-e em 3 steps:
+ *   Step 1: URL input → POST /api/orcamento/nfce/preview
+ *   Step 2: Preview dos itens com seleção + toggle
+ *   Step 3: Confirmação após POST /api/orcamento/nfce/importar
+ *
+ * @param {boolean}  open      - controla visibilidade do Dialog
+ * @param {function} onClose   - callback ao fechar
+ * @param {function} onSuccess - callback após importação bem-sucedida
+ */
+const NfceScannerModal = ({ open, onClose, onSuccess }) => {
+  const [step, setStep] = useState(1)
+  const [url, setUrl] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [loadingImport, setLoadingImport] = useState(false)
+  const [erro, setErro] = useState(null)
+  const [nfce, setNfce] = useState(null)
+  const [selecionados, setSelecionados] = useState([])
+  const [importarSeparados, setImportarSeparados] = useState(false)
+  const [totalImportado, setTotalImportado] = useState(0)
+
+  const resetar = () => {
+    setStep(1); setUrl(''); setLoading(false); setLoadingImport(false)
+    setErro(null); setNfce(null); setSelecionados([])
+    setImportarSeparados(false); setTotalImportado(0)
+  }
+
+  const handleClose = () => {
+    resetar()
+    onClose()
+  }
+
+  // ── STEP 1: Analisar URL ─────────────────────────────────────────────────
+
+  const handleAnalisar = async () => {
+    setErro(null)
+    setLoading(true)
+    try {
+      const res = await api.post('/orcamento/nfce/preview', { url })
+      const dto = res.data
+      setNfce(dto)
+      // Pré-selecionar todos os itens
+      setSelecionados(dto.itens.map((_, i) => i))
+      setStep(2)
+    } catch (e) {
+      const msg =
+        e?.response?.data?.mensagem ||
+        e?.response?.data?.message ||
+        (e?.response?.status === 503
+          ? 'Serviço da Receita Federal temporariamente indisponível. Tente novamente.'
+          : 'URL não reconhecida como NF-e válida. Verifique o link e tente novamente.')
+      setErro(msg)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // ── STEP 2: Importar seleção ──────────────────────────────────────────────
+
+  const toggleItem = (idx) => {
+    setSelecionados((prev) =>
+      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
+    )
+  }
+
+  const totalSelecionado = nfce?.itens
+    .filter((_, i) => selecionados.includes(i))
+    .reduce((sum, item) => sum + (item.valorTotal ?? 0), 0) ?? 0
+
+  const handleImportar = async () => {
+    setErro(null)
+    setLoadingImport(true)
+    try {
+      const res = await api.post('/orcamento/nfce/importar', {
+        url,
+        importarItensSeparados: importarSeparados,
+        indicesItensSelecionados: selecionados,
+      })
+      const transacoes = res.data ?? []
+      setTotalImportado(transacoes.length)
+      setStep(3)
+    } catch (e) {
+      const msg =
+        e?.response?.data?.mensagem ||
+        e?.response?.data?.message ||
+        'Não foi possível importar as transações. Tente novamente.'
+      setErro(msg)
+    } finally {
+      setLoadingImport(false)
+    }
+  }
+
+  // ── Render por Step ───────────────────────────────────────────────────────
+
+  return (
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{ sx: { borderRadius: 3, bgcolor: '#1a1a2e' } }}
+    >
+      {/* Cabeçalho */}
+      <DialogTitle
+        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <QrCodeScannerIcon sx={{ color: '#7C6AF7' }} />
+          <Typography variant="h6" fontWeight={700}>
+            {step === 1 && 'Escanear NF-e'}
+            {step === 2 && 'Itens da Nota Fiscal'}
+            {step === 3 && 'Importação concluída'}
+          </Typography>
+        </Box>
+        <IconButton size="small" onClick={handleClose}>
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </DialogTitle>
+
+      <DialogContent sx={{ pt: 1 }}>
+
+        {/* ── STEP 1 ──────────────────────────────────────────────────────── */}
+        {step === 1 && (
+          <Box>
+            <TextField
+              label="URL da Nota Fiscal Eletrônica"
+              fullWidth
+              value={url}
+              onChange={(e) => { setUrl(e.target.value); setErro(null) }}
+              placeholder="Cole a URL da NF-e aqui..."
+              helperText="Aponte a câmera para o QR code da nota, copie o link e cole aqui"
+              size="small"
+              sx={{ mb: 2 }}
+              inputProps={{ 'aria-label': 'URL da Nota Fiscal Eletrônica' }}
+            />
+
+            {loading && <LinearProgress sx={{ mb: 2, borderRadius: 1 }} />}
+
+            {erro && (
+              <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
+                {erro}
+              </Alert>
+            )}
+
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+              <Button variant="outlined" onClick={handleClose} color="inherit">
+                Cancelar
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleAnalisar}
+                disabled={!url.trim() || loading}
+                sx={{ bgcolor: '#7C6AF7', '&:hover': { bgcolor: '#6355d4' }, fontWeight: 700 }}
+              >
+                Analisar NF-e
+              </Button>
+            </Box>
+          </Box>
+        )}
+
+        {/* ── STEP 2 ──────────────────────────────────────────────────────── */}
+        {step === 2 && nfce && (
+          <Box>
+            {/* Header da nota */}
+            <Box sx={{ mb: 2, p: 1.5, borderRadius: 2, bgcolor: 'rgba(255,255,255,0.04)' }}>
+              <Typography variant="subtitle1" fontWeight={700}>{nfce.estabelecimento}</Typography>
+              <Typography variant="caption" color="text.secondary">
+                {formatData(nfce.dataEmissao)} · Total: {formatBRL(nfce.valorTotal)}
+              </Typography>
+            </Box>
+
+            {/* Lista de itens */}
+            <Box sx={{ maxHeight: 280, overflowY: 'auto', mb: 2 }}>
+              {nfce.itens.map((item, idx) => (
+                <Box
+                  key={idx}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    py: 0.75,
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                  }}
+                >
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={selecionados.includes(idx)}
+                        onChange={() => toggleItem(idx)}
+                        size="small"
+                      />
+                    }
+                    label={
+                      <Box>
+                        <Typography variant="body2" fontWeight={500}>
+                          {item.descricao}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {item.quantidade}× {formatBRL(item.valorUnitario)}
+                        </Typography>
+                      </Box>
+                    }
+                    sx={{ mr: 0, flex: 1 }}
+                  />
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+                    <Chip
+                      label={item.categoria}
+                      size="small"
+                      sx={{
+                        bgcolor: `${COR_CATEGORIA[item.categoria] ?? '#6B7280'}22`,
+                        color: COR_CATEGORIA[item.categoria] ?? '#6B7280',
+                        fontWeight: 600,
+                        fontSize: 10,
+                        height: 20,
+                      }}
+                    />
+                    <Typography variant="body2" fontWeight={600} sx={{ minWidth: 60, textAlign: 'right' }}>
+                      {formatBRL(item.valorTotal)}
+                    </Typography>
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+
+            {/* Toggle + resumo */}
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={importarSeparados}
+                  onChange={(e) => setImportarSeparados(e.target.checked)}
+                  size="small"
+                />
+              }
+              label={
+                <Typography variant="body2">Importar como itens separados</Typography>
+              }
+              sx={{ mb: 1.5 }}
+            />
+
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              {selecionados.length} {selecionados.length === 1 ? 'item selecionado' : 'itens selecionados'}{' '}
+              · {formatBRL(totalSelecionado)}
+            </Typography>
+
+            {erro && (
+              <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{erro}</Alert>
+            )}
+
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
+              <Button variant="outlined" onClick={() => { setStep(1); setErro(null) }} color="inherit">
+                Voltar
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleImportar}
+                disabled={selecionados.length === 0 || loadingImport}
+                sx={{ bgcolor: '#7C6AF7', '&:hover': { bgcolor: '#6355d4' }, fontWeight: 700 }}
+                startIcon={loadingImport ? <CircularProgress size={16} color="inherit" /> : null}
+              >
+                {loadingImport ? 'Importando...' : 'Importar'}
+              </Button>
+            </Box>
+          </Box>
+        )}
+
+        {/* ── STEP 3 ──────────────────────────────────────────────────────── */}
+        {step === 3 && (
+          <Box sx={{ textAlign: 'center', py: 3 }}>
+            <CheckCircleIcon sx={{ fontSize: 64, color: '#10B981', mb: 2 }} />
+            <Typography variant="h6" fontWeight={700} sx={{ mb: 0.5 }}>
+              {totalImportado === 1
+                ? '1 transação importada com sucesso!'
+                : `${totalImportado} transações importadas com sucesso!`}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              As transações já aparecem no seu orçamento.
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={() => { onSuccess?.(); handleClose() }}
+              sx={{ bgcolor: '#7C6AF7', '&:hover': { bgcolor: '#6355d4' }, fontWeight: 700 }}
+            >
+              Ver no orçamento
+            </Button>
+          </Box>
+        )}
+
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+export default NfceScannerModal

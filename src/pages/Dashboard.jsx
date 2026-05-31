@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { Alert, Box, Divider, Grid, IconButton, Paper, Typography } from '@mui/material'
+import { Alert, Box, Divider, Grid, Paper, Typography } from '@mui/material'
 import PieChartIcon from '@mui/icons-material/PieChart'
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
-import LightbulbIcon from '@mui/icons-material/Lightbulb'
-import CloseIcon from '@mui/icons-material/Close'
 import { Area, AreaChart, ResponsiveContainer, Tooltip } from 'recharts'
 import api from '../services/api'
 
@@ -18,6 +16,7 @@ import GastosPorCategoriaChart from '../components/dashboard/GastosPorCategoriaC
 import DividendosCard from '../components/dashboard/DividendosCard'
 import ScoreSaudeCard from '../components/dashboard/ScoreSaudeCard'
 import ExportarRelatorioButton from '../components/dashboard/ExportarRelatorioButton'
+import InsightEducacionalCard from '../components/InsightEducacionalCard'
 
 const formatBRL = (value) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value ?? 0)
@@ -128,13 +127,8 @@ const Dashboard = () => {
       .catch(() => setInsight(null))
   }, [])
 
-  const handleDismissInsight = () => {
-    if (insight?.id) {
-      // Best-effort: marca como visto no backend; falha silenciosa
-      api.post(`/api/insights/${insight.id}/visto`).catch(() => {})
-    }
-    setInsight(null)
-  }
+  // InsightEducacionalCard chama POST internamente — só precisa setar null após dismiss
+  const handleDismissInsight = () => setInsight(null)
 
   if (loading) return <DashboardSkeleton />
 
@@ -253,54 +247,15 @@ const Dashboard = () => {
         </Grid>
       </Grid>
 
-      {/* INSIGHT EDUCACIONAL — wrapper só renderizado quando há dado: sem gap vazio ──
-          Se insight === null ou undefined, este bloco não existe no DOM.
-          O mt: 2 substitui visualmente o mt: 3 da seção tática quando o card aparece. */}
-      {insight && (
-        <Paper
-          sx={{
-            mt: 2,
-            p: 2,
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: 1.5,
-            border: '1px solid rgba(124,106,247,0.3)',
-            borderRadius: '16px',
-            background: 'rgba(124,106,247,0.05)',
-            boxShadow: 'none',
-          }}
-        >
-          <LightbulbIcon sx={{ color: '#7C6AF7', mt: 0.3, flexShrink: 0, fontSize: 20 }} />
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography
-              variant="caption"
-              sx={{
-                color: '#7C6AF7',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: 0.6,
-                fontSize: 10,
-                display: 'block',
-              }}
-            >
-              💡 {insight.tipoInsight?.replace(/_/g, ' ')}
-            </Typography>
-            <Typography variant="body2" fontWeight={600} sx={{ mt: 0.25 }}>
-              {insight.titulo}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontSize: 13, lineHeight: 1.5 }}>
-              {insight.conteudo}
-            </Typography>
-          </Box>
-          <IconButton
-            size="small"
-            onClick={handleDismissInsight}
-            sx={{ flexShrink: 0, mt: -0.5, color: 'text.disabled' }}
-            aria-label="Fechar insight"
-          >
-            <CloseIcon fontSize="small" />
-          </IconButton>
-        </Paper>
+      {/* InsightEducacionalCard — componente extraído com animação e cor por TipoInsight.
+          Retorna null quando insight === null → sem gap no layout. */}
+      {insight !== undefined && (
+        <Box sx={{ mt: insight ? 2 : 0 }}>
+          <InsightEducacionalCard
+            insight={insight}
+            onDismiss={handleDismissInsight}
+          />
+        </Box>
       )}
 
       {/* SEÇÃO TÁTICA — Evolução do Saldo (md=8) + Composição do Portfólio (md=4) */}

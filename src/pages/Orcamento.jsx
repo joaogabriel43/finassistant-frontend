@@ -6,6 +6,7 @@ import {
 } from '@mui/material';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import AdicionarTransacaoForm from '../components/orcamento/AdicionarTransacaoForm';
 import GastosPorCategoriaChart from '../components/dashboard/GastosPorCategoriaChart';
@@ -13,6 +14,7 @@ import ListaTransacoes from '../components/orcamento/ListaTransacoes';
 import ComparativoCard from '../components/orcamento/ComparativoCard';
 import AnomaliaAlert from '../components/orcamento/AnomaliaAlert';
 import ImportacaoExtratoModal from '../components/orcamento/ImportacaoExtratoModal';
+import NfceScannerModal from '../components/orcamento/NfceScannerModal';
 import RecorrenciasCard from '../components/orcamento/RecorrenciasCard';
 import { useExportacao } from '../hooks/useExportacao';
 import api from '../services/api';
@@ -35,6 +37,7 @@ const Orcamento = () => {
     const [pageLoading, setPageLoading] = useState(true);
     const [refreshKey, setRefreshKey] = useState(0);
     const [extratoModalOpen, setExtratoModalOpen] = useState(false);
+    const [nfceOpen, setNfceOpen] = useState(false);
     const now = new Date();
     const [mesSelecionado, setMesSelecionado] = useState(now.getMonth() + 1);
     const [anoSelecionado, setAnoSelecionado] = useState(now.getFullYear());
@@ -89,23 +92,42 @@ const Orcamento = () => {
 
     return (
         <Box sx={{ width: '100%', maxWidth: 1200, mx: 'auto', px: { xs: 1.5, md: 3 }, py: 2 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 1 }}>
                 <Typography variant="h5" sx={{ fontWeight: 700 }}>
                     Painel de Orçamento
                 </Typography>
-                <Button
-                    variant="outlined"
-                    startIcon={<UploadFileIcon />}
-                    onClick={() => setExtratoModalOpen(true)}
-                >
-                    Importar Extrato
-                </Button>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button
+                        variant="outlined"
+                        startIcon={<QrCodeScannerIcon />}
+                        onClick={() => setNfceOpen(true)}
+                        sx={{ borderColor: 'rgba(255,255,255,0.2)' }}
+                    >
+                        📄 Escanear NF-e
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        startIcon={<UploadFileIcon />}
+                        onClick={() => setExtratoModalOpen(true)}
+                    >
+                        Importar Extrato
+                    </Button>
+                </Box>
             </Box>
 
             <ImportacaoExtratoModal
                 open={extratoModalOpen}
                 onClose={() => setExtratoModalOpen(false)}
                 onImported={handleExtratoImported}
+            />
+
+            <NfceScannerModal
+                open={nfceOpen}
+                onClose={() => setNfceOpen(false)}
+                onSuccess={() => {
+                    setNfceOpen(false);
+                    setRefreshKey((k) => k + 1); // recarrega lista de transações
+                }}
             />
 
             {/* Anomalias detectadas */}
