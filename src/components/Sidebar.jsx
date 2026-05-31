@@ -46,31 +46,35 @@ const Sidebar = () => {
           gap: 1,
         }}
       >
-        <Box sx={{ minWidth: 0 }}>
+        {/* Esquerda: logo + subtítulo apenas — sem badge aqui */}
+        <Box sx={{ minWidth: 0, overflow: 'hidden' }}>
           <Typography
             variant="h6"
             fontWeight={700}
+            noWrap
             sx={{ color: '#7C6AF7', letterSpacing: '-0.5px', lineHeight: 1.2 }}
           >
             FortunAI
           </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.25 }}>
-            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 11 }}>
-              Assistente Financeiro
-            </Typography>
-            <PlanoBadge />
-          </Box>
+          <Typography
+            variant="caption"
+            noWrap
+            sx={{ color: 'text.secondary', fontSize: 11, display: 'block' }}
+          >
+            Assistente Financeiro
+          </Typography>
         </Box>
 
-        {/* Notificações + Avatar — visível apenas em desktop (md+) */}
+        {/* Direita: [PlanoBadge] [Notificações] [Avatar] — alinhados em linha */}
         <Box
           sx={{
             display: { xs: 'none', md: 'flex' },
             alignItems: 'center',
             flexShrink: 0,
-            gap: 0.5,   // 4px — evita sobreposição entre sino, PlanoBadge e avatar
+            gap: 0.75,
           }}
         >
+          <PlanoBadge />
           <NotificacoesBadge />
           <UserMenu />
         </Box>
