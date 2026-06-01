@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { Box, CircularProgress, Container, Typography } from '@mui/material'
+import { Box, CircularProgress, Typography } from '@mui/material'
 
 /**
  * Página pública dos Termos de Uso — rota /termos.
  * Acessível sem login. Renderiza markdown de /termos-de-uso.md.
+ * Tem scroll completo — sem Layout wrapper que restrinja overflow.
  */
 const TermosUsoPage = () => {
   const [conteudo, setConteudo] = useState('')
@@ -26,20 +27,23 @@ const TermosUsoPage = () => {
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: 6 }}>
+    /* Wrapper com overflow próprio — garante scroll mesmo sem Layout pai */
+    <Box
+      sx={{
+        minHeight: '100vh',
+        overflowY: 'auto',
+        bgcolor: '#0a0a0f',
+      }}
+    >
       <Box
-        component="article"
         sx={{
-          '& h1': { variant: 'h4', fontWeight: 700, mb: 2, color: '#7C6AF7' },
-          '& h2': { variant: 'h6', fontWeight: 600, mt: 4, mb: 1 },
-          '& h3': { fontWeight: 600, mt: 3, mb: 1, fontSize: '1rem' },
-          '& p': { color: 'text.secondary', lineHeight: 1.8, mb: 1.5 },
-          '& ul, & ol': { pl: 3, color: 'text.secondary', lineHeight: 1.8 },
-          '& strong': { color: 'text.primary', fontWeight: 600 },
-          '& hr': { borderColor: 'rgba(255,255,255,0.08)', my: 3 },
+          maxWidth: 800,
+          mx: 'auto',
+          py: 4,
+          px: { xs: 2, md: 4 },
         }}
+        component="article"
       >
-        {/* Renderização simples de markdown sem dependências externas */}
         {conteudo.split('\n').map((linha, i) => {
           if (linha.startsWith('# '))
             return <Typography key={i} variant="h4" fontWeight={700} sx={{ color: '#7C6AF7', mb: 2 }}>{linha.slice(2)}</Typography>
@@ -50,12 +54,15 @@ const TermosUsoPage = () => {
           if (linha.startsWith('---'))
             return <Box key={i} sx={{ borderTop: '1px solid rgba(255,255,255,0.08)', my: 3 }} />
           if (linha.startsWith('- '))
-            return <Typography key={i} component="li" variant="body2" color="text.secondary" sx={{ ml: 3, lineHeight: 1.8 }}>{linha.slice(2)}</Typography>
+            return (
+              <Typography key={i} component="li" variant="body2" color="text.secondary" sx={{ ml: 3, lineHeight: 1.8 }}>
+                {linha.slice(2)}
+              </Typography>
+            )
           if (linha.trim() === '')
             return <Box key={i} sx={{ mb: 1 }} />
           return (
             <Typography key={i} variant="body2" color="text.secondary" sx={{ lineHeight: 1.8, mb: 1 }}>
-              {/* Renderiza **bold** simples */}
               {linha.split(/\*\*(.+?)\*\*/g).map((parte, j) =>
                 j % 2 === 1 ? <strong key={j}>{parte}</strong> : parte
               )}
@@ -63,7 +70,7 @@ const TermosUsoPage = () => {
           )
         })}
       </Box>
-    </Container>
+    </Box>
   )
 }
 

@@ -1,10 +1,13 @@
 import React, { Suspense, lazy, useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import PageLoader from './components/ui/PageLoader';
 import ConsentimentoModal from './components/ConsentimentoModal';
+import TutorialOnboarding from './components/onboarding/TutorialOnboarding';
+import PWAInstallBanner from './components/pwa/PWAInstallBanner';
+import OfflinePage from './components/pwa/OfflinePage';
 import api from './services/api';
 
 const LoginPage               = lazy(() => import('./pages/LoginPage'));
@@ -26,11 +29,24 @@ const TermosUsoPage           = lazy(() => import('./pages/TermosUsoPage'));
 const PoliticaPrivacidadePage = lazy(() => import('./pages/PoliticaPrivacidadePage'));
 
 /**
- * Wrapper interno (dentro de AuthProvider) — verifica consentimento LGPD após login.
- * Exibe ConsentimentoModal se o usuário autenticado não consentiu com a versão vigente.
+ * Rotas onde o ConsentimentoModal NÃO deve aparecer:
+ * - Páginas legais (usuário precisa conseguir LER antes de aceitar)
+ * - Páginas públicas de auth (sem sessão ativa ainda)
+ */
+const ROTAS_SEM_MODAL = ['/termos', '/privacidade', '/login', '/registrar', '/status'];
+
+/**
+ * Wrapper interno (dentro de AuthProvider + Router) — controla os overlays globais:
+ * 1. ConsentimentoModal LGPD — exibido PRIMEIRO, bloqueia tutorial até aceite
+ * 2. TutorialOnboarding — exibido APÓS consentimento aceito
+ * 3. PWAInstallBanner e OfflinePage — sem restrição de consentimento
+ *
+ * FIX: ConsentimentoModal suprimido em /termos e /privacidade para que o usuário
+ * consiga ler os documentos antes de aceitar.
  */
 function AppContent({ children }) {
     const { user } = useAuth();
+    const location = useLocation();
     const [consentimentoPendente, setConsentimentoPendente] = useState(false);
 
     useEffect(() => {
@@ -40,14 +56,26 @@ function AppContent({ children }) {
             .catch(() => { /* falha silenciosa — não bloqueia o uso */ });
     }, [user?.id]);
 
+    // Modal só aparece em rotas que não sejam as páginas legais/auth
+    const exibirModal = consentimentoPendente &&
+        !ROTAS_SEM_MODAL.includes(location.pathname);
+
     return (
         <>
             {children}
-            {/* ConsentimentoModal LGPD sobrepõe qualquer tela quando pendente */}
+
+            {/* ConsentimentoModal — PRIMEIRO overlay (bloqueia tutorial enquanto pendente) */}
             <ConsentimentoModal
-                open={consentimentoPendente}
+                open={exibirModal}
                 onAceitar={() => setConsentimentoPendente(false)}
             />
+
+            {/* TutorialOnboarding — só exibido APÓS consentimento aceito
+                Se consentimentoPendente, não renderiza para evitar conflito de overlays */}
+            {!consentimentoPendente && <TutorialOnboarding />}
+
+            <PWAInstallBanner />
+            <OfflinePage />
         </>
     );
 }
