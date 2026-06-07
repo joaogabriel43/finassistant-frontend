@@ -1,9 +1,10 @@
+// Consolidado no design system D4 — fonte única em src/components/ui.
+// Mantido como shim para compatibilidade com os imports existentes.
+export { formatBRL, formatBRLShort } from '../components/ui'
+import { formatBRL } from '../components/ui'
+
 /**
- * Formata um valor numérico como moeda brasileira (BRL).
- * Exemplo: 1234.56 → "R$ 1.234,56"
- *
- * @param {number} value - Valor a formatar.
- * @returns {string} Valor formatado no padrão pt-BR.
+ * @deprecated Use `formatBRL` de '@/components/ui'.
+ * Mantido como alias para não quebrar os imports legados.
  */
-export const formatCurrency = (value) =>
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value ?? 0)
+export const formatCurrency = formatBRL

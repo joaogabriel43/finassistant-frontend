@@ -5,7 +5,6 @@ import {
 } from '@mui/material'
 import CameraAltIcon from '@mui/icons-material/CameraAlt'
 import { useAuth } from '../contexts/AuthContext'
-import { useColorMode } from '../contexts/ColorModeContext'
 import { configuracaoService } from '../services/configuracaoService'
 import ExclusaoContaModal from '../components/ExclusaoContaModal'
 
@@ -158,7 +157,6 @@ function PrefsRow({ label, desc, checked, onChange }) {
 }
 
 function TabNotificacoes({ onSuccess }) {
-  const { mode, setMode } = useColorMode()
   const [prefs, setPrefs] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -166,7 +164,7 @@ function TabNotificacoes({ onSuccess }) {
   useEffect(() => {
     configuracaoService.getPreferencias()
       .then(setPrefs)
-      .catch(() => setPrefs({ temaEscuro: mode === 'dark', notificacaoEmailAtiva: true, digestSemanalAtivo: true }))
+      .catch(() => setPrefs({ temaEscuro: true, notificacaoEmailAtiva: true, digestSemanalAtivo: true }))
       .finally(() => setLoading(false))
   }, [])
 
@@ -175,8 +173,7 @@ function TabNotificacoes({ onSuccess }) {
   const handleSalvar = async () => {
     setSaving(true)
     try {
-      const saved = await configuracaoService.atualizarPreferencias(prefs)
-      setMode(saved.temaEscuro)
+      await configuracaoService.atualizarPreferencias(prefs)
       onSuccess('Preferencias salvas com sucesso')
     } catch {
       onSuccess('Erro ao salvar preferencias')
@@ -189,13 +186,6 @@ function TabNotificacoes({ onSuccess }) {
 
   return (
     <Stack spacing={3}>
-      <PrefsRow
-        label="Tema escuro"
-        desc="Interface com fundo escuro (recomendado)"
-        checked={prefs.temaEscuro}
-        onChange={() => toggle('temaEscuro')}
-      />
-      <Divider />
       <PrefsRow
         label="Notificacoes por e-mail"
         desc="Receba alertas de preco e orcamento por e-mail"

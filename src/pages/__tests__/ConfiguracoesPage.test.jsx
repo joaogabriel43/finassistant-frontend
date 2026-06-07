@@ -23,10 +23,6 @@ vi.mock('../../contexts/AuthContext', () => ({
   }),
 }))
 
-vi.mock('../../contexts/ColorModeContext', () => ({
-  useColorMode: () => ({ mode: 'dark', toggleMode: vi.fn(), setMode: vi.fn() }),
-}))
-
 vi.mock('../../services/configuracaoService', () => ({
   configuracaoService: mockService,
 }))
@@ -151,7 +147,9 @@ describe('Configuracoes — pagina de configuracoes', () => {
     await waitFor(() => {
       expect(mockService.getPreferencias).toHaveBeenCalled()
     })
-    expect(screen.getByText(/tema escuro/i)).toBeInTheDocument()
+    // Dark-only (D4): o toggle "Tema escuro" foi removido; valida outra preferência
+    expect(screen.getByText(/notificacoes por e-mail/i)).toBeInTheDocument()
+    expect(screen.getByText(/digest semanal/i)).toBeInTheDocument()
   })
 
   // Testes atualizados para o novo fluxo LGPD (ExclusaoContaModal com "EXCLUIR")

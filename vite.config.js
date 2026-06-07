@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { fileURLToPath, URL } from 'node:url'
 
 // Vite configuration with explicit proxy to Spring Boot backend on port 3333
 export default defineConfig({
@@ -52,6 +53,12 @@ export default defineConfig({
       }
     })
   ],
+  resolve: {
+    alias: {
+      // Alias '@' -> /src (usado pelo design system D4: '@/theme', '@/components/ui')
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
   define: {
     // sockjs-client uses Node.js `global` — map it to browser globalThis
     global: 'globalThis',
