@@ -13,9 +13,20 @@ vi.mock('../../services/api', () => ({
   default: { post: vi.fn(), get: vi.fn() },
 }))
 
+import { ThemeProvider } from '@mui/material/styles'
+import theme from '../../theme'
 import ChatPage from '../Chat'
 import { useAuth } from '../../contexts/AuthContext'
 import api from '../../services/api'
+
+// Chat usa tokens D4 customizados (palette.surfaces/lines/accent) — precisa do tema do app.
+const PLACEHOLDER = 'Pergunte ou registre algo em português...'
+const renderChat = () =>
+  render(
+    <ThemeProvider theme={theme}>
+      <ChatPage />
+    </ThemeProvider>
+  )
 
 const mockUser = {
   id: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
@@ -39,9 +50,9 @@ describe('Chat — integração anomalias', () => {
       },
     })
 
-    render(<ChatPage />)
+    renderChat()
 
-    const input = screen.getByPlaceholderText('Digite sua mensagem...')
+    const input = screen.getByPlaceholderText(PLACEHOLDER)
     fireEvent.change(input, { target: { value: 'como estão meus gastos' } })
     fireEvent.submit(input.closest('form'))
 
@@ -64,9 +75,9 @@ describe('Chat — integração anomalias', () => {
       },
     })
 
-    render(<ChatPage />)
+    renderChat()
 
-    const input = screen.getByPlaceholderText('Digite sua mensagem...')
+    const input = screen.getByPlaceholderText(PLACEHOLDER)
     fireEvent.change(input, { target: { value: 'gastos do mês' } })
     fireEvent.submit(input.closest('form'))
 

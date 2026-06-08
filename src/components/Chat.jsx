@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Box, TextField, Button, Paper, List, ListItem, Typography, IconButton, Skeleton } from '@mui/material';
+import { Box, TextField, Button, Paper, Typography, IconButton, Skeleton, Chip, useTheme } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
@@ -13,6 +13,16 @@ import PremiumBanner from './plano/PremiumBanner';
 
 const MENSAGEM_BEM_VINDO = { text: 'Olá! Eu sou o Fortunai. Como posso te ajudar hoje?', sender: 'bot' };
 
+// Sugestões iniciais — mapeiam para intents reais do ChatService.
+const SUGESTOES = [
+    'Quanto gastei esse mês?',
+    'Registrar um gasto',
+    'Como está meu portfólio?',
+    'Cotação da PETR4',
+];
+
+const PLACEHOLDER = 'Pergunte ou registre algo em português...';
+
 // API helpers para histórico de chat persistido no backend
 const buscarHistorico = async (limite = 50) => {
     const res = await api.get(`/chat/historico?limite=${limite}`);
@@ -23,7 +33,17 @@ const limparHistoricoBackend = async () => {
     await api.delete('/chat/historico');
 };
 
+// Ícone "spark" do design system D4 (SVG puro).
+function SparkIcon({ size = 16 }) {
+    return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 3l2 6 6 .5-4.5 4 1.5 6-5-3.5-5 3.5 1.5-6L4 9.5 10 9z" />
+        </svg>
+    );
+}
+
 const Chat = () => {
+    const theme = useTheme();
     const { user } = useAuth();
     const userKey = user?.id ?? user?.email ?? user?.username ?? 'anon';
 
@@ -37,7 +57,6 @@ const Chat = () => {
         } catch (_) { /* ignore */ }
     }, []);
 
-    // Helper de reidratação de sessão por usuário (mantido em localStorage — é leve e efêmero)
     const loadSessionId = (k) => {
         try {
             return localStorage.getItem(keySession(k)) || uuidv4();
@@ -59,8 +78,6 @@ const Chat = () => {
     const messagesEndRef = useRef(null);
 
     // Carrega histórico do backend ao montar (ou quando o usuário mudar).
-    // Usa flag de cancelamento para não sobrescrever mensagens caso o usuário
-    // já tenha interagido com o chat enquanto o histórico carregava.
     useEffect(() => {
         if (!user?.id) return;
 
@@ -73,7 +90,6 @@ const Chat = () => {
                 setLoadingHistorico(true);
                 const historico = await buscarHistorico(50);
                 if (cancelado) return;
-                // Mapeia ChatHistoricoDTO → formato local { text, sender }
                 const mensagens = historico.map((dto) => ({
                     id: dto.id,
                     text: dto.conteudo,
@@ -81,7 +97,6 @@ const Chat = () => {
                     timestamp: dto.criadoEm,
                     sessaoId: dto.sessaoId,
                 }));
-                // Só sobrescreve se o usuário ainda não iniciou a conversa (evita race condition)
                 setMessages((prev) => {
                     const apenasBoasVindas = prev.length === 1 && prev[0].text === MENSAGEM_BEM_VINDO.text;
                     if (!apenasBoasVindas) return prev;
@@ -90,7 +105,6 @@ const Chat = () => {
             } catch (e) {
                 if (cancelado) return;
                 console.warn('Falha ao carregar histórico — iniciando chat vazio', e);
-                // Não altera estado em erro — a mensagem de boas-vindas já está lá como fallback
             } finally {
                 if (!cancelado) setLoadingHistorico(false);
             }
@@ -116,7 +130,6 @@ const Chat = () => {
     const handleDownloadAutenticado = async (url, label) => {
         try {
             const token = localStorage.getItem('authToken');
-            // url is like "/api/exportacao/extrato?mes=5&ano=2026"
             const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3333/api';
             const fullUrl = url.startsWith('http') ? url : `${baseUrl.replace(/\/api$/, '')}${url}`;
             const response = await fetch(fullUrl, {
@@ -137,12 +150,13 @@ const Chat = () => {
         }
     };
 
-    const handleSend = async (e) => {
-        e.preventDefault();
-        if (!input.trim()) return;
-        const userMessage = { text: input, sender: 'user' };
+    // Núcleo de envio — reaproveitado pelo form e pelos chips de sugestão.
+    const enviarMensagem = async (texto) => {
+        const conteudo = (texto ?? '').trim();
+        if (!conteudo || loadingResposta) return;
+
+        const userMessage = { text: conteudo, sender: 'user' };
         setMessages((prev) => [...prev, userMessage]);
-        const currentInput = input;
         setInput('');
 
         const typingMessage = { text: 'Assistente está digitando...', sender: 'bot', typing: true };
@@ -151,7 +165,7 @@ const Chat = () => {
 
         try {
             const response = await api.post('/chat/enviar', {
-                mensagem: currentInput,
+                mensagem: conteudo,
                 idSessao: sessionId,
             });
             const data = response.data;
@@ -160,7 +174,7 @@ const Chat = () => {
         } catch (error) {
             console.error('Falha ao enviar mensagem:', error);
             if (error.response?.status === 429 || error.response?.status === 403) {
-                const data = error.response.data
+                const data = error.response.data;
                 setMessages((prev) => prev.filter((m) => !m.typing));
                 setPlanoBloqueio({ recurso: data.recurso, uso: null });
                 return;
@@ -170,6 +184,11 @@ const Chat = () => {
         } finally {
             setLoadingResposta(false);
         }
+    };
+
+    const handleSend = (e) => {
+        e.preventDefault();
+        enviarMensagem(input);
     };
 
     const handleFileSelect = (e) => {
@@ -189,10 +208,11 @@ const Chat = () => {
             await limparHistoricoBackend();
         } catch (e) {
             console.warn('Falha ao limpar histórico no backend', e);
-            // Continua — limpa estado local mesmo assim
         }
         setMessages([MENSAGEM_BEM_VINDO]);
     };
+
+    const mostrarSugestoes = !loadingHistorico && messages.length <= 1;
 
     return (
         <Box
@@ -205,58 +225,153 @@ const Chat = () => {
                 px: { xs: 1.5, md: 3 },
                 py: 2,
                 width: '100%',
+                boxSizing: 'border-box',
             }}
         >
-            <Typography variant="h5" gutterBottom>
-                Fortunai
-            </Typography>
+            {/* ── Header com avatar gradiente + status online ─────────────── */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2, flexShrink: 0 }}>
+                <Box
+                    sx={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#fff',
+                        background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                        boxShadow: '0 4px 16px rgba(124,106,247,0.4)',
+                    }}
+                >
+                    <SparkIcon size={22} />
+                </Box>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography variant="h6" fontWeight={700} sx={{ lineHeight: 1.1 }}>
+                        Fortunai
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <Box
+                            sx={{
+                                width: 7,
+                                height: 7,
+                                borderRadius: '50%',
+                                bgcolor: 'success.main',
+                                '@keyframes faPulse': {
+                                    '0%, 100%': { opacity: 1 },
+                                    '50%': { opacity: 0.35 },
+                                },
+                                animation: 'faPulse 1.8s ease-in-out infinite',
+                            }}
+                        />
+                        <Typography variant="caption" color="text.secondary">
+                            online · entende português natural
+                        </Typography>
+                    </Box>
+                </Box>
+                <IconButton onClick={limparChat} aria-label="limpar chat" title="Limpar chat" size="small">
+                    <DeleteIcon fontSize="small" />
+                </IconButton>
+            </Box>
 
-            <Paper
-                elevation={3}
+            {/* ── Corpo das mensagens ────────────────────────────────────── */}
+            <Box
                 sx={{
                     flexGrow: 1,
                     overflowY: 'auto',
-                    p: 2,
+                    px: { xs: 0.5, md: 1 },
+                    py: 1,
                     mb: 2,
                 }}
             >
                 {loadingHistorico && (
-                    <Box sx={{ px: 2, py: 1 }}>
+                    <Box sx={{ px: 1, py: 1 }}>
                         {Array.from({ length: 3 }).map((_, i) => (
-                            <Box key={i} sx={{ display: 'flex', mb: 1.5,
-                                justifyContent: i % 2 === 0 ? 'flex-end' : 'flex-start' }}>
+                            <Box key={i} sx={{ display: 'flex', mb: 1.5, justifyContent: i % 2 === 0 ? 'flex-end' : 'flex-start' }}>
                                 <Skeleton
                                     animation="wave"
                                     variant="rectangular"
-                                    height={60}
+                                    height={56}
                                     width={`${55 + (i * 10)}%`}
                                     sx={{
                                         bgcolor: 'rgba(255,255,255,0.05)',
-                                        borderRadius: i % 2 === 0
-                                            ? '18px 18px 4px 18px'
-                                            : '18px 18px 18px 4px',
+                                        borderRadius: i % 2 === 0 ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
                                     }}
                                 />
                             </Box>
                         ))}
                     </Box>
                 )}
-                <List>
-                    {messages.map((msg, index) => (
-                        <ListItem key={index} sx={{ justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start' }}>
+
+                {messages.map((msg, index) => {
+                    const isUser = msg.sender === 'user';
+                    return (
+                        <Box
+                            key={index}
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'flex-end',
+                                gap: 1,
+                                mb: 1.75,
+                                justifyContent: isUser ? 'flex-end' : 'flex-start',
+                            }}
+                        >
+                            {!isUser && (
+                                <Box
+                                    sx={{
+                                        width: 28,
+                                        height: 28,
+                                        borderRadius: '50%',
+                                        flexShrink: 0,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: '#fff',
+                                        background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                                    }}
+                                >
+                                    <SparkIcon size={14} />
+                                </Box>
+                            )}
+
                             <Paper
-                                elevation={2}
+                                elevation={0}
                                 sx={{
-                                    bgcolor: msg.sender === 'user' ? 'primary.main' : 'background.paper',
-                                    color: msg.sender === 'user' ? 'primary.contrastText' : 'text.primary',
                                     p: 1.5,
-                                    borderRadius: 2,
-                                    maxWidth: '75%'
+                                    maxWidth: '78%',
+                                    border: 'none',
+                                    borderRadius: isUser ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                                    color: isUser ? '#fff' : 'text.primary',
+                                    background: isUser
+                                        ? `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`
+                                        : theme.palette.surfaces.raised,
                                 }}
                             >
-                                <Typography component="span" sx={{ whiteSpace: 'pre-wrap' }}>
-                                    {msg.typing ? 'Assistente está digitando...' : (msg.sender === 'bot' ? formatCurrencyInText(msg.text) : msg.text)}
-                                </Typography>
+                                {msg.typing ? (
+                                    <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', py: 0.5 }}>
+                                        {[0, 1, 2].map((d) => (
+                                            <Box
+                                                key={d}
+                                                sx={{
+                                                    width: 7,
+                                                    height: 7,
+                                                    borderRadius: '50%',
+                                                    bgcolor: 'text.disabled',
+                                                    '@keyframes faTyping': {
+                                                        '0%, 60%, 100%': { transform: 'translateY(0)', opacity: 0.4 },
+                                                        '30%': { transform: 'translateY(-4px)', opacity: 1 },
+                                                    },
+                                                    animation: 'faTyping 1.2s ease-in-out infinite',
+                                                    animationDelay: `${d * 0.18}s`,
+                                                }}
+                                            />
+                                        ))}
+                                    </Box>
+                                ) : (
+                                    <Typography component="span" sx={{ whiteSpace: 'pre-wrap', fontSize: '0.92rem', lineHeight: 1.5 }}>
+                                        {isUser ? msg.text : formatCurrencyInText(msg.text)}
+                                    </Typography>
+                                )}
+
                                 {msg.acao?.tipo === 'DOWNLOAD' && (
                                     <Box sx={{ mt: 1 }}>
                                         <Button
@@ -264,24 +379,18 @@ const Chat = () => {
                                             size="small"
                                             startIcon={<DownloadIcon />}
                                             onClick={() => handleDownloadAutenticado(msg.acao.url, msg.acao.label)}
-                                            sx={{
-                                                borderColor: 'rgba(124,58,237,0.5)',
-                                                color: '#7C3AED',
-                                                textTransform: 'none',
-                                                fontSize: 12,
-                                                '&:hover': { borderColor: '#7C3AED', bgcolor: 'rgba(124,58,237,0.08)' },
-                                            }}
+                                            sx={{ textTransform: 'none', fontSize: 12 }}
                                         >
                                             {msg.acao.label}
                                         </Button>
                                     </Box>
                                 )}
                             </Paper>
-                        </ListItem>
-                    ))}
-                </List>
+                        </Box>
+                    );
+                })}
                 <div ref={messagesEndRef} />
-            </Paper>
+            </Box>
 
             {planoBloqueio && (
                 <Box sx={{ mb: 1.5, flexShrink: 0 }}>
@@ -293,43 +402,81 @@ const Chat = () => {
                 </Box>
             )}
 
-            <Box component="form" onSubmit={handleSend} sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                <TextField
-                    fullWidth
-                    variant="outlined"
-                    placeholder="Digite sua mensagem..."
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    autoFocus
-                />
-                <Button type="submit" variant="contained" sx={{ ml: 1, p: '15px' }} endIcon={<SendIcon />} disabled={loadingResposta}>
-                    Enviar
-                </Button>
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    style={{ display: 'none' }}
-                    accept=".pdf,.png,.jpg,.jpeg"
-                    onChange={handleFileSelect}
-                />
-                <IconButton
-                    color="primary"
-                    onClick={() => fileInputRef.current?.click()}
-                    sx={{ ml: 1 }}
-                    aria-label="upload comprovante"
-                    title="Enviar comprovante"
+            {/* ── Composer: sugestões + barra de input ───────────────────── */}
+            <Box sx={{ flexShrink: 0 }}>
+                {mostrarSugestoes && (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1.5 }}>
+                        {SUGESTOES.map((s) => (
+                            <Chip
+                                key={s}
+                                label={s}
+                                onClick={() => enviarMensagem(s)}
+                                variant="outlined"
+                                sx={{
+                                    cursor: 'pointer',
+                                    borderColor: 'lines.strong',
+                                    '&:hover': { borderColor: 'primary.main', bgcolor: 'accent.primarySoft' },
+                                }}
+                            />
+                        ))}
+                    </Box>
+                )}
+
+                <Paper
+                    component="form"
+                    onSubmit={handleSend}
+                    elevation={0}
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.5,
+                        p: 0.5,
+                        pl: 1.5,
+                        borderRadius: 999,
+                        bgcolor: 'surfaces.raised',
+                    }}
                 >
-                    <AttachFileIcon />
-                </IconButton>
-                <IconButton
-                    color="secondary"
-                    onClick={limparChat}
-                    sx={{ ml: 1 }}
-                    aria-label="limpar chat"
-                    title="Limpar chat"
-                >
-                    <DeleteIcon />
-                </IconButton>
+                    <Box sx={{ color: 'primary.main', display: 'flex', flexShrink: 0 }}>
+                        <SparkIcon size={18} />
+                    </Box>
+                    <TextField
+                        fullWidth
+                        variant="standard"
+                        placeholder={PLACEHOLDER}
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        autoFocus
+                        InputProps={{ disableUnderline: true, sx: { fontSize: '0.92rem' } }}
+                    />
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        style={{ display: 'none' }}
+                        accept=".pdf,.png,.jpg,.jpeg"
+                        onChange={handleFileSelect}
+                    />
+                    <IconButton
+                        onClick={() => fileInputRef.current?.click()}
+                        aria-label="upload comprovante"
+                        title="Enviar comprovante"
+                        size="small"
+                    >
+                        <AttachFileIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton
+                        type="submit"
+                        aria-label="Enviar"
+                        disabled={loadingResposta}
+                        sx={{
+                            color: '#fff',
+                            background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                            '&:hover': { boxShadow: '0 0 16px rgba(124,106,247,0.5)' },
+                            '&.Mui-disabled': { color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.08)' },
+                        }}
+                    >
+                        <SendIcon fontSize="small" />
+                    </IconButton>
+                </Paper>
             </Box>
 
             <UploadComprovanteModal
@@ -340,4 +487,5 @@ const Chat = () => {
         </Box>
     );
 };
+
 export default Chat;
