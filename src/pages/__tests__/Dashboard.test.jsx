@@ -1,7 +1,18 @@
 import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
+import { ThemeProvider } from '@mui/material/styles'
+import theme from '../../theme'
 import Dashboard from '../Dashboard'
+
+// Dashboard usa tokens D4 customizados (palette.lines/surfaces/accent/series),
+// portanto precisa do ThemeProvider com o tema do app — como em produção.
+const renderDash = () =>
+  render(
+    <ThemeProvider theme={theme}>
+      <Dashboard />
+    </ThemeProvider>
+  )
 
 // --- MOCK: AuthContext ---
 const mockUser = {
@@ -89,7 +100,7 @@ describe('Dashboard', () => {
   // --- Teste 1 --- KPI Cards renderizam com dados mockados
   it('renderiza KPI cards com valores formatados em R$', async () => {
     setupApiMocks(api)
-    render(<Dashboard />)
+    renderDash()
 
     await waitFor(() => {
       expect(screen.getByText('Saldo Atual')).toBeInTheDocument()
@@ -105,7 +116,7 @@ describe('Dashboard', () => {
   // --- Teste 2 --- Lista de transações
   it('renderiza lista com 5 transações e tipos corretos', async () => {
     setupApiMocks(api)
-    render(<Dashboard />)
+    renderDash()
 
     await waitFor(() => {
       expect(screen.getByText('Mercado')).toBeInTheDocument()
@@ -133,7 +144,7 @@ describe('Dashboard', () => {
       transacoes: [],
       portfolio: [],
     })
-    render(<Dashboard />)
+    renderDash()
 
     await waitFor(() => {
       expect(screen.getAllByTestId('empty-state').length).toBeGreaterThanOrEqual(1)
@@ -147,7 +158,7 @@ describe('Dashboard', () => {
   it('exibe skeleton durante carregamento', async () => {
     // Promessas que nunca resolvem = loading infinito
     api.get = vi.fn(() => new Promise(() => {}))
-    render(<Dashboard />)
+    renderDash()
 
     expect(screen.getAllByTestId('skeleton').length).toBeGreaterThanOrEqual(1)
     expect(screen.queryByTestId('kpi-card')).toBeNull()
@@ -156,7 +167,7 @@ describe('Dashboard', () => {
   // --- Teste 5 --- Gráfico donut com dados de portfólio
   it('renderiza nomes dos ativos no gráfico de portfólio', async () => {
     setupApiMocks(api)
-    render(<Dashboard />)
+    renderDash()
 
     await waitFor(() => {
       expect(screen.getByText('PETR4')).toBeInTheDocument()
@@ -168,7 +179,7 @@ describe('Dashboard', () => {
 
   it('exibe empty-state de portfólio quando não há ativos', async () => {
     setupApiMocks(api, { portfolio: [] })
-    render(<Dashboard />)
+    renderDash()
 
     await waitFor(() => {
       expect(screen.getByText('Adicione ativos para ver sua composição')).toBeInTheDocument()
@@ -178,7 +189,7 @@ describe('Dashboard', () => {
   // --- Teste 6 --- Gráfico de evolução de saldo
   it('renderiza gráfico de evolução do saldo com dados mockados', async () => {
     setupApiMocks(api)
-    render(<Dashboard />)
+    renderDash()
 
     await waitFor(() => {
       expect(screen.getByTestId('evolucao-saldo-chart')).toBeInTheDocument()
@@ -190,7 +201,7 @@ describe('Dashboard', () => {
   // --- Teste 7 --- Gráfico de evolução em estado vazio
   it('exibe empty-state de evolução quando não há movimentações', async () => {
     setupApiMocks(api, { evolucao: [] })
-    render(<Dashboard />)
+    renderDash()
 
     await waitFor(() => {
       expect(screen.getByText('Nenhuma movimentação registrada ainda')).toBeInTheDocument()
