@@ -1,5 +1,6 @@
 import React from 'react'
 import { Box } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import {
   AreaChart,
   Area,
@@ -33,7 +34,15 @@ const formatBRL = (val) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
 
 export default function SaldoLineChart({ data, height = 240 }) {
+  const theme = useTheme()
+
   if (!data || data.length === 0) return null
+
+  const corLinha = theme.palette.primary.main
+  const corEixo = theme.palette.text.secondary
+  const corFundoTooltip = theme.palette.background.paper
+  const corBorda = theme.palette.divider
+  const corFundoGrafico = theme.palette.background.default
 
   return (
     <Box data-testid="evolucao-saldo-chart">
@@ -41,35 +50,36 @@ export default function SaldoLineChart({ data, height = 240 }) {
         <AreaChart data={data} margin={{ top: 5, right: 20, bottom: 5, left: 60 }}>
           <defs>
             <linearGradient id="saldoGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#7C6AF7" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#7C6AF7" stopOpacity={0.0} />
+              <stop offset="5%" stopColor={corLinha} stopOpacity={0.3} />
+              <stop offset="95%" stopColor={corLinha} stopOpacity={0.0} />
             </linearGradient>
           </defs>
           <CartesianGrid
             strokeDasharray="3 3"
-            stroke="rgba(255,255,255,0.04)"
+            stroke={corBorda}
             vertical={false}
           />
           <XAxis
             dataKey="data"
             tickFormatter={formatDate}
-            tick={{ fill: '#8B8BA8', fontSize: 11 }}
+            tick={{ fill: corEixo, fontSize: 11 }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis
             tickFormatter={formatCurrency}
-            tick={{ fill: '#8B8BA8', fontSize: 11 }}
+            tick={{ fill: corEixo, fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             width={56}
           />
           <Tooltip
             contentStyle={{
-              background: '#1A1A24',
-              border: '1px solid rgba(255,255,255,0.08)',
+              background: corFundoTooltip,
+              border: `1px solid ${corBorda}`,
               borderRadius: 8,
               fontSize: 12,
+              fontFamily: theme.typography.fontFamilyMono,
             }}
             labelFormatter={formatDateLong}
             formatter={(val) => [formatBRL(val), 'Saldo']}
@@ -77,11 +87,11 @@ export default function SaldoLineChart({ data, height = 240 }) {
           <Area
             type="monotone"
             dataKey="saldo"
-            stroke="#7C6AF7"
+            stroke={corLinha}
             strokeWidth={2}
             fill="url(#saldoGradient)"
-            dot={{ fill: '#7C6AF7', r: 4 }}
-            activeDot={{ r: 6, fill: '#7C6AF7', stroke: '#0A0A0F', strokeWidth: 2 }}
+            dot={{ fill: corLinha, r: 4 }}
+            activeDot={{ r: 6, fill: corLinha, stroke: corFundoGrafico, strokeWidth: 2 }}
           />
         </AreaChart>
       </ResponsiveContainer>

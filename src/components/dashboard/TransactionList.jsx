@@ -10,6 +10,7 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material'
+import { useTheme, alpha } from '@mui/material/styles'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 
@@ -23,6 +24,10 @@ const capitalize = (str) =>
   str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : ''
 
 export default function TransactionList({ transacoes }) {
+  const theme = useTheme()
+  const corPorTipo = (tipo) =>
+    tipo === 'CREDIT' ? theme.palette.success.main : theme.palette.error.main
+
   return (
     <List disablePadding>
       {transacoes.map((t, index) => (
@@ -33,7 +38,7 @@ export default function TransactionList({ transacoes }) {
               <Typography
                 variant="body2"
                 fontWeight={600}
-                color={t.tipo === 'CREDIT' ? 'secondary.main' : 'error.main'}
+                sx={{ fontFamily: theme.typography.fontFamilyMono, color: corPorTipo(t.tipo) }}
               >
                 {t.tipo === 'CREDIT' ? '+ ' : '- '}
                 {formatBRL(t.valor?.quantia)}
@@ -46,14 +51,12 @@ export default function TransactionList({ transacoes }) {
                 sx={{
                   width: 32,
                   height: 32,
-                  bgcolor: t.tipo === 'CREDIT'
-                    ? 'rgba(76,175,80,0.15)'
-                    : 'rgba(255,77,106,0.15)',
+                  bgcolor: alpha(corPorTipo(t.tipo), 0.15),
                 }}
               >
                 {t.tipo === 'CREDIT'
-                  ? <ArrowUpwardIcon sx={{ fontSize: 16, color: '#4CAF50' }} />
-                  : <ArrowDownwardIcon sx={{ fontSize: 16, color: '#FF4D6A' }} />
+                  ? <ArrowUpwardIcon sx={{ fontSize: 16, color: corPorTipo(t.tipo) }} />
+                  : <ArrowDownwardIcon sx={{ fontSize: 16, color: corPorTipo(t.tipo) }} />
                 }
               </Avatar>
             </ListItemAvatar>
@@ -77,14 +80,12 @@ export default function TransactionList({ transacoes }) {
                     sx={{
                       fontSize: 10,
                       height: 18,
-                      bgcolor: t.tipo === 'CREDIT'
-                        ? 'rgba(76,175,80,0.15)'
-                        : 'rgba(255,77,106,0.15)',
-                      color: t.tipo === 'CREDIT' ? '#4CAF50' : '#FF4D6A',
+                      bgcolor: alpha(corPorTipo(t.tipo), 0.15),
+                      color: corPorTipo(t.tipo),
                       border: 'none',
                     }}
                   />
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
                     {formatDate(t.data)}
                   </Typography>
                 </Box>
