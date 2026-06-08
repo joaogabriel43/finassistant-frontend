@@ -50,13 +50,13 @@ describe('InsightEducacionalCard', () => {
     expect(screen.getByText(/3 a 6 meses/i)).toBeInTheDocument()
   })
 
-  // 2. Retorna null quando insight é null — sem ocupar espaço no layout
-  it('não renderiza nada (null) quando insight é null', () => {
-    const { container } = render(
-      <InsightEducacionalCard insight={null} onDismiss={onDismiss} />
-    )
-    // Container deve estar vazio — sem elementos DOM
-    expect(container.firstChild).toBeNull()
+  // 2. Renderiza estado vazio (placeholder + overlay) quando insight é null —
+  // mantém a forma do card no bento grid em vez de deixar um buraco visual
+  it('renderiza estado vazio com overlay quando insight é null', () => {
+    render(<InsightEducacionalCard insight={null} onDismiss={onDismiss} />)
+
+    expect(screen.getByTestId('insight-card-empty')).toBeInTheDocument()
+    expect(screen.getByText(/Dados insuficientes/i)).toBeInTheDocument()
   })
 
   // 3. Botão "Entendi" visível com label textual

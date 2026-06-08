@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link, Outlet } from 'react-router-dom'
+import { Link, Outlet, useLocation } from 'react-router-dom'
 import {
   AppBar, Box, Drawer, IconButton, Toolbar, Typography,
 } from '@mui/material'
@@ -27,6 +27,12 @@ const drawerPaperSx = {
 const Layout = () => {
   useAuth() // manter contexto disponível
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { pathname } = useLocation()
+
+  // Chat é uma interface conversacional full-height — o footer legal "rouba"
+  // espaço do scroll e gera overflow vertical indesejado. startsWith cobre
+  // eventuais sub-rotas futuras (ex: /chat/historico) com a mesma regra.
+  const isChatRoute = pathname.startsWith('/chat')
 
   const handleToggle = () => setMobileOpen((prev) => !prev)
   const handleClose = () => setMobileOpen(false)
@@ -111,42 +117,46 @@ const Layout = () => {
           <Outlet />
         </Box>
 
-        {/* Footer legal LGPD — links para Termos e Privacidade */}
-        <Box
-          component="footer"
-          sx={{
-            py: 1.5,
-            px: 3,
-            borderTop: '1px solid rgba(255,255,255,0.05)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: 0.5,
-            flexShrink: 0,
-          }}
-        >
-          <Typography variant="caption" color="text.disabled" sx={{ fontSize: 11 }}>
-            © 2026 FortunAI
-          </Typography>
-          <Typography variant="caption" color="text.disabled" sx={{ fontSize: 11 }}>·</Typography>
-          <Typography
-            variant="caption"
-            component={Link}
-            to="/termos"
-            sx={{ fontSize: 11, color: 'text.disabled', textDecoration: 'none', '&:hover': { color: 'text.secondary' } }}
+        {/* Footer legal LGPD — links para Termos e Privacidade.
+            Omitido na rota do chat: interface conversacional full-height,
+            o footer ocuparia espaço do scroll e geraria overflow vertical. */}
+        {!isChatRoute && (
+          <Box
+            component="footer"
+            sx={{
+              py: 1.5,
+              px: 3,
+              borderTop: '1px solid rgba(255,255,255,0.05)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: 0.5,
+              flexShrink: 0,
+            }}
           >
-            Termos de Uso
-          </Typography>
-          <Typography variant="caption" color="text.disabled" sx={{ fontSize: 11 }}>·</Typography>
-          <Typography
-            variant="caption"
-            component={Link}
-            to="/privacidade"
-            sx={{ fontSize: 11, color: 'text.disabled', textDecoration: 'none', '&:hover': { color: 'text.secondary' } }}
-          >
-            Política de Privacidade
-          </Typography>
-        </Box>
+            <Typography variant="caption" color="text.disabled" sx={{ fontSize: 11 }}>
+              © 2026 FortunAI
+            </Typography>
+            <Typography variant="caption" color="text.disabled" sx={{ fontSize: 11 }}>·</Typography>
+            <Typography
+              variant="caption"
+              component={Link}
+              to="/termos"
+              sx={{ fontSize: 11, color: 'text.disabled', textDecoration: 'none', '&:hover': { color: 'text.secondary' } }}
+            >
+              Termos de Uso
+            </Typography>
+            <Typography variant="caption" color="text.disabled" sx={{ fontSize: 11 }}>·</Typography>
+            <Typography
+              variant="caption"
+              component={Link}
+              to="/privacidade"
+              sx={{ fontSize: 11, color: 'text.disabled', textDecoration: 'none', '&:hover': { color: 'text.secondary' } }}
+            >
+              Política de Privacidade
+            </Typography>
+          </Box>
+        )}
       </Box>
 
 

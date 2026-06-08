@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Box, Button, Fade, Paper, Typography } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import api from '../services/api'
 
 /**
@@ -32,15 +33,86 @@ function parseBold(texto) {
 /**
  * Card educacional contextual — mostra uma micro-lição financeira para o usuário.
  *
- * @param {object|null} insight - InsightDTO ou null (retorna null sem ocupar espaço)
+ * @param {object|null} insight - InsightDTO ou null/incompleto → renderiza estado vazio
+ *                                (placeholder desfocado + overlay) para preservar a forma
+ *                                do card no bento grid — nunca retorna null.
  * @param {function} onDismiss  - callback chamado após a animação de saída (300ms)
  */
 const InsightEducacionalCard = ({ insight, onDismiss }) => {
   const [visible, setVisible] = useState(true)
+  const theme = useTheme()
 
-  // Sem insight elegível → retorna null — sem wrapper, sem gap no layout
   // Guard robusto: rejeita null, undefined e objetos sem id/titulo (API retornou {} vazio)
-  if (!insight || !insight.id || !insight.titulo) return null
+  const insightValido = insight && insight.id && insight.titulo
+
+  if (!insightValido) {
+    return (
+      <Paper
+        data-testid="insight-card-empty"
+        elevation={0}
+        sx={{
+          position: 'relative',
+          borderRadius: '12px',
+          border: `1px solid ${theme.palette.divider}`,
+          p: 2,
+          background: theme.palette.background.paper,
+          boxShadow: 'none',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Conteúdo placeholder — mesma estrutura do card preenchido, desfocado */}
+        <Box sx={{ filter: 'blur(4px)', opacity: 0.25 }} aria-hidden="true">
+          <Typography
+            variant="caption"
+            sx={{
+              color: theme.palette.text.secondary,
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: 0.8,
+              fontSize: 10,
+              display: 'block',
+              mb: 0.5,
+            }}
+          >
+            💡 Dica financeira
+          </Typography>
+          <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 0.75, lineHeight: 1.4 }}>
+            Dica financeira
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6, mb: 1.5 }}>
+            Continue registrando suas transações e investimentos para que possamos
+            identificar padrões e gerar recomendações personalizadas para você.
+          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Button variant="text" size="small" tabIndex={-1} sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>
+              Entendi ✓
+            </Button>
+          </Box>
+        </Box>
+
+        {/* Overlay — ícone + mensagem explicativa sobre o estado vazio */}
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+            gap: 1,
+            px: 3,
+            background: `${theme.palette.background.paper}CC`,
+          }}
+        >
+          <Typography sx={{ fontSize: 28, lineHeight: 1 }}>🔒</Typography>
+          <Typography variant="body2" sx={{ color: theme.palette.text.secondary, lineHeight: 1.5, maxWidth: 320 }}>
+            Dados insuficientes ainda — continue registrando para receber insights personalizados
+          </Typography>
+        </Box>
+      </Paper>
+    )
+  }
 
   const cor = COR_POR_TIPO[insight.tipoInsight] ?? COR_FALLBACK
 
