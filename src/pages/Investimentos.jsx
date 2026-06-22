@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AlocacaoAtivosChart from '../components/investimentos/AlocacaoAtivosChart';
 import BenchmarkChart from '../components/investimentos/BenchmarkChart';
 import RendaPassivaPanel from '../components/investimentos/RendaPassivaPanel';
+import RentabilidadePanel from '../components/investimentos/RentabilidadePanel';
 import MarkowitzPanel from '../components/investimentos/MarkowitzPanel';
 import PortfolioTable from '../components/dashboard/PortfolioTable';
 import EstrategiaForm from '../components/investimentos/EstrategiaForm';
@@ -196,6 +197,15 @@ const Investimentos = () => {
                 <Grid size={{ xs: 12 }}>
                     <Paper sx={cardStyle}>
                         <BenchmarkChart />
+                    </Paper>
+                </Grid>
+            </Grid>
+
+            {/* LINHA 3.4 — Rentabilidade da Carteira (xs=12) */}
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+                <Grid size={{ xs: 12 }}>
+                    <Paper sx={cardStyle}>
+                        <RentabilidadePanel />
                     </Paper>
                 </Grid>
             </Grid>
