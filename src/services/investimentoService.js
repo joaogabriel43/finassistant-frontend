@@ -75,10 +75,30 @@ const getCalendarioProventos = async () => {
   }
 };
 
+// Agenda de eventos corporativos: linha do tempo dos eventos corporativos dos
+// ativos da carteira (data-com, data-ex, desdobramento, JCP, etc.), em ordem
+// cronológica crescente, com flag `proximo` (próximos 7 dias) vinda do backend.
+// tipo opcional ∈ { DATA_COM, DATA_EX, DESDOBRAMENTO, GRUPAMENTO, AMORTIZACAO,
+// JCP, BONIFICACAO, SUBSCRICAO } — quando ausente, retorna todos os tipos.
+const getEventosCorporativos = async (tipo) => {
+  try {
+    const url = tipo
+      ? `/investimentos/eventos-corporativos?tipo=${tipo}`
+      : '/investimentos/eventos-corporativos';
+    const response = await api.get(url);
+    return response.data;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Erro ao buscar eventos corporativos:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 export const investimentoService = {
   venderAtivo,
   getRendaPassiva,
   getRentabilidade,
   getBenchmarkJanelas,
   getCalendarioProventos,
+  getEventosCorporativos,
 };

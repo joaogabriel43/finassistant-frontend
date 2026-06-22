@@ -4,6 +4,7 @@ import BenchmarkChart from '../components/investimentos/BenchmarkChart';
 import BenchmarkJanelasPanel from '../components/investimentos/BenchmarkJanelasPanel';
 import RendaPassivaPanel from '../components/investimentos/RendaPassivaPanel';
 import CalendarioProventosPanel from '../components/investimentos/CalendarioProventosPanel';
+import EventosCorporativosPanel from '../components/investimentos/EventosCorporativosPanel';
 import RentabilidadePanel from '../components/investimentos/RentabilidadePanel';
 import MarkowitzPanel from '../components/investimentos/MarkowitzPanel';
 import PortfolioTable from '../components/dashboard/PortfolioTable';
@@ -235,6 +236,15 @@ const Investimentos = () => {
                 <Grid size={{ xs: 12 }}>
                     <Paper sx={cardStyle}>
                         <CalendarioProventosPanel />
+                    </Paper>
+                </Grid>
+            </Grid>
+
+            {/* LINHA 3.7 — Agenda de Eventos Corporativos (xs=12) */}
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+                <Grid size={{ xs: 12 }}>
+                    <Paper sx={cardStyle}>
+                        <EventosCorporativosPanel />
                     </Paper>
                 </Grid>
             </Grid>
