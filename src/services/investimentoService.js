@@ -44,8 +44,25 @@ const getRentabilidade = async () => {
   }
 };
 
+// Comparação vs benchmarks por janela temporal (MES, ANO, DOZE_MESES,
+// DESDE_INICIO). Retorna, para cada janela, a rentabilidade da carteira e dos
+// índices (CDI/IBOV/IPCA) + alpha e flags `superou*`; além de 4 séries de 12
+// pontos para o gráfico multi-série sobreposto.
+// Toda a agregação vem do backend — o front apenas consome e formata.
+const getBenchmarkJanelas = async () => {
+  try {
+    const response = await api.get('/benchmarks/janelas');
+    return response.data;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Erro ao buscar benchmarks por janela:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 export const investimentoService = {
   venderAtivo,
   getRendaPassiva,
   getRentabilidade,
+  getBenchmarkJanelas,
 };

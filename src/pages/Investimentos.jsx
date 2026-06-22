@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AlocacaoAtivosChart from '../components/investimentos/AlocacaoAtivosChart';
 import BenchmarkChart from '../components/investimentos/BenchmarkChart';
+import BenchmarkJanelasPanel from '../components/investimentos/BenchmarkJanelasPanel';
 import RendaPassivaPanel from '../components/investimentos/RendaPassivaPanel';
 import RentabilidadePanel from '../components/investimentos/RentabilidadePanel';
 import MarkowitzPanel from '../components/investimentos/MarkowitzPanel';
@@ -197,6 +198,15 @@ const Investimentos = () => {
                 <Grid size={{ xs: 12 }}>
                     <Paper sx={cardStyle}>
                         <BenchmarkChart />
+                    </Paper>
+                </Grid>
+            </Grid>
+
+            {/* LINHA 3.2 — Benchmark por janela temporal + multi-série (xs=12) */}
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+                <Grid size={{ xs: 12 }}>
+                    <Paper sx={cardStyle}>
+                        <BenchmarkJanelasPanel />
                     </Paper>
                 </Grid>
             </Grid>
