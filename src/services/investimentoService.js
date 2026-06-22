@@ -14,6 +14,23 @@ const venderAtivo = async (venderRequest) => {
   }
 };
 
+// Renda passiva mês a mês: histórico de proventos agrupado por mês.
+// tipo opcional ∈ { DIVIDENDO, JCP, RENDIMENTO } — quando ausente, retorna todos.
+const getRendaPassiva = async (tipo) => {
+  try {
+    const url = tipo
+      ? `/investimentos/renda-passiva?tipo=${tipo}`
+      : '/investimentos/renda-passiva';
+    const response = await api.get(url);
+    return response.data;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Erro ao buscar renda passiva:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 export const investimentoService = {
   venderAtivo,
+  getRendaPassiva,
 };
