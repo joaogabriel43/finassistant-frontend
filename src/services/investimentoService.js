@@ -60,9 +60,25 @@ const getBenchmarkJanelas = async () => {
   }
 };
 
+// Calendário de proventos com projeção futura: meses futuros com os eventos
+// de proventos esperados (confirmados = data-com anunciada; projetados =
+// estimativa baseada em histórico). Toda a projeção vem do backend — o front
+// apenas consome e formata.
+const getCalendarioProventos = async () => {
+  try {
+    const response = await api.get('/investimentos/calendario-proventos');
+    return response.data;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Erro ao buscar calendário de proventos:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 export const investimentoService = {
   venderAtivo,
   getRendaPassiva,
   getRentabilidade,
   getBenchmarkJanelas,
+  getCalendarioProventos,
 };
