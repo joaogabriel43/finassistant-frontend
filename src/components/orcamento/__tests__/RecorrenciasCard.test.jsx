@@ -2,7 +2,6 @@ import React from 'react'
 import { render, screen } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 
-// RecorrenciasCard ainda não existe — import intencional para causar falha (RED phase TDD)
 import RecorrenciasCard from '../RecorrenciasCard'
 
 const recorrenciaNetflix = {
@@ -59,5 +58,67 @@ describe('RecorrenciasCard', () => {
       screen.queryByTestId('recorrencias-loading')
 
     expect(loadingElement).not.toBeNull()
+  })
+
+  it('exibe chip de frequência bimestral', () => {
+    const seguro = { ...recorrenciaNetflix, nome: 'Seguro Carro', frequencia: 'BIMESTRAL' }
+    render(<RecorrenciasCard recorrencias={[seguro]} />)
+
+    expect(screen.getByText(/bimestral/i)).toBeInTheDocument()
+  })
+
+  it('exibe badge de nível de confiança quando presente', () => {
+    const comConfianca = { ...recorrenciaNetflix, confianca: 'ALTA' }
+    render(<RecorrenciasCard recorrencias={[comConfianca]} />)
+
+    expect(screen.getByText(/alta confiança/i)).toBeInTheDocument()
+  })
+
+  it('não exibe badge de confiança quando o campo está ausente', () => {
+    render(<RecorrenciasCard recorrencias={[recorrenciaNetflix]} />)
+
+    expect(screen.queryByText(/confiança/i)).not.toBeInTheDocument()
+  })
+
+  it('marca visualmente assinatura possivelmente cancelada', () => {
+    const cancelada = { ...recorrenciaNetflix, possivelmenteCancelada: true }
+    render(<RecorrenciasCard recorrencias={[cancelada]} />)
+
+    expect(screen.getByText(/possivelmente cancelada/i)).toBeInTheDocument()
+  })
+
+  it('exibe indicador de aumento de valor com o valor anterior', () => {
+    const aumentou = {
+      ...recorrenciaNetflix,
+      aumentouValor: true,
+      valorAnterior: 30.0,
+    }
+    render(<RecorrenciasCard recorrencias={[aumentou]} />)
+
+    expect(screen.getByText(/valor subiu/i)).toBeInTheDocument()
+    expect(screen.getByText(/antes R\$/i)).toBeInTheDocument()
+  })
+
+  it('exibe o total mensal comprometido quando informado', () => {
+    render(
+      <RecorrenciasCard
+        recorrencias={[recorrenciaNetflix]}
+        totalMensalComprometido={216.67}
+      />
+    )
+
+    expect(screen.getByText(/comprometido\/mês/i)).toBeInTheDocument()
+    expect(screen.getByText(/216,67/)).toBeInTheDocument()
+  })
+
+  it('não exibe o total mensal quando é zero', () => {
+    render(
+      <RecorrenciasCard
+        recorrencias={[recorrenciaNetflix]}
+        totalMensalComprometido={0}
+      />
+    )
+
+    expect(screen.queryByText(/comprometido\/mês/i)).not.toBeInTheDocument()
   })
 })

@@ -43,6 +43,7 @@ const Orcamento = () => {
     const [anoSelecionado, setAnoSelecionado] = useState(now.getFullYear());
     const { loading: exportLoading, error: exportError, downloadArquivo, clearError } = useExportacao();
     const [recorrencias, setRecorrencias] = useState([]);
+    const [totalMensalComprometido, setTotalMensalComprometido] = useState(0);
     const [loadingRecorrencias, setLoadingRecorrencias] = useState(true);
 
     // Skeleton de inicialização — mostra enquanto as transações iniciais carregam
@@ -58,8 +59,14 @@ const Orcamento = () => {
         if (!user?.id) { setLoadingRecorrencias(false); return; }
         setLoadingRecorrencias(true);
         api.get('/orcamento/recorrencias')
-            .then((res) => setRecorrencias(res.data ?? []))
-            .catch(() => setRecorrencias([]))
+            .then((res) => {
+                setRecorrencias(res.data?.recorrencias ?? []);
+                setTotalMensalComprometido(res.data?.totalMensalComprometido ?? 0);
+            })
+            .catch(() => {
+                setRecorrencias([]);
+                setTotalMensalComprometido(0);
+            })
             .finally(() => setLoadingRecorrencias(false));
     }, [user?.id]);
 
@@ -160,7 +167,11 @@ const Orcamento = () => {
 
             {/* Assinaturas Recorrentes */}
             <Box sx={{ mb: 3 }}>
-                <RecorrenciasCard recorrencias={recorrencias} loading={loadingRecorrencias} />
+                <RecorrenciasCard
+                    recorrencias={recorrencias}
+                    totalMensalComprometido={totalMensalComprometido}
+                    loading={loadingRecorrencias}
+                />
             </Box>
 
             {/* Exportar */}

@@ -16,35 +16,60 @@ import {
 import RepeatIcon from '@mui/icons-material/Repeat'
 
 const FREQUENCIA_LABEL = {
-  MENSAL: 'Mensal',
   SEMANAL: 'Semanal',
+  MENSAL: 'Mensal',
+  BIMESTRAL: 'Bimestral',
   ANUAL: 'Anual',
 }
 
 const FREQUENCIA_COLOR = {
-  MENSAL: 'primary',
   SEMANAL: 'secondary',
+  MENSAL: 'primary',
+  BIMESTRAL: 'info',
   ANUAL: 'success',
+}
+
+const NIVEL_CONFIANCA_LABEL = {
+  ALTA: 'Alta confiança',
+  MEDIA: 'Média confiança',
+  BAIXA: 'Baixa confiança',
+}
+
+const NIVEL_CONFIANCA_COLOR = {
+  ALTA: 'success',
+  MEDIA: 'warning',
+  BAIXA: 'default',
 }
 
 const formatBRL = (valor) =>
   Number(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
-const formatData = (dataStr) => {
-  if (!dataStr) return ''
-  return new Date(dataStr + 'T00:00:00').toLocaleDateString('pt-BR')
-}
+const RecorrenciasCard = ({ recorrencias = [], totalMensalComprometido = 0, loading = false }) => {
+  const mostrarTotal = !loading && recorrencias.length > 0 && Number(totalMensalComprometido) > 0
 
-const RecorrenciasCard = ({ recorrencias = [], loading = false }) => {
   return (
     <Card>
       <CardContent>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-          Assinaturas Recorrentes
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Gastos recorrentes identificados automaticamente
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+              Assinaturas Recorrentes
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Gastos recorrentes identificados automaticamente
+            </Typography>
+          </Box>
+          {mostrarTotal && (
+            <Box sx={{ textAlign: 'right' }}>
+              <Typography variant="caption" color="text.secondary" display="block">
+                Comprometido/mês
+              </Typography>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                R$ {formatBRL(totalMensalComprometido)}
+              </Typography>
+            </Box>
+          )}
+        </Box>
 
         {loading && (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
@@ -80,22 +105,75 @@ const RecorrenciasCard = ({ recorrencias = [], loading = false }) => {
                   alignItems="flex-start"
                   disableGutters
                   secondaryAction={
-                    <Chip
-                      label={FREQUENCIA_LABEL[rec.frequencia] ?? rec.frequencia}
-                      color={FREQUENCIA_COLOR[rec.frequencia] ?? 'default'}
-                      size="small"
-                      sx={{ fontWeight: 600 }}
-                    />
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
+                      <Chip
+                        label={FREQUENCIA_LABEL[rec.frequencia] ?? rec.frequencia}
+                        color={FREQUENCIA_COLOR[rec.frequencia] ?? 'default'}
+                        size="small"
+                        sx={{ fontWeight: 600 }}
+                      />
+                      {rec.confianca && (
+                        <Chip
+                          label={NIVEL_CONFIANCA_LABEL[rec.confianca] ?? rec.confianca}
+                          color={NIVEL_CONFIANCA_COLOR[rec.confianca] ?? 'default'}
+                          size="small"
+                          variant="outlined"
+                        />
+                      )}
+                    </Box>
                   }
                 >
                   <ListItemAvatar>
-                    <Avatar sx={{ bgcolor: '#9c27b0', width: 36, height: 36, fontSize: 16 }}>
+                    <Avatar
+                      sx={{
+                        bgcolor: rec.possivelmenteCancelada ? 'rgba(255,255,255,0.12)' : '#9c27b0',
+                        width: 36,
+                        height: 36,
+                        fontSize: 16,
+                      }}
+                    >
                       {rec.nome?.charAt(0)?.toUpperCase() ?? '?'}
                     </Avatar>
                   </ListItemAvatar>
                   <ListItemText
-                    primary={rec.nome}
-                    secondary={`R$ ${formatBRL(rec.valorMedio)} · Todo dia ${rec.diaRecorrente}`}
+                    primary={
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                        <Typography
+                          component="span"
+                          sx={{
+                            fontWeight: 500,
+                            textDecoration: rec.possivelmenteCancelada ? 'line-through' : 'none',
+                            color: rec.possivelmenteCancelada ? 'text.secondary' : 'text.primary',
+                          }}
+                        >
+                          {rec.nome}
+                        </Typography>
+                        {rec.possivelmenteCancelada && (
+                          <Chip
+                            label="Possivelmente cancelada"
+                            size="small"
+                            variant="outlined"
+                            sx={{ height: 20, fontSize: 11 }}
+                          />
+                        )}
+                        {rec.aumentouValor && (
+                          <Chip
+                            label="Valor subiu"
+                            size="small"
+                            color="warning"
+                            variant="outlined"
+                            sx={{ height: 20, fontSize: 11 }}
+                          />
+                        )}
+                      </Box>
+                    }
+                    secondary={
+                      <Box component="span">
+                        {`R$ ${formatBRL(rec.valorMedio)} · Todo dia ${rec.diaRecorrente}`}
+                        {rec.aumentouValor && rec.valorAnterior != null &&
+                          ` · antes R$ ${formatBRL(rec.valorAnterior)}`}
+                      </Box>
+                    }
                     secondaryTypographyProps={{ component: 'span' }}
                   />
                 </ListItem>
