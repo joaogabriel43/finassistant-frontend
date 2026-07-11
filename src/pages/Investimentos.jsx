@@ -9,6 +9,9 @@ import RentabilidadePanel from '../components/investimentos/RentabilidadePanel';
 import MarkowitzPanel from '../components/investimentos/MarkowitzPanel';
 import PortfolioTable from '../components/dashboard/PortfolioTable';
 import EstrategiaForm from '../components/investimentos/EstrategiaForm';
+import AdicionarAtivoForm from '../components/investimentos/AdicionarAtivoForm';
+import EditarAtivoDialog from '../components/investimentos/EditarAtivoDialog';
+import RemoverAtivoDialog from '../components/investimentos/RemoverAtivoDialog';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { investimentoService } from '../services/investimentoService';
@@ -61,6 +64,17 @@ const Investimentos = () => {
     const [sellQuantity, setSellQuantity] = useState(0);
     const [selling, setSelling] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
+
+    // Estado para edição/remoção de posição (CRUD manual de ativos)
+    const [editAtivo, setEditAtivo] = useState(null);
+    const [removeAtivo, setRemoveAtivo] = useState(null);
+    const [crudSuccess, setCrudSuccess] = useState('');
+
+    // Refresh da tabela + gráfico de alocação após qualquer operação bem-sucedida
+    const handlePortfolioChanged = (mensagem) => {
+        if (typeof mensagem === 'string' && mensagem) setCrudSuccess(mensagem);
+        setRefreshKey((k) => k + 1);
+    };
 
     // Adiciona log de navegação para depuração e direciona para a rota do questionário-perfil
     const handleRefazerQuestionario = () => {
@@ -190,7 +204,24 @@ const Investimentos = () => {
                         <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
                             Meu Portfólio
                         </Typography>
-                        <PortfolioTable onSellRequest={handleOpenSellModal} refreshKey={refreshKey} />
+                        <PortfolioTable
+                            onSellRequest={handleOpenSellModal}
+                            onEditRequest={(ativo) => setEditAtivo(ativo)}
+                            onRemoveRequest={(ativo) => setRemoveAtivo(ativo)}
+                            refreshKey={refreshKey}
+                        />
+                    </Paper>
+                </Grid>
+            </Grid>
+
+            {/* LINHA 2.5 — Cadastro manual de ativo (xs=12) */}
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+                <Grid size={{ xs: 12 }}>
+                    <Paper sx={cardStyle}>
+                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                            Adicionar Ativo
+                        </Typography>
+                        <AdicionarAtivoForm onAtivoAdicionado={handlePortfolioChanged} />
                     </Paper>
                 </Grid>
             </Grid>
@@ -278,6 +309,31 @@ const Investimentos = () => {
             >
                 <Alert severity="error" onClose={clearError}>{exportError}</Alert>
             </Snackbar>
+
+            <Snackbar
+                open={!!crudSuccess}
+                autoHideDuration={5000}
+                onClose={() => setCrudSuccess('')}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert severity="success" onClose={() => setCrudSuccess('')}>{crudSuccess}</Alert>
+            </Snackbar>
+
+            {/* Dialog de edição absoluta de posição (PUT) */}
+            <EditarAtivoDialog
+                open={!!editAtivo}
+                ativo={editAtivo}
+                onClose={() => setEditAtivo(null)}
+                onSaved={handlePortfolioChanged}
+            />
+
+            {/* Dialog de confirmação de remoção (DELETE) */}
+            <RemoverAtivoDialog
+                open={!!removeAtivo}
+                ativo={removeAtivo}
+                onClose={() => setRemoveAtivo(null)}
+                onRemoved={handlePortfolioChanged}
+            />
 
             {/* Modal de Venda */}
             <Modal open={modalOpen} onClose={handleCloseSellModal} aria-labelledby="sell-modal-title">

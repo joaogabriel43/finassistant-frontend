@@ -14,6 +14,48 @@ const venderAtivo = async (venderRequest) => {
   }
 };
 
+// Cadastro manual de ativo no portfólio.
+// payload: { ticker, quantidade, precoCompra, tipoAtivo?, dataCompra? ("yyyy-MM-dd") }
+// Ticker já existente = RE-COMPRA: o backend recalcula o preço médio ponderado.
+const adicionarAtivo = async (payload) => {
+  try {
+    const response = await api.post('/investimentos/portfolio/ativos', payload);
+    return response.data;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Erro ao adicionar ativo:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+// Edição ABSOLUTA de uma posição existente (correção de quantidade/preço médio).
+// Não é re-compra: os valores enviados substituem os atuais.
+// payload: { quantidade, precoMedio }
+const editarAtivo = async (ticker, payload) => {
+  try {
+    const response = await api.put(
+      `/investimentos/portfolio/ativos/${encodeURIComponent(ticker)}`,
+      payload,
+    );
+    return response.data;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Erro ao editar ativo:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+// Remove completamente um ativo do portfólio (todas as unidades).
+const removerAtivo = async (ticker) => {
+  try {
+    await api.delete(`/investimentos/portfolio/ativos/${encodeURIComponent(ticker)}`);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Erro ao remover ativo:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 // Renda passiva mês a mês: histórico de proventos agrupado por mês.
 // tipo opcional ∈ { DIVIDENDO, JCP, RENDIMENTO } — quando ausente, retorna todos.
 const getRendaPassiva = async (tipo) => {
@@ -96,6 +138,9 @@ const getEventosCorporativos = async (tipo) => {
 
 export const investimentoService = {
   venderAtivo,
+  adicionarAtivo,
+  editarAtivo,
+  removerAtivo,
   getRendaPassiva,
   getRentabilidade,
   getBenchmarkJanelas,

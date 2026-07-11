@@ -12,11 +12,20 @@ import {
     TableContainer,
     TableHead,
     TableRow,
+    Tooltip,
     Typography,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import SellIcon from '@mui/icons-material/Sell';
+import { formatBRL } from '../ui';
 
-const PortfolioTable = ({ onSellRequest = () => {}, refreshKey = 0 }) => {
+const PortfolioTable = ({
+    onSellRequest = () => {},
+    onEditRequest = null,
+    onRemoveRequest = null,
+    refreshKey = 0,
+}) => {
     const [portfolio, setPortfolio] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -43,8 +52,10 @@ const PortfolioTable = ({ onSellRequest = () => {}, refreshKey = 0 }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [fetchPortfolio, refreshKey]);
 
-    const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
     const formatPercent = (value) => new Intl.NumberFormat('pt-BR', { style: 'percent', minimumFractionDigits: 2 }).format((value ?? 0));
+
+    // Regra do design system D4: valores monetários usam formatBRL + fonte mono.
+    const monoSx = { fontFamily: (theme) => theme.typography.fontFamilyMono };
 
     if (!user || !user.id) {
         return (
@@ -110,26 +121,52 @@ const PortfolioTable = ({ onSellRequest = () => {}, refreshKey = 0 }) => {
                                 <TableCell sx={{ fontWeight: 600 }}>{ativo.ticker}</TableCell>
                                 <TableCell sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>{ativo.tipoAtivo || '—'}</TableCell>
                                 <TableCell align="right">{ativo.quantidade}</TableCell>
-                                <TableCell align="right">{formatCurrency(ativo.precoMedio)}</TableCell>
-                                <TableCell align="right">{formatCurrency(ativo.totalAtual)}</TableCell>
+                                <TableCell align="right" sx={monoSx}>{formatBRL(ativo.precoMedio)}</TableCell>
+                                <TableCell align="right" sx={monoSx}>{formatBRL(ativo.totalAtual)}</TableCell>
                                 <TableCell
                                     align="right"
                                     sx={{
+                                        ...monoSx,
                                         color: lucro >= 0 ? 'success.main' : 'error.main',
                                         fontWeight: 600,
                                     }}
                                 >
-                                    {formatCurrency(lucro)} ({formatPercent(ativo.variacaoPercentual)})
+                                    {formatBRL(lucro)} ({formatPercent(ativo.variacaoPercentual)})
                                 </TableCell>
-                                <TableCell align="right">
-                                    <IconButton
-                                        color="error"
-                                        aria-label="vender ativo"
-                                        size="small"
-                                        onClick={() => onSellRequest(ativo)}
-                                    >
-                                        <DeleteIcon fontSize="small" />
-                                    </IconButton>
+                                <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                                    {onEditRequest && (
+                                        <Tooltip title="Editar posição">
+                                            <IconButton
+                                                aria-label={`editar ${ativo.ticker}`}
+                                                size="small"
+                                                onClick={() => onEditRequest(ativo)}
+                                            >
+                                                <EditIcon fontSize="small" />
+                                            </IconButton>
+                                        </Tooltip>
+                                    )}
+                                    <Tooltip title="Vender">
+                                        <IconButton
+                                            color="warning"
+                                            aria-label={`vender ${ativo.ticker}`}
+                                            size="small"
+                                            onClick={() => onSellRequest(ativo)}
+                                        >
+                                            <SellIcon fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
+                                    {onRemoveRequest && (
+                                        <Tooltip title="Remover ativo">
+                                            <IconButton
+                                                color="error"
+                                                aria-label={`remover ${ativo.ticker}`}
+                                                size="small"
+                                                onClick={() => onRemoveRequest(ativo)}
+                                            >
+                                                <DeleteIcon fontSize="small" />
+                                            </IconButton>
+                                        </Tooltip>
+                                    )}
                                 </TableCell>
                             </TableRow>
                         );
