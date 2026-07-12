@@ -55,7 +55,7 @@ describe('AdicionarAtivoForm — renderização', () => {
     expect(screen.getByTestId('btn-adicionar-ativo')).toBeInTheDocument();
   });
 
-  it('exibe os 4 tipos de ativo com rótulos PT-BR no select', () => {
+  it('exibe os 5 tipos de ativo com rótulos PT-BR no select (incluindo Exterior)', () => {
     render(<AdicionarAtivoForm />);
 
     fireEvent.mouseDown(screen.getByRole('combobox', { name: /tipo/i }));
@@ -64,7 +64,106 @@ describe('AdicionarAtivoForm — renderização', () => {
     expect(screen.getByRole('option', { name: 'FII' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'Renda Fixa' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'Cripto' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Exterior' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: /detectar automaticamente/i })).toBeInTheDocument();
+  });
+
+  it('renderiza os selects opcionais de setor, subsetor e geografia', () => {
+    render(<AdicionarAtivoForm />);
+
+    expect(screen.getByRole('combobox', { name: /^setor$/i })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: /subsetor/i })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: /geografia/i })).toBeInTheDocument();
+  });
+});
+
+describe('AdicionarAtivoForm — classificação setor/subsetor/geografia', () => {
+  it('filtra o subsetor pelo setor selecionado', () => {
+    render(<AdicionarAtivoForm />);
+
+    // Seleciona o setor Financeiro
+    fireEvent.mouseDown(screen.getAllByRole('combobox', { name: /^setor/i })[0]);
+    fireEvent.click(screen.getByRole('option', { name: 'Financeiro' }));
+
+    // O select de subsetor mostra apenas os filhos de Financeiro
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: /subsetor/i }));
+    expect(screen.getByRole('option', { name: 'Bancos' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Seguros' })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: 'Mineração' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: 'Transporte' })).not.toBeInTheDocument();
+  });
+
+  it('escolher subsetor sem setor auto-preenche o setor pai', async () => {
+    render(<AdicionarAtivoForm />);
+
+    // Sem setor selecionado, o subsetor lista a taxonomia completa
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: /subsetor/i }));
+    fireEvent.click(screen.getByRole('option', { name: 'Mineração' }));
+
+    // Setor pai (Materiais Básicos) auto-preenchido
+    expect(screen.getByTestId('select-setor')).toHaveValue('MATERIAIS_BASICOS');
+    expect(screen.getByTestId('select-subsetor')).toHaveValue('MINERACAO');
+  });
+
+  it('trocar o setor limpa o subsetor incompatível', () => {
+    render(<AdicionarAtivoForm />);
+
+    // Financeiro → Bancos
+    fireEvent.mouseDown(screen.getAllByRole('combobox', { name: /^setor/i })[0]);
+    fireEvent.click(screen.getByRole('option', { name: 'Financeiro' }));
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: /subsetor/i }));
+    fireEvent.click(screen.getByRole('option', { name: 'Bancos' }));
+    expect(screen.getByTestId('select-subsetor')).toHaveValue('BANCOS');
+
+    // Troca o setor para Saúde → Bancos é incompatível e deve ser limpo
+    fireEvent.mouseDown(screen.getAllByRole('combobox', { name: /^setor/i })[0]);
+    fireEvent.click(screen.getByRole('option', { name: 'Saúde' }));
+
+    expect(screen.getByTestId('select-setor')).toHaveValue('SAUDE');
+    expect(screen.getByTestId('select-subsetor')).toHaveValue('');
+  });
+
+  it('envia setor, subsetor e geografia no payload quando selecionados', async () => {
+    render(<AdicionarAtivoForm />);
+
+    preencherCamposValidos();
+
+    fireEvent.mouseDown(screen.getAllByRole('combobox', { name: /^setor/i })[0]);
+    fireEvent.click(screen.getByRole('option', { name: 'Financeiro' }));
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: /subsetor/i }));
+    fireEvent.click(screen.getByRole('option', { name: 'Bancos' }));
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: /geografia/i }));
+    fireEvent.click(screen.getByRole('option', { name: 'Brasil' }));
+
+    submeter();
+
+    await waitFor(() => {
+      expect(investimentoService.adicionarAtivo).toHaveBeenCalledWith({
+        ticker: 'MXRF11',
+        quantidade: 10,
+        precoCompra: 28.5,
+        dataCompra: hoje(),
+        setor: 'FINANCEIRO',
+        subsetor: 'BANCOS',
+        geografia: 'BRASIL',
+      });
+    });
+  });
+
+  it('omite setor/subsetor/geografia do payload quando "Não classificar"', async () => {
+    render(<AdicionarAtivoForm />);
+
+    preencherCamposValidos();
+    submeter();
+
+    await waitFor(() => {
+      expect(investimentoService.adicionarAtivo).toHaveBeenCalledTimes(1);
+    });
+
+    const payload = investimentoService.adicionarAtivo.mock.calls[0][0];
+    expect(payload).not.toHaveProperty('setor');
+    expect(payload).not.toHaveProperty('subsetor');
+    expect(payload).not.toHaveProperty('geografia');
   });
 });
 

@@ -102,6 +102,60 @@ describe('EditarAtivoDialog', () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
+  it('pré-preenche os selects de classificação com os valores atuais do ativo', () => {
+    renderDialog({
+      ativo: {
+        ...ativo,
+        setor: 'FINANCEIRO',
+        subsetor: 'BANCOS',
+        geografia: 'BRASIL',
+      },
+    });
+
+    expect(screen.getByTestId('select-setor')).toHaveValue('FINANCEIRO');
+    expect(screen.getByTestId('select-subsetor')).toHaveValue('BANCOS');
+    expect(screen.getByTestId('select-geografia')).toHaveValue('BRASIL');
+  });
+
+  it('inclui a classificação no PUT quando selecionada (semântica merge)', async () => {
+    renderDialog();
+
+    // Escolher subsetor sem setor → auto-preenche o setor pai
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: /subsetor/i }));
+    fireEvent.click(screen.getByRole('option', { name: 'Mineração' }));
+    expect(screen.getByTestId('select-setor')).toHaveValue('MATERIAIS_BASICOS');
+
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: /geografia/i }));
+    fireEvent.click(screen.getByRole('option', { name: 'Estados Unidos' }));
+
+    fireEvent.click(screen.getByTestId('btn-salvar-edicao-ativo'));
+
+    await waitFor(() => {
+      expect(investimentoService.editarAtivo).toHaveBeenCalledWith('PETR4', {
+        quantidade: 100,
+        precoMedio: 32.5,
+        setor: 'MATERIAIS_BASICOS',
+        subsetor: 'MINERACAO',
+        geografia: 'EUA',
+      });
+    });
+  });
+
+  it('omite a classificação do PUT quando nada foi selecionado (mantém a atual)', async () => {
+    renderDialog();
+
+    fireEvent.click(screen.getByTestId('btn-salvar-edicao-ativo'));
+
+    await waitFor(() => {
+      expect(investimentoService.editarAtivo).toHaveBeenCalledTimes(1);
+    });
+
+    const payload = investimentoService.editarAtivo.mock.calls[0][1];
+    expect(payload).not.toHaveProperty('setor');
+    expect(payload).not.toHaveProperty('subsetor');
+    expect(payload).not.toHaveProperty('geografia');
+  });
+
   it('exibe a mensagem de validação do backend em erro 400 (fields)', async () => {
     investimentoService.editarAtivo.mockRejectedValue({
       response: {

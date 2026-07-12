@@ -136,6 +136,51 @@ const getEventosCorporativos = async (tipo) => {
   }
 };
 
+// ── Gestão estratégica por setores (tetos de alocação) ─────────────────────
+
+// Tetos configurados por dimensão. Shape:
+// { porClasse: {ACAO: 30}, porSetor: {FINANCEIRO: 25}, porGeografia: {BRASIL: 80} }
+// Mapas vazios quando o usuário nunca configurou.
+const obterTetos = async () => {
+  try {
+    const response = await api.get('/investimentos/estrategia/tetos');
+    return response.data;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Erro ao buscar tetos de alocação:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+// SUBSTITUIÇÃO COMPLETA dos tetos (dimensão omitida/nula = limpa a dimensão).
+// Cada teto deve satisfazer 0 < teto ≤ 100; tetos NÃO precisam somar 100
+// (são limites independentes, diferente do alvo legado que é partição).
+const salvarTetos = async (payload) => {
+  try {
+    const response = await api.put('/investimentos/estrategia/tetos', payload);
+    return response.data;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Erro ao salvar tetos de alocação:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+// Breakdown da carteira A CUSTO (quantidade × preço médio) por dimensão:
+// { valorTotal, porClasse: [item], porSetor: [item], porSubsetor: [item],
+//   porGeografia: [item] } com item = { chave, valor, percentualReal,
+//   percentualAlvo, percentualTeto, excedeuTeto }. Carteira vazia = listas vazias.
+const obterBreakdown = async () => {
+  try {
+    const response = await api.get('/investimentos/estrategia/breakdown');
+    return response.data;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Erro ao buscar breakdown estratégico:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 export const investimentoService = {
   venderAtivo,
   adicionarAtivo,
@@ -146,4 +191,7 @@ export const investimentoService = {
   getBenchmarkJanelas,
   getCalendarioProventos,
   getEventosCorporativos,
+  obterTetos,
+  salvarTetos,
+  obterBreakdown,
 };

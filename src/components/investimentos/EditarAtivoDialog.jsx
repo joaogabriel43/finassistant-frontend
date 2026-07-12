@@ -7,19 +7,24 @@ import {
     DialogContent,
     DialogContentText,
     DialogTitle,
+    Grid,
     TextField,
 } from '@mui/material';
 import { investimentoService } from '../../services/investimentoService';
 import { extrairMensagemErroApi } from '../../utils/apiErrorUtils';
+import ClassificacaoAtivoSelects from './ClassificacaoAtivoSelects';
 
 /**
  * Dialog de EDIÇÃO ABSOLUTA de uma posição do portfólio (correção manual).
- * PUT /api/investimentos/portfolio/ativos/{ticker} — os valores enviados
+ * PUT /api/investimentos/portfolio/ativos/{ticker} — quantidade/preço médio
  * SUBSTITUEM os atuais (não é re-compra; preço médio não é ponderado aqui).
+ * Setor/subsetor/geografia seguem semântica MERGE no backend: campo omitido
+ * (null) mantém a classificação atual.
  */
 const EditarAtivoDialog = ({ open, ativo, onClose, onSaved }) => {
     const [quantidade, setQuantidade] = useState('');
     const [precoMedio, setPrecoMedio] = useState('');
+    const [classificacao, setClassificacao] = useState({ setor: '', subsetor: '', geografia: '' });
     const [error, setError] = useState('');
     const [saving, setSaving] = useState(false);
 
@@ -28,6 +33,11 @@ const EditarAtivoDialog = ({ open, ativo, onClose, onSaved }) => {
         if (open && ativo) {
             setQuantidade(ativo.quantidade != null ? String(ativo.quantidade) : '');
             setPrecoMedio(ativo.precoMedio != null ? String(ativo.precoMedio) : '');
+            setClassificacao({
+                setor: ativo.setor || '',
+                subsetor: ativo.subsetor || '',
+                geografia: ativo.geografia || '',
+            });
             setError('');
         }
     }, [open, ativo]);
@@ -49,10 +59,16 @@ const EditarAtivoDialog = ({ open, ativo, onClose, onSaved }) => {
         }
         try {
             setSaving(true);
-            await investimentoService.editarAtivo(ativo.ticker, {
+            const payload = {
                 quantidade: parseFloat(quantidade),
                 precoMedio: parseFloat(precoMedio),
-            });
+            };
+            // MERGE no backend: só envia classificação selecionada; campo
+            // omitido (null) mantém o valor atual do ativo.
+            if (classificacao.setor) payload.setor = classificacao.setor;
+            if (classificacao.subsetor) payload.subsetor = classificacao.subsetor;
+            if (classificacao.geografia) payload.geografia = classificacao.geografia;
+            await investimentoService.editarAtivo(ativo.ticker, payload);
             if (onSaved) onSaved(`Posição de ${ativo.ticker} atualizada.`);
             onClose();
         } catch (err) {
@@ -92,6 +108,14 @@ const EditarAtivoDialog = ({ open, ativo, onClose, onSaved }) => {
                     inputProps={{ 'data-testid': 'input-editar-preco-medio', min: 0, step: '0.01' }}
                     sx={{ mt: 2 }}
                 />
+                {/* Classificação estratégica (setor/subsetor/geografia) — merge no backend */}
+                <Grid container spacing={2} sx={{ mt: 0.5 }}>
+                    <ClassificacaoAtivoSelects
+                        value={classificacao}
+                        onChange={setClassificacao}
+                        gridSize={{ xs: 12 }}
+                    />
+                </Grid>
                 {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
             </DialogContent>
             <DialogActions>

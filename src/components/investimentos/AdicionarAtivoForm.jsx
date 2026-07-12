@@ -14,17 +14,14 @@ import {
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { investimentoService } from '../../services/investimentoService';
 import { extrairMensagemErroApi } from '../../utils/apiErrorUtils';
+import { CLASSES_ATIVO } from '../../constants/taxonomiaB3';
+import ClassificacaoAtivoSelects from './ClassificacaoAtivoSelects';
 
 const hoje = () => new Date().toISOString().split('T')[0]; // "yyyy-MM-dd"
 
 // Rótulos PT-BR dos tipos aceitos pelo backend (enum TipoAtivo).
 // Valor vazio = backend infere o tipo via catálogo (comportamento legado).
-const TIPOS_ATIVO = [
-    { value: 'ACAO', label: 'Ação' },
-    { value: 'FUNDO_IMOBILIARIO', label: 'FII' },
-    { value: 'RENDA_FIXA', label: 'Renda Fixa' },
-    { value: 'CRIPTOMOEDA', label: 'Cripto' },
-];
+const TIPOS_ATIVO = CLASSES_ATIVO;
 
 const estadoInicial = () => ({
     ticker: '',
@@ -32,6 +29,9 @@ const estadoInicial = () => ({
     quantidade: '',
     precoCompra: '',
     dataCompra: hoje(),
+    setor: '',
+    subsetor: '',
+    geografia: '',
 });
 
 /**
@@ -80,6 +80,11 @@ const AdicionarAtivoForm = ({ onAtivoAdicionado }) => {
         // Campos opcionais: omitidos quando não informados (backend aplica os fallbacks).
         if (form.tipoAtivo) payload.tipoAtivo = form.tipoAtivo;
         if (form.dataCompra) payload.dataCompra = form.dataCompra;
+        // Classificação estratégica opcional (setor/subsetor/geografia).
+        // Subsetor sem setor não acontece na UI (auto-preenchimento do pai).
+        if (form.setor) payload.setor = form.setor;
+        if (form.subsetor) payload.subsetor = form.subsetor;
+        if (form.geografia) payload.geografia = form.geografia;
 
         try {
             setSaving(true);
@@ -170,6 +175,12 @@ const AdicionarAtivoForm = ({ onAtivoAdicionado }) => {
                         slotProps={{ inputLabel: { shrink: true } }}
                     />
                 </Grid>
+
+                {/* Classificação estratégica opcional — alimenta o breakdown por setores */}
+                <ClassificacaoAtivoSelects
+                    value={{ setor: form.setor, subsetor: form.subsetor, geografia: form.geografia }}
+                    onChange={(next) => setForm((prev) => ({ ...prev, ...next }))}
+                />
 
                 <Grid size={{ xs: 12 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>

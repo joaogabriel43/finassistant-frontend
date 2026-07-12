@@ -9,6 +9,7 @@ import RentabilidadePanel from '../components/investimentos/RentabilidadePanel';
 import MarkowitzPanel from '../components/investimentos/MarkowitzPanel';
 import PortfolioTable from '../components/dashboard/PortfolioTable';
 import EstrategiaForm from '../components/investimentos/EstrategiaForm';
+import EstrategiaSetoresPanel from '../components/investimentos/EstrategiaSetoresPanel';
 import AdicionarAtivoForm from '../components/investimentos/AdicionarAtivoForm';
 import EditarAtivoDialog from '../components/investimentos/EditarAtivoDialog';
 import RemoverAtivoDialog from '../components/investimentos/RemoverAtivoDialog';
@@ -222,6 +223,15 @@ const Investimentos = () => {
                             Adicionar Ativo
                         </Typography>
                         <AdicionarAtivoForm onAtivoAdicionado={handlePortfolioChanged} />
+                    </Paper>
+                </Grid>
+            </Grid>
+
+            {/* LINHA 2.7 — Estratégia por Setores: tetos + breakdown (xs=12) */}
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+                <Grid size={{ xs: 12 }}>
+                    <Paper sx={cardStyle}>
+                        <EstrategiaSetoresPanel refreshKey={refreshKey} />
                     </Paper>
                 </Grid>
             </Grid>
