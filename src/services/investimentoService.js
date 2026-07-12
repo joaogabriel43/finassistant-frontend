@@ -215,6 +215,45 @@ const sugerirAporte = async (valor) => {
   }
 };
 
+// ── Preço-teto (valuation Bazin + Graham) ──────────────────────────────────
+
+// Preço-teto de cada AÇÃO da carteira pelos métodos Bazin e Graham.
+// `yieldDesejado` (decimal, ex.: 0.06 = 6%) é query param opcional do Bazin;
+// backend usa 0.06 por default. Retorna:
+// { yieldDesejado, ativos: [{ ticker, precoAtual?, origemPreco?, bazin, graham }],
+//   disclaimer }. Carteira sem ações → ativos: []. yield ≤ 0 → 400.
+// Toda a análise vem do backend — o front apenas consome e formata.
+const obterPrecoTeto = async (yieldDesejado) => {
+  try {
+    const url =
+      yieldDesejado != null
+        ? `/investimentos/valuation/preco-teto?yield=${encodeURIComponent(yieldDesejado)}`
+        : '/investimentos/valuation/preco-teto';
+    const response = await api.get(url);
+    return response.data;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Erro ao buscar preço-teto da carteira:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+// Avaliação avulsa de preço-teto para um ticker fora da carteira (útil antes de
+// comprar). payload: { ticker (obrigatório), precoAtual?, yieldDesejado?,
+// dividendoAnual?, lpa?, vpa? } — campos manuais têm precedência sobre a fonte.
+// Retorna { yieldDesejado, analise: ItemValuation, disclaimer }.
+// ticker ausente, yieldDesejado ≤ 0 ou precoAtual ≤ 0 → 400.
+const avaliarPrecoTetoAvulso = async (payload) => {
+  try {
+    const response = await api.post('/investimentos/valuation/preco-teto/avulso', payload);
+    return response.data;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Erro ao avaliar preço-teto avulso:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 export const investimentoService = {
   venderAtivo,
   adicionarAtivo,
@@ -230,4 +269,6 @@ export const investimentoService = {
   obterBreakdown,
   obterAlertas,
   sugerirAporte,
+  obterPrecoTeto,
+  avaliarPrecoTetoAvulso,
 };

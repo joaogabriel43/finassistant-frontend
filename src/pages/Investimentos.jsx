@@ -11,6 +11,7 @@ import PortfolioTable from '../components/dashboard/PortfolioTable';
 import EstrategiaForm from '../components/investimentos/EstrategiaForm';
 import EstrategiaSetoresPanel from '../components/investimentos/EstrategiaSetoresPanel';
 import SaudeCarteiraPanel from '../components/investimentos/SaudeCarteiraPanel';
+import PrecoTetoPanel from '../components/investimentos/PrecoTetoPanel';
 import AdicionarAtivoForm from '../components/investimentos/AdicionarAtivoForm';
 import EditarAtivoDialog from '../components/investimentos/EditarAtivoDialog';
 import RemoverAtivoDialog from '../components/investimentos/RemoverAtivoDialog';
@@ -252,6 +253,15 @@ const Investimentos = () => {
                                     ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
                             }
                         />
+                    </Paper>
+                </Grid>
+            </Grid>
+
+            {/* LINHA 2.9 — Preço-Teto (Valuation): Bazin + Graham (xs=12) */}
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+                <Grid size={{ xs: 12 }}>
+                    <Paper sx={cardStyle}>
+                        <PrecoTetoPanel refreshKey={refreshKey} />
                     </Paper>
                 </Grid>
             </Grid>

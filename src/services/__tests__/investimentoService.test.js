@@ -106,3 +106,48 @@ describe('investimentoService — saúde da carteira (alertas + aporte)', () => 
     await expect(investimentoService.sugerirAporte(500)).rejects.toBe(erro);
   });
 });
+
+describe('investimentoService — preço-teto (valuation Bazin + Graham)', () => {
+  it('obterPrecoTeto faz GET em /investimentos/valuation/preco-teto com o yield como query param', async () => {
+    const resposta = { yieldDesejado: 0.07, ativos: [], disclaimer: 'Metodologia informativa.' };
+    api.get.mockResolvedValue({ data: resposta });
+
+    const resultado = await investimentoService.obterPrecoTeto(0.07);
+
+    expect(api.get).toHaveBeenCalledWith('/investimentos/valuation/preco-teto?yield=0.07');
+    expect(resultado).toEqual(resposta);
+  });
+
+  it('obterPrecoTeto sem yield omite a query param (backend usa o default)', async () => {
+    api.get.mockResolvedValue({ data: { yieldDesejado: 0.06, ativos: [], disclaimer: 'x' } });
+
+    await investimentoService.obterPrecoTeto();
+
+    expect(api.get).toHaveBeenCalledWith('/investimentos/valuation/preco-teto');
+  });
+
+  it('obterPrecoTeto propaga o 400 do backend (yield ≤ 0)', async () => {
+    const erro = { response: { status: 400, data: { status: 400, message: 'yield deve ser positivo' } } };
+    api.get.mockRejectedValue(erro);
+
+    await expect(investimentoService.obterPrecoTeto(0)).rejects.toBe(erro);
+  });
+
+  it('avaliarPrecoTetoAvulso faz POST em /investimentos/valuation/preco-teto/avulso com o payload', async () => {
+    const payload = { ticker: 'BBAS3', yieldDesejado: 0.06, dividendoAnual: 3.2, lpa: 5.5, vpa: 12 };
+    const resposta = { yieldDesejado: 0.06, analise: { ticker: 'BBAS3' }, disclaimer: 'x' };
+    api.post.mockResolvedValue({ data: resposta });
+
+    const resultado = await investimentoService.avaliarPrecoTetoAvulso(payload);
+
+    expect(api.post).toHaveBeenCalledWith('/investimentos/valuation/preco-teto/avulso', payload);
+    expect(resultado).toEqual(resposta);
+  });
+
+  it('avaliarPrecoTetoAvulso propaga o 400 do backend (ticker ausente)', async () => {
+    const erro = { response: { status: 400, data: { status: 400, message: 'ticker é obrigatório' } } };
+    api.post.mockRejectedValue(erro);
+
+    await expect(investimentoService.avaliarPrecoTetoAvulso({})).rejects.toBe(erro);
+  });
+});
