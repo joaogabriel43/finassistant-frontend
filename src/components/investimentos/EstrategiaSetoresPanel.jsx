@@ -61,7 +61,7 @@ const fmtPct = (v) => `${(v ?? 0).toFixed(1).replace('.', ',')}%`;
  * alocação. Valores A CUSTO (quantidade × preço médio) vindos do backend;
  * o front apenas consome e formata.
  */
-const EstrategiaSetoresPanel = ({ refreshKey = 0 }) => {
+const EstrategiaSetoresPanel = ({ refreshKey = 0, onTetosSalvos }) => {
     const theme = useTheme();
     const series = theme.palette.series;
 
@@ -74,6 +74,9 @@ const EstrategiaSetoresPanel = ({ refreshKey = 0 }) => {
     // Configuração de tetos (rascunho editável por dimensão)
     const [configAberta, setConfigAberta] = useState(false);
     const [linhasTeto, setLinhasTeto] = useState({ porClasse: [], porSetor: [], porGeografia: [] });
+    // Teto por ativo individual (%): string vazia = sem limite (o PUT é
+    // substituição completa — campo ausente REMOVE o limite no backend).
+    const [tetoAtivoIndividual, setTetoAtivoIndividual] = useState('');
     const [salvando, setSalvando] = useState(false);
     const [msgSalvar, setMsgSalvar] = useState(null); // { severity, texto }
 
@@ -92,6 +95,7 @@ const EstrategiaSetoresPanel = ({ refreshKey = 0 }) => {
                 porSetor: mapaParaLinhas(tt?.porSetor),
                 porGeografia: mapaParaLinhas(tt?.porGeografia),
             });
+            setTetoAtivoIndividual(tt?.porAtivoIndividual != null ? String(tt.porAtivoIndividual) : '');
         } catch (err) {
             setError(extrairMensagemErroApi(err, 'Falha ao carregar a estratégia por setores.'));
         } finally {
@@ -143,6 +147,13 @@ const EstrategiaSetoresPanel = ({ refreshKey = 0 }) => {
     // Validação client-side espelhando o backend: 0 < teto ≤ 100 e chaves
     // únicas por dimensão. Tetos NÃO precisam somar 100 (limites independentes).
     const validarTetos = () => {
+        // Teto por ativo individual: opcional; quando preenchido, 0 < x ≤ 100.
+        if (tetoAtivoIndividual.trim() !== '') {
+            const teto = parseFloat(tetoAtivoIndividual);
+            if (Number.isNaN(teto) || teto <= 0 || teto > 100) {
+                return 'O teto por ativo individual deve ser maior que 0 e no máximo 100.';
+            }
+        }
         for (const { key, label } of DIMENSOES_TETO) {
             const chaves = new Set();
             for (const linha of linhasTeto[key]) {
@@ -166,18 +177,23 @@ const EstrategiaSetoresPanel = ({ refreshKey = 0 }) => {
             setMsgSalvar({ severity: 'error', texto: invalido });
             return;
         }
-        // SUBSTITUIÇÃO COMPLETA: mapa vazio limpa a dimensão no backend.
+        // SUBSTITUIÇÃO COMPLETA: mapa vazio limpa a dimensão no backend e
+        // porAtivoIndividual ausente REMOVE o limite por ativo.
         const payload = Object.fromEntries(
             DIMENSOES_TETO.map(({ key }) => [
                 key,
                 Object.fromEntries(linhasTeto[key].map((l) => [l.chave, parseFloat(l.teto)])),
             ]),
         );
+        if (tetoAtivoIndividual.trim() !== '') {
+            payload.porAtivoIndividual = parseFloat(tetoAtivoIndividual);
+        }
         try {
             setSalvando(true);
             await investimentoService.salvarTetos(payload);
             setMsgSalvar({ severity: 'success', texto: 'Tetos salvos com sucesso.' });
             await carregar();
+            onTetosSalvos?.();
         } catch (err) {
             setMsgSalvar({
                 severity: 'error',
@@ -241,6 +257,27 @@ const EstrategiaSetoresPanel = ({ refreshKey = 0 }) => {
                     }}
                     data-testid="config-tetos"
                 >
+                    <Box sx={{ mb: 3 }}>
+                        <Typography variant="overline" sx={{ color: 'text.secondary', display: 'block' }}>
+                            Por ativo individual
+                        </Typography>
+                        <TextField
+                            label="Teto por ativo individual (%)"
+                            type="number"
+                            size="small"
+                            value={tetoAtivoIndividual}
+                            onChange={(e) => setTetoAtivoIndividual(e.target.value)}
+                            helperText="Opcional — limite máximo de concentração para cada ativo. Deixe vazio para não limitar."
+                            inputProps={{
+                                'data-testid': 'input-teto-por-ativo',
+                                min: 0,
+                                max: 100,
+                                step: 0.5,
+                            }}
+                            sx={{ mt: 1, width: 280 }}
+                        />
+                    </Box>
+
                     <Grid container spacing={3}>
                         {DIMENSOES_TETO.map(({ key, label, opcoes }) => (
                             <Grid key={key} size={{ xs: 12, md: 4 }}>

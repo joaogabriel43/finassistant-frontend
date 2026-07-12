@@ -181,6 +181,40 @@ const obterBreakdown = async () => {
   }
 };
 
+// ── Saúde da carteira (alertas de concentração + aporte inteligente) ───────
+
+// Alertas de concentração + score de aderência. Shape:
+// { alertas: [{ dimensao, chave, percentualReal, limite, excesso }],
+//   scoreAderencia: number|null, motivoScoreIndisponivel: string|null }
+// dimensao ∈ ATIVO|CLASSE|SETOR|GEOGRAFIA; chave = ticker (ATIVO) ou enum.
+// A lista já vem ordenada do backend e vazia quando não há violação.
+const obterAlertas = async () => {
+  try {
+    const response = await api.get('/investimentos/estrategia/alertas');
+    return response.data;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Erro ao buscar alertas de concentração:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+// Sugestão de aporte inteligente. Envia { valor } (≥ 0.01, máx 2 casas) e
+// recebe { valorAporte, parcelas: [{classe, valor}], valorNaoAlocavel,
+// motivoNaoAlocavel, simulacao: [{classe, percentualAntes, percentualDepois,
+// percentualAlvo}], disclaimer }. Invariante do backend:
+// Σparcelas + valorNaoAlocavel = valorAporte. 400 sem estratégia configurada.
+const sugerirAporte = async (valor) => {
+  try {
+    const response = await api.post('/investimentos/estrategia/aporte', { valor });
+    return response.data;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Erro ao sugerir aporte:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 export const investimentoService = {
   venderAtivo,
   adicionarAtivo,
@@ -194,4 +228,6 @@ export const investimentoService = {
   obterTetos,
   salvarTetos,
   obterBreakdown,
+  obterAlertas,
+  sugerirAporte,
 };

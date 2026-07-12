@@ -64,3 +64,45 @@ describe('investimentoService — CRUD de posições do portfólio', () => {
     ).rejects.toBe(erro);
   });
 });
+
+describe('investimentoService — saúde da carteira (alertas + aporte)', () => {
+  it('obterAlertas faz GET em /investimentos/estrategia/alertas e retorna o payload', async () => {
+    const resposta = {
+      alertas: [{ dimensao: 'ATIVO', chave: 'PETR4', percentualReal: 35, limite: 20, excesso: 15 }],
+      scoreAderencia: 72.5,
+      motivoScoreIndisponivel: null,
+    };
+    api.get.mockResolvedValue({ data: resposta });
+
+    const resultado = await investimentoService.obterAlertas();
+
+    expect(api.get).toHaveBeenCalledWith('/investimentos/estrategia/alertas');
+    expect(resultado).toEqual(resposta);
+  });
+
+  it('sugerirAporte faz POST em /investimentos/estrategia/aporte com { valor }', async () => {
+    const resposta = {
+      valorAporte: 1000,
+      parcelas: [{ classe: 'ACAO', valor: 600 }],
+      valorNaoAlocavel: 400,
+      motivoNaoAlocavel: 'Teto atingido',
+      simulacao: [],
+      disclaimer: 'Sugestão informativa.',
+    };
+    api.post.mockResolvedValue({ data: resposta });
+
+    const resultado = await investimentoService.sugerirAporte(1000);
+
+    expect(api.post).toHaveBeenCalledWith('/investimentos/estrategia/aporte', { valor: 1000 });
+    expect(resultado).toEqual(resposta);
+  });
+
+  it('sugerirAporte propaga o 400 do backend (sem estratégia configurada)', async () => {
+    const erro = {
+      response: { status: 400, data: { status: 400, message: 'Nenhuma estratégia configurada' } },
+    };
+    api.post.mockRejectedValue(erro);
+
+    await expect(investimentoService.sugerirAporte(500)).rejects.toBe(erro);
+  });
+});

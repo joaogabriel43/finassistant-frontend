@@ -10,6 +10,7 @@ import MarkowitzPanel from '../components/investimentos/MarkowitzPanel';
 import PortfolioTable from '../components/dashboard/PortfolioTable';
 import EstrategiaForm from '../components/investimentos/EstrategiaForm';
 import EstrategiaSetoresPanel from '../components/investimentos/EstrategiaSetoresPanel';
+import SaudeCarteiraPanel from '../components/investimentos/SaudeCarteiraPanel';
 import AdicionarAtivoForm from '../components/investimentos/AdicionarAtivoForm';
 import EditarAtivoDialog from '../components/investimentos/EditarAtivoDialog';
 import RemoverAtivoDialog from '../components/investimentos/RemoverAtivoDialog';
@@ -231,7 +232,26 @@ const Investimentos = () => {
             <Grid container spacing={3} sx={{ mb: 3 }}>
                 <Grid size={{ xs: 12 }}>
                     <Paper sx={cardStyle}>
-                        <EstrategiaSetoresPanel refreshKey={refreshKey} />
+                        <EstrategiaSetoresPanel
+                            refreshKey={refreshKey}
+                            onTetosSalvos={handlePortfolioChanged}
+                        />
+                    </Paper>
+                </Grid>
+            </Grid>
+
+            {/* LINHA 2.8 — Saúde da Carteira: score + alertas + aporte (xs=12) */}
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+                <Grid size={{ xs: 12 }}>
+                    <Paper sx={cardStyle}>
+                        <SaudeCarteiraPanel
+                            refreshKey={refreshKey}
+                            onConfigurarEstrategia={() =>
+                                document
+                                    .getElementById('card-estrategia-alocacao')
+                                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                            }
+                        />
                     </Paper>
                 </Grid>
             </Grid>
@@ -302,7 +322,7 @@ const Investimentos = () => {
             {/* LINHA 5 — Strategy card (xs=12) */}
             <Grid container spacing={3}>
                 <Grid size={{ xs: 12 }}>
-                    <Paper sx={cardStyle}>
+                    <Paper sx={cardStyle} id="card-estrategia-alocacao">
                         <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
                             Minha Estratégia de Alocação
                         </Typography>

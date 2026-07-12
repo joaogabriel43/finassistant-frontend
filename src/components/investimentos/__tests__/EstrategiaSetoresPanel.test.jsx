@@ -290,6 +290,72 @@ describe('EstrategiaSetoresPanel — configuração de tetos', () => {
     });
   });
 
+  it('pré-carrega o teto por ativo individual quando configurado no backend', async () => {
+    investimentoService.obterTetos.mockResolvedValue({
+      ...tetosConfigurados,
+      porAtivoIndividual: 15,
+    });
+    const config = await abrirConfig();
+
+    expect(within(config).getByTestId('input-teto-por-ativo').value).toBe('15');
+  });
+
+  it('bloqueia o PUT quando o teto por ativo está fora de 0 < x ≤ 100', async () => {
+    const config = await abrirConfig();
+
+    fireEvent.change(within(config).getByTestId('input-teto-por-ativo'), {
+      target: { value: '120' },
+    });
+    fireEvent.click(screen.getByTestId('btn-salvar-tetos'));
+
+    expect(
+      await screen.findByText(/teto por ativo individual deve ser maior que 0 e no máximo 100/i),
+    ).toBeInTheDocument();
+    expect(investimentoService.salvarTetos).not.toHaveBeenCalled();
+  });
+
+  it('inclui porAtivoIndividual no PUT quando preenchido', async () => {
+    const config = await abrirConfig();
+
+    fireEvent.change(within(config).getByTestId('input-teto-por-ativo'), {
+      target: { value: '10' },
+    });
+    fireEvent.click(screen.getByTestId('btn-salvar-tetos'));
+
+    await waitFor(() => {
+      expect(investimentoService.salvarTetos).toHaveBeenCalledWith({
+        porClasse: { ACAO: 30 },
+        porSetor: { FINANCEIRO: 25 },
+        porGeografia: { BRASIL: 80 },
+        porAtivoIndividual: 10,
+      });
+    });
+  });
+
+  it('omite porAtivoIndividual no PUT quando o campo fica vazio (remove o limite)', async () => {
+    investimentoService.obterTetos.mockResolvedValue({
+      ...tetosConfigurados,
+      porAtivoIndividual: 15,
+    });
+    const config = await abrirConfig();
+
+    fireEvent.change(within(config).getByTestId('input-teto-por-ativo'), {
+      target: { value: '' },
+    });
+    fireEvent.click(screen.getByTestId('btn-salvar-tetos'));
+
+    await waitFor(() => {
+      expect(investimentoService.salvarTetos).toHaveBeenCalledWith({
+        porClasse: { ACAO: 30 },
+        porSetor: { FINANCEIRO: 25 },
+        porGeografia: { BRASIL: 80 },
+      });
+    });
+    expect(
+      investimentoService.salvarTetos.mock.calls[0][0],
+    ).not.toHaveProperty('porAtivoIndividual');
+  });
+
   it('exibe o erro do backend quando o PUT falha (400 teto inválido)', async () => {
     investimentoService.salvarTetos.mockRejectedValue({
       response: {
