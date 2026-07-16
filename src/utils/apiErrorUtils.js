@@ -12,9 +12,16 @@
 export const extrairMensagemErroApi = (error, fallback) => {
   const data = error?.response?.data;
   if (data) {
+    if (typeof data === 'string' && data.trim()) {
+      return data;
+    }
     if (data.fields && typeof data.fields === 'object') {
       const mensagens = Object.values(data.fields).filter(Boolean);
       if (mensagens.length > 0) return mensagens.join(' ');
+    }
+    // Shape do RateLimitingFilter (429): { erro: "RATE_LIMIT", mensagem: "..." }
+    if (typeof data.mensagem === 'string' && data.mensagem.trim()) {
+      return data.mensagem;
     }
     if (typeof data.message === 'string' && data.message.trim()) {
       return data.message;

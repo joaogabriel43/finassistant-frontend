@@ -6,6 +6,8 @@ import {
 } from '@mui/material';
 import authService from '../services/authService';
 import api from '../services/api';
+import { regrasSenha, senhaValida } from '../utils/senhaPolicy';
+import { extrairMensagemErroApi } from '../utils/apiErrorUtils';
 
 const VERSAO_TERMOS = '1.0';
 const VERSAO_PRIVACIDADE = '1.0';
@@ -18,9 +20,12 @@ const Registro = () => {
     const [success, setSuccess] = useState('');
     const navigate = useNavigate();
 
+    const regras = regrasSenha(senha);
+    const politicaOk = senhaValida(senha);
+
     const handleRegister = async (e) => {
         e.preventDefault();
-        if (!aceitouTermos) return;
+        if (!aceitouTermos || !politicaOk) return;
         setError('');
         setSuccess('');
         try {
@@ -43,7 +48,8 @@ const Registro = () => {
             setSuccess('Usuário registrado com sucesso! Redirecionando para o login...');
             setTimeout(() => navigate('/login'), 2000);
         } catch (err) {
-            setError(err.response?.data || 'Erro ao registrar. Tente novamente.');
+            // 429 (rate limit) e 400 (política de senha) trazem mensagem própria do backend
+            setError(extrairMensagemErroApi(err, 'Erro ao registrar. Tente novamente.'));
         }
     };
 
@@ -118,6 +124,24 @@ const Registro = () => {
                         sx={inputSx}
                     />
 
+                    {/* Checklist ao vivo da política de senha (espelho do backend — ADR-028) */}
+                    <Box sx={{ mt: 0.5, mb: 0.5 }}>
+                        {[
+                            { ok: regras.tamanho, texto: 'Mínimo de 8 caracteres' },
+                            { ok: regras.letra, texto: 'Pelo menos 1 letra' },
+                            { ok: regras.numero, texto: 'Pelo menos 1 número' },
+                        ].map(({ ok, texto }) => (
+                            <Typography
+                                key={texto}
+                                variant="caption"
+                                component="div"
+                                sx={{ color: ok ? '#4ade80' : 'rgba(255,255,255,0.45)' }}
+                            >
+                                {ok ? '✓' : '○'} {texto}
+                            </Typography>
+                        ))}
+                    </Box>
+
                     {/* LGPD: aceite obrigatório dos Termos de Uso e Política de Privacidade */}
                     <FormControlLabel
                         control={
@@ -169,7 +193,7 @@ const Registro = () => {
                         type="submit"
                         variant="contained"
                         fullWidth
-                        disabled={!aceitouTermos}
+                        disabled={!aceitouTermos || !politicaOk}
                         sx={{ mt: 2, py: 1.5, bgcolor: '#7C6AF7', '&:hover': { bgcolor: '#6355d4' } }}
                     >
                         Criar conta

@@ -21,7 +21,13 @@ const Login = () => {
       }
       // redirecionamento controlado pelo AuthContext
     } catch (err) {
-      setError('Email ou senha inválidos. Por favor, tente novamente.');
+      // 429 (rate limit anti brute-force) tem mensagem própria do backend com o tempo
+      // de espera — mostrá-la evita o falso "senha inválida" durante o bloqueio.
+      if (err?.response?.status === 429) {
+        setError(err.response?.data?.mensagem || 'Muitas tentativas. Aguarde e tente novamente.');
+      } else {
+        setError('Email ou senha inválidos. Por favor, tente novamente.');
+      }
       console.error('Erro de autenticação:', err);
     } finally {
       setLoading(false);
