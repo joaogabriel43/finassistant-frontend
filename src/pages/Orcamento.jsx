@@ -17,6 +17,7 @@ import ImportacaoExtratoModal from '../components/orcamento/ImportacaoExtratoMod
 import NfceScannerModal from '../components/orcamento/NfceScannerModal';
 import RecorrenciasCard from '../components/orcamento/RecorrenciasCard';
 import OrcamentoLimitesCard from '../components/orcamento/OrcamentoLimitesCard';
+import CartoesCard from '../components/orcamento/CartoesCard';
 import { useExportacao } from '../hooks/useExportacao';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -161,6 +162,9 @@ const Orcamento = () => {
 
             {/* Orçamento por categoria (ADR-034) */}
             <OrcamentoLimitesCard />
+
+            {/* Cartões de crédito (ADR-035) */}
+            <CartoesCard />
 
             {/* Comparativo Mensal */}
             <Card sx={{ mb: 3 }}>
