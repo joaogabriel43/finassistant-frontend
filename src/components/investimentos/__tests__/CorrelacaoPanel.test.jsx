@@ -5,7 +5,7 @@ import theme from '../../../theme';
 import CorrelacaoPanel from '../CorrelacaoPanel';
 
 vi.mock('../../../services/investimentoService', () => ({
-  investimentoService: { obterAnaliseCorrelacao: vi.fn() },
+  investimentoService: { obterAnaliseCorrelacao: vi.fn(), obterAlphaBeta: vi.fn() },
 }));
 
 import { investimentoService } from '../../../services/investimentoService';
@@ -16,6 +16,21 @@ const renderPanel = () =>
       <CorrelacaoPanel refreshKey={0} />
     </ThemeProvider>
   );
+
+const alphaBetaIndisponivel = {
+  benchmark: null, itens: [], betaCarteira: null,
+  motivoIndisponivel: 'Série do benchmark indisponível.', ativosExcluidos: [], disclaimer: 'D.',
+};
+
+const alphaBetaCompleto = {
+  benchmark: 'IBOVESPA (simulado)',
+  itens: [
+    { ticker: 'PETR4', beta: 1.42, alphaMensal: 0.002, alphaAnualizado: 0.024 },
+    { ticker: 'PETR3', beta: 0.98, alphaMensal: -0.001, alphaAnualizado: -0.012 },
+  ],
+  betaCarteira: 1.2,
+  motivoIndisponivel: null, ativosExcluidos: [], disclaimer: 'D.',
+};
 
 const analiseCompleta = {
   tickers: ['PETR4', 'PETR3'],
@@ -31,6 +46,7 @@ const analiseCompleta = {
 describe('CorrelacaoPanel (ADR-030)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    investimentoService.obterAlphaBeta.mockResolvedValue(alphaBetaIndisponivel);
   });
 
   it('renderiza heatmap, par correlacionado, score e disclaimer', async () => {
@@ -70,6 +86,25 @@ describe('CorrelacaoPanel (ADR-030)', () => {
     renderPanel();
 
     expect(await screen.findByText(/não foi possível carregar/i)).toBeInTheDocument();
+  });
+
+  it('exibe tabela de alpha/beta com beta da carteira quando o benchmark existe', async () => {
+    investimentoService.obterAnaliseCorrelacao.mockResolvedValueOnce(analiseCompleta);
+    investimentoService.obterAlphaBeta.mockResolvedValue(alphaBetaCompleto);
+    renderPanel();
+
+    expect(await screen.findByTestId('secao-alpha-beta')).toBeInTheDocument();
+    expect(screen.getByText(/β carteira 1,20/)).toBeInTheDocument();
+    expect(screen.getByText('1,42')).toBeInTheDocument();
+    expect(screen.getByText('2,40%')).toBeInTheDocument();
+    expect(screen.getByText('-1,20%')).toBeInTheDocument();
+  });
+
+  it('benchmark indisponível mostra o motivo na seção alpha/beta', async () => {
+    investimentoService.obterAnaliseCorrelacao.mockResolvedValueOnce(analiseCompleta);
+    renderPanel();
+
+    expect(await screen.findByText(/benchmark indisponível/i)).toBeInTheDocument();
   });
 
   it('sem pares acima do limiar, a seção de alerta não aparece', async () => {

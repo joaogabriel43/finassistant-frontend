@@ -229,6 +229,12 @@ const obterAnaliseCorrelacao = async () => {
   return data;
 };
 
+// Alpha de Jensen + Beta vs benchmark (ADR-031)
+const obterAlphaBeta = async () => {
+  const { data } = await api.get('/investimentos/risco/alpha-beta');
+  return data;
+};
+
 const obterPrecoTeto = async (yieldDesejado) => {
   try {
     const url =
@@ -277,5 +283,6 @@ export const investimentoService = {
   sugerirAporte,
   obterPrecoTeto,
   obterAnaliseCorrelacao,
+  obterAlphaBeta,
   avaliarPrecoTetoAvulso,
 };

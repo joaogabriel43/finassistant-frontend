@@ -37,17 +37,29 @@ const corDoScore = (theme, score) => {
     return theme.palette.error.main;
 };
 
+const fmtBeta = (v) => (v ?? 0).toFixed(2).replace('.', ',');
+const fmtAlphaPct = (v) => `${(v * 100).toFixed(2).replace('.', ',')}%`;
+
 const CorrelacaoPanel = ({ refreshKey }) => {
     const theme = useTheme();
     const [analise, setAnalise] = useState(null);
+    const [alphaBeta, setAlphaBeta] = useState(null);
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState('');
 
     useEffect(() => {
         let ativo = true;
         setCarregando(true);
-        investimentoService.obterAnaliseCorrelacao()
-            .then((dados) => { if (ativo) setAnalise(dados); })
+        Promise.all([
+            investimentoService.obterAnaliseCorrelacao(),
+            investimentoService.obterAlphaBeta(),
+        ])
+            .then(([correlacao, ab]) => {
+                if (ativo) {
+                    setAnalise(correlacao);
+                    setAlphaBeta(ab);
+                }
+            })
             .catch((e) => {
                 if (ativo) setErro(extrairMensagemErroApi(e, 'Não foi possível carregar a análise de correlação.'));
             })
@@ -163,6 +175,61 @@ const CorrelacaoPanel = ({ refreshKey }) => {
                 <Alert severity="info" sx={{ mt: 2 }}>
                     Fora da análise: {ativosExcluidos.map((a) => `${a.ticker} (${a.motivo})`).join(' · ')}
                 </Alert>
+            )}
+
+            {/* Alpha & Beta vs benchmark (ADR-031) */}
+            {alphaBeta && (
+                <Box sx={{ mt: 3 }} data-testid="secao-alpha-beta">
+                    <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                        Alpha &amp; Beta {alphaBeta.benchmark ? `vs ${alphaBeta.benchmark}` : ''}
+                        {alphaBeta.betaCarteira != null && (
+                            <Chip size="small" sx={{ ml: 1 }} variant="outlined"
+                                  label={`β carteira ${fmtBeta(alphaBeta.betaCarteira)}`} />
+                        )}
+                    </Typography>
+                    {alphaBeta.motivoIndisponivel ? (
+                        <Alert severity="info">{alphaBeta.motivoIndisponivel}</Alert>
+                    ) : (
+                        <Box component="table" sx={{ borderCollapse: 'collapse', width: '100%', maxWidth: 460 }}>
+                            <Box component="thead">
+                                <Box component="tr">
+                                    {['Ativo', 'Beta', 'Alpha (a.a.)'].map((h) => (
+                                        <Box key={h} component="th" sx={{
+                                            textAlign: h === 'Ativo' ? 'left' : 'right', py: 0.5, px: 1,
+                                            borderBottom: `1px solid ${theme.palette.divider}`,
+                                            color: theme.palette.text.secondary,
+                                            typography: 'caption',
+                                        }}>{h}</Box>
+                                    ))}
+                                </Box>
+                            </Box>
+                            <Box component="tbody">
+                                {alphaBeta.itens.map((item) => (
+                                    <Box key={item.ticker} component="tr">
+                                        <Box component="td" sx={{ py: 0.5, px: 1, typography: 'body2' }}>
+                                            {item.ticker}
+                                        </Box>
+                                        <Box component="td" sx={{
+                                            py: 0.5, px: 1, textAlign: 'right', typography: 'body2',
+                                            fontFamily: theme.typography.fontFamilyMono,
+                                        }}>
+                                            {fmtBeta(item.beta)}
+                                        </Box>
+                                        <Box component="td" sx={{
+                                            py: 0.5, px: 1, textAlign: 'right', typography: 'body2',
+                                            fontFamily: theme.typography.fontFamilyMono,
+                                            color: item.alphaAnualizado >= 0
+                                                ? theme.palette.success.main
+                                                : theme.palette.error.main,
+                                        }}>
+                                            {fmtAlphaPct(item.alphaAnualizado)}
+                                        </Box>
+                                    </Box>
+                                ))}
+                            </Box>
+                        </Box>
+                    )}
+                </Box>
             )}
 
             <Divider sx={{ my: 2 }} />
