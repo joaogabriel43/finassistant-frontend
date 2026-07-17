@@ -229,6 +229,12 @@ const obterAnaliseCorrelacao = async () => {
   return data;
 };
 
+// Fronteira eficiente de Markowitz (ADR-033)
+const obterFronteira = async () => {
+  const { data } = await api.get('/investimentos/risco/fronteira');
+  return data;
+};
+
 // Alpha de Jensen + Beta vs benchmark (ADR-031)
 const obterAlphaBeta = async () => {
   const { data } = await api.get('/investimentos/risco/alpha-beta');
@@ -284,5 +290,6 @@ export const investimentoService = {
   obterPrecoTeto,
   obterAnaliseCorrelacao,
   obterAlphaBeta,
+  obterFronteira,
   avaliarPrecoTetoAvulso,
 };
