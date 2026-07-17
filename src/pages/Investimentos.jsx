@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import AlocacaoAtivosChart from '../components/investimentos/AlocacaoAtivosChart';
 import BenchmarkChart from '../components/investimentos/BenchmarkChart';
 import BenchmarkJanelasPanel from '../components/investimentos/BenchmarkJanelasPanel';
@@ -22,22 +22,29 @@ import { useNavigate } from 'react-router-dom';
 import { investimentoService } from '../services/investimentoService';
 import { useExportacao } from '../hooks/useExportacao';
 import api from '../services/api';
+import { mesclarOrdem, moverCard } from '../utils/ordemCards';
 import {
     Box,
     Button,
     Chip,
     CircularProgress,
     Grid,
+    IconButton,
     Modal,
     Paper,
     Skeleton,
     Snackbar,
     Alert,
+    Tab,
+    Tabs,
     TextField,
     Typography,
 } from '@mui/material';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
+import ViewAgendaIcon from '@mui/icons-material/ViewAgenda';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ConfigurarAlertasModal from '../components/notificacoes/ConfigurarAlertasModal';
 
 const cardStyle = {
@@ -46,6 +53,114 @@ const cardStyle = {
     borderRadius: '16px',
     boxShadow: 'none',
 };
+
+/**
+ * Sub-abas da página (padrão de mercado: Kinvo/Status Invest agrupam a
+ * carteira por tema em vez de uma página única com scroll infinito).
+ */
+const ABAS = [
+    { id: 'carteira', label: 'Carteira' },
+    { id: 'rentabilidade', label: 'Rentabilidade' },
+    { id: 'proventos', label: 'Proventos' },
+    { id: 'estrategia', label: 'Estratégia' },
+    { id: 'risco', label: 'Risco & Valuation' },
+];
+
+/**
+ * Registry dos cards (ADR-037): fonte da verdade de id, sub-aba, título e
+ * render. A ordem deste array É a ordem padrão; a ordem customizada do
+ * usuário (backend) é reconciliada contra estes ids em mesclarOrdem().
+ */
+const CARDS = [
+    {
+        id: 'alocacao-ativos', aba: 'carteira', titulo: 'Alocação por Tipo de Ativo', md: 5,
+        render: (ctx) => <AlocacaoAtivosChart refreshKey={ctx.refreshKey} />,
+    },
+    {
+        id: 'portfolio', aba: 'carteira', titulo: 'Meu Portfólio', md: 7,
+        render: (ctx) => (
+            <PortfolioTable
+                onSellRequest={ctx.handleOpenSellModal}
+                onEditRequest={ctx.setEditAtivo}
+                onRemoveRequest={ctx.setRemoveAtivo}
+                refreshKey={ctx.refreshKey}
+            />
+        ),
+    },
+    {
+        id: 'adicionar-ativo', aba: 'carteira', titulo: 'Adicionar Ativo',
+        render: (ctx) => <AdicionarAtivoForm onAtivoAdicionado={ctx.handlePortfolioChanged} />,
+    },
+    {
+        id: 'benchmark', aba: 'rentabilidade', titulo: 'Comparação com Benchmarks',
+        render: () => <BenchmarkChart />,
+    },
+    {
+        id: 'benchmark-janelas', aba: 'rentabilidade', titulo: 'Benchmark por Janela Temporal',
+        render: () => <BenchmarkJanelasPanel />,
+    },
+    {
+        id: 'rentabilidade', aba: 'rentabilidade', titulo: 'Rentabilidade da Carteira',
+        render: () => <RentabilidadePanel />,
+    },
+    {
+        id: 'renda-passiva', aba: 'proventos', titulo: 'Renda Passiva',
+        render: () => <RendaPassivaPanel />,
+    },
+    {
+        id: 'calendario-proventos', aba: 'proventos', titulo: 'Calendário de Proventos',
+        render: () => <CalendarioProventosPanel />,
+    },
+    {
+        id: 'eventos-corporativos', aba: 'proventos', titulo: 'Agenda de Eventos Corporativos',
+        render: () => <EventosCorporativosPanel />,
+    },
+    {
+        id: 'estrategia-setores', aba: 'estrategia', titulo: 'Estratégia por Setores',
+        render: (ctx) => (
+            <EstrategiaSetoresPanel
+                refreshKey={ctx.refreshKey}
+                onTetosSalvos={ctx.handlePortfolioChanged}
+            />
+        ),
+    },
+    {
+        id: 'saude-carteira', aba: 'estrategia', titulo: 'Saúde da Carteira',
+        render: (ctx) => (
+            <SaudeCarteiraPanel
+                refreshKey={ctx.refreshKey}
+                onConfigurarEstrategia={ctx.irParaEstrategiaAlocacao}
+            />
+        ),
+    },
+    {
+        id: 'markowitz', aba: 'estrategia', titulo: 'Otimização de Portfólio (Markowitz)',
+        render: () => <MarkowitzPanel />,
+    },
+    {
+        id: 'estrategia-alocacao', aba: 'estrategia', titulo: 'Minha Estratégia de Alocação',
+        domId: 'card-estrategia-alocacao',
+        render: () => <EstrategiaForm />,
+    },
+    {
+        id: 'preco-teto', aba: 'risco', titulo: 'Preço-Teto (Bazin + Graham)',
+        render: (ctx) => <PrecoTetoPanel refreshKey={ctx.refreshKey} />,
+    },
+    {
+        id: 'correlacao', aba: 'risco', titulo: 'Correlação e Diversificação',
+        render: (ctx) => <CorrelacaoPanel refreshKey={ctx.refreshKey} />,
+    },
+    {
+        id: 'fronteira', aba: 'risco', titulo: 'Fronteira Eficiente',
+        render: (ctx) => <FronteiraPanel refreshKey={ctx.refreshKey} />,
+    },
+];
+
+const ORDEM_PADRAO = CARDS.map((c) => c.id);
+
+// Títulos de cards cujos painéis já renderizam o próprio cabeçalho —
+// evita título duplicado (o Paper só mostra o Typography quando true).
+const TITULO_NO_PAPER = new Set(['alocacao-ativos', 'portfolio', 'adicionar-ativo', 'estrategia-alocacao']);
 
 const Investimentos = () => {
     const { user } = useAuth();
@@ -75,10 +190,75 @@ const Investimentos = () => {
     const [removeAtivo, setRemoveAtivo] = useState(null);
     const [crudSuccess, setCrudSuccess] = useState('');
 
+    // Sub-abas + ordem customizada dos cards (ADR-037)
+    const [abaAtiva, setAbaAtiva] = useState('carteira');
+    const [ordem, setOrdem] = useState(ORDEM_PADRAO);
+    const [ordemOriginal, setOrdemOriginal] = useState(ORDEM_PADRAO);
+    const [editLayout, setEditLayout] = useState(false);
+    const [salvandoOrdem, setSalvandoOrdem] = useState(false);
+
+    useEffect(() => {
+        if (!user?.id) return;
+        api.get('/usuario/preferencias/ordem-cards-investimentos')
+            .then((res) => {
+                const mesclada = mesclarOrdem(res.data?.ordem, ORDEM_PADRAO);
+                setOrdem(mesclada);
+                setOrdemOriginal(mesclada);
+            })
+            .catch(() => { /* sem preferência salva → ordem padrão */ });
+    }, [user?.id]);
+
+    const iniciarEdicaoLayout = () => {
+        setOrdemOriginal(ordem);
+        setEditLayout(true);
+    };
+
+    const cancelarEdicaoLayout = () => {
+        setOrdem(ordemOriginal);
+        setEditLayout(false);
+    };
+
+    const salvarOrdem = async () => {
+        try {
+            setSalvandoOrdem(true);
+            await api.put('/usuario/preferencias/ordem-cards-investimentos', { ordem });
+            setOrdemOriginal(ordem);
+            setEditLayout(false);
+            setCrudSuccess('Ordem dos cards salva!');
+        } catch {
+            alert('Erro ao salvar a ordem dos cards.');
+        } finally {
+            setSalvandoOrdem(false);
+        }
+    };
+
+    // Cards da aba ativa, já na ordem customizada
+    const cardsDaAba = useMemo(() => {
+        const porId = new Map(CARDS.map((c) => [c.id, c]));
+        return ordem
+            .map((id) => porId.get(id))
+            .filter((c) => c && c.aba === abaAtiva);
+    }, [ordem, abaAtiva]);
+
+    const idsDaAbaAtiva = useMemo(
+        () => CARDS.filter((c) => c.aba === abaAtiva).map((c) => c.id),
+        [abaAtiva]
+    );
+
     // Refresh da tabela + gráfico de alocação após qualquer operação bem-sucedida
     const handlePortfolioChanged = (mensagem) => {
         if (typeof mensagem === 'string' && mensagem) setCrudSuccess(mensagem);
         setRefreshKey((k) => k + 1);
+    };
+
+    // "Configurar estratégia" na Saúde da Carteira: o card alvo vive na mesma
+    // sub-aba (estrategia) — troca a aba se preciso e rola até o card.
+    const irParaEstrategiaAlocacao = () => {
+        setAbaAtiva('estrategia');
+        setTimeout(() => {
+            document.getElementById('card-estrategia-alocacao')
+                ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
     };
 
     // Adiciona log de navegação para depuração e direciona para a rota do questionário-perfil
@@ -142,11 +322,21 @@ const Investimentos = () => {
         );
     }
 
+    // Contexto passado ao render de cada card do registry
+    const ctx = {
+        refreshKey,
+        handleOpenSellModal,
+        setEditAtivo,
+        setRemoveAtivo,
+        handlePortfolioChanged,
+        irParaEstrategiaAlocacao,
+    };
+
     return (
         <Box sx={{ width: '100%', maxWidth: 1200, mx: 'auto', px: { xs: 1.5, md: 3 }, py: 2 }}>
 
             {/* LINHA 1 — Header */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 1 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Typography variant="h5" fontWeight={700}>
                         Painel de Investimentos
@@ -165,26 +355,53 @@ const Investimentos = () => {
                         />
                     )}
                 </Box>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button
-                        variant="outlined"
-                        startIcon={exportLoading ? <CircularProgress size={16} /> : <TableChartIcon />}
-                        disabled={exportLoading}
-                        onClick={() => downloadArquivo('/api/exportacao/portfolio/csv', 'portfolio.csv')}
-                        data-testid="btn-portfolio-csv"
-                    >
-                        Exportar Portfólio CSV
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        startIcon={<NotificationsActiveIcon />}
-                        onClick={() => setAlertasModalOpen(true)}
-                    >
-                        Configurar Alertas
-                    </Button>
-                    <Button variant="outlined" onClick={handleRefazerQuestionario}>
-                        Refazer Questionário
-                    </Button>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    {editLayout ? (
+                        <>
+                            <Button
+                                variant="contained"
+                                disabled={salvandoOrdem}
+                                startIcon={salvandoOrdem ? <CircularProgress size={16} /> : null}
+                                onClick={salvarOrdem}
+                                data-testid="btn-salvar-ordem"
+                            >
+                                Salvar Ordem
+                            </Button>
+                            <Button variant="outlined" disabled={salvandoOrdem} onClick={cancelarEdicaoLayout}>
+                                Cancelar
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <Button
+                                variant="outlined"
+                                startIcon={<ViewAgendaIcon />}
+                                onClick={iniciarEdicaoLayout}
+                                data-testid="btn-organizar-cards"
+                            >
+                                Organizar Cards
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                startIcon={exportLoading ? <CircularProgress size={16} /> : <TableChartIcon />}
+                                disabled={exportLoading}
+                                onClick={() => downloadArquivo('/api/exportacao/portfolio/csv', 'portfolio.csv')}
+                                data-testid="btn-portfolio-csv"
+                            >
+                                Exportar CSV
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                startIcon={<NotificationsActiveIcon />}
+                                onClick={() => setAlertasModalOpen(true)}
+                            >
+                                Alertas
+                            </Button>
+                            <Button variant="outlined" onClick={handleRefazerQuestionario}>
+                                Refazer Questionário
+                            </Button>
+                        </>
+                    )}
                 </Box>
             </Box>
 
@@ -193,162 +410,63 @@ const Investimentos = () => {
                 onClose={() => setAlertasModalOpen(false)}
             />
 
-            {/* LINHA 2 — Chart (md=5) + Portfolio Table (md=7) */}
-            <Grid container spacing={3} sx={{ mb: 3 }}>
-                <Grid size={{ xs: 12, md: 5 }}>
-                    <Paper sx={cardStyle}>
-                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-                            Alocação por Tipo de Ativo
-                        </Typography>
-                        <AlocacaoAtivosChart refreshKey={refreshKey} />
-                    </Paper>
-                </Grid>
+            {/* Sub-abas por tema (ADR-037) */}
+            <Tabs
+                value={abaAtiva}
+                onChange={(_e, v) => setAbaAtiva(v)}
+                variant="scrollable"
+                scrollButtons="auto"
+                allowScrollButtonsMobile
+                sx={{ mb: 3, borderBottom: '1px solid rgba(255,255,255,0.08)' }}
+            >
+                {ABAS.map((aba) => (
+                    <Tab key={aba.id} value={aba.id} label={aba.label} data-testid={`tab-${aba.id}`} />
+                ))}
+            </Tabs>
 
-                <Grid size={{ xs: 12, md: 7 }}>
-                    <Paper sx={cardStyle}>
-                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-                            Meu Portfólio
-                        </Typography>
-                        <PortfolioTable
-                            onSellRequest={handleOpenSellModal}
-                            onEditRequest={(ativo) => setEditAtivo(ativo)}
-                            onRemoveRequest={(ativo) => setRemoveAtivo(ativo)}
-                            refreshKey={refreshKey}
-                        />
-                    </Paper>
-                </Grid>
-            </Grid>
+            {editLayout && (
+                <Alert severity="info" sx={{ mb: 2 }}>
+                    Use as setas para reordenar os cards desta aba. A ordem é salva na sua conta
+                    e vale em qualquer dispositivo.
+                </Alert>
+            )}
 
-            {/* LINHA 2.5 — Cadastro manual de ativo (xs=12) */}
-            <Grid container spacing={3} sx={{ mb: 3 }}>
-                <Grid size={{ xs: 12 }}>
-                    <Paper sx={cardStyle}>
-                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-                            Adicionar Ativo
-                        </Typography>
-                        <AdicionarAtivoForm onAtivoAdicionado={handlePortfolioChanged} />
-                    </Paper>
-                </Grid>
-            </Grid>
-
-            {/* LINHA 2.7 — Estratégia por Setores: tetos + breakdown (xs=12) */}
-            <Grid container spacing={3} sx={{ mb: 3 }}>
-                <Grid size={{ xs: 12 }}>
-                    <Paper sx={cardStyle}>
-                        <EstrategiaSetoresPanel
-                            refreshKey={refreshKey}
-                            onTetosSalvos={handlePortfolioChanged}
-                        />
-                    </Paper>
-                </Grid>
-            </Grid>
-
-            {/* LINHA 2.8 — Saúde da Carteira: score + alertas + aporte (xs=12) */}
-            <Grid container spacing={3} sx={{ mb: 3 }}>
-                <Grid size={{ xs: 12 }}>
-                    <Paper sx={cardStyle}>
-                        <SaudeCarteiraPanel
-                            refreshKey={refreshKey}
-                            onConfigurarEstrategia={() =>
-                                document
-                                    .getElementById('card-estrategia-alocacao')
-                                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                            }
-                        />
-                    </Paper>
-                </Grid>
-            </Grid>
-
-            {/* LINHA 2.9 — Preço-Teto (Valuation): Bazin + Graham (xs=12) */}
-            <Grid container spacing={3} sx={{ mb: 3 }}>
-                <Grid size={{ xs: 12 }}>
-                    <Paper sx={cardStyle}>
-                        <PrecoTetoPanel refreshKey={refreshKey} />
-                    </Paper>
-
-                    <Paper sx={{ p: 3, mt: 3 }}>
-                        <CorrelacaoPanel refreshKey={refreshKey} />
-                    </Paper>
-
-                    <Paper sx={{ p: 3, mt: 3 }}>
-                        <FronteiraPanel refreshKey={refreshKey} />
-                    </Paper>
-                </Grid>
-            </Grid>
-
-            {/* LINHA 3 — Benchmark Chart (xs=12) */}
-            <Grid container spacing={3} sx={{ mb: 3 }}>
-                <Grid size={{ xs: 12 }}>
-                    <Paper sx={cardStyle}>
-                        <BenchmarkChart />
-                    </Paper>
-                </Grid>
-            </Grid>
-
-            {/* LINHA 3.2 — Benchmark por janela temporal + multi-série (xs=12) */}
-            <Grid container spacing={3} sx={{ mb: 3 }}>
-                <Grid size={{ xs: 12 }}>
-                    <Paper sx={cardStyle}>
-                        <BenchmarkJanelasPanel />
-                    </Paper>
-                </Grid>
-            </Grid>
-
-            {/* LINHA 3.4 — Rentabilidade da Carteira (xs=12) */}
-            <Grid container spacing={3} sx={{ mb: 3 }}>
-                <Grid size={{ xs: 12 }}>
-                    <Paper sx={cardStyle}>
-                        <RentabilidadePanel />
-                    </Paper>
-                </Grid>
-            </Grid>
-
-            {/* LINHA 3.5 — Renda Passiva mês a mês (xs=12) */}
-            <Grid container spacing={3} sx={{ mb: 3 }}>
-                <Grid size={{ xs: 12 }}>
-                    <Paper sx={cardStyle}>
-                        <RendaPassivaPanel />
-                    </Paper>
-                </Grid>
-            </Grid>
-
-            {/* LINHA 3.6 — Calendário de Proventos com Projeção Futura (xs=12) */}
-            <Grid container spacing={3} sx={{ mb: 3 }}>
-                <Grid size={{ xs: 12 }}>
-                    <Paper sx={cardStyle}>
-                        <CalendarioProventosPanel />
-                    </Paper>
-                </Grid>
-            </Grid>
-
-            {/* LINHA 3.7 — Agenda de Eventos Corporativos (xs=12) */}
-            <Grid container spacing={3} sx={{ mb: 3 }}>
-                <Grid size={{ xs: 12 }}>
-                    <Paper sx={cardStyle}>
-                        <EventosCorporativosPanel />
-                    </Paper>
-                </Grid>
-            </Grid>
-
-            {/* LINHA 4 — Markowitz Optimization (xs=12) */}
-            <Grid container spacing={3} sx={{ mb: 3 }}>
-                <Grid size={{ xs: 12 }}>
-                    <Paper sx={cardStyle}>
-                        <MarkowitzPanel />
-                    </Paper>
-                </Grid>
-            </Grid>
-
-            {/* LINHA 5 — Strategy card (xs=12) */}
+            {/* Cards da aba ativa, na ordem do usuário */}
             <Grid container spacing={3}>
-                <Grid size={{ xs: 12 }}>
-                    <Paper sx={cardStyle} id="card-estrategia-alocacao">
-                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-                            Minha Estratégia de Alocação
-                        </Typography>
-                        <EstrategiaForm />
-                    </Paper>
-                </Grid>
+                {cardsDaAba.map((card, posNaAba) => (
+                    <Grid key={card.id} size={{ xs: 12, md: card.md ?? 12 }}>
+                        <Paper sx={cardStyle} id={card.domId} data-testid={`card-${card.id}`}>
+                            {(editLayout || TITULO_NO_PAPER.has(card.id)) && (
+                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                                        {card.titulo}
+                                    </Typography>
+                                    {editLayout && (
+                                        <Box>
+                                            <IconButton
+                                                size="small"
+                                                aria-label={`Subir ${card.titulo}`}
+                                                disabled={posNaAba === 0}
+                                                onClick={() => setOrdem(moverCard(ordem, card.id, -1, idsDaAbaAtiva))}
+                                            >
+                                                <ArrowUpwardIcon fontSize="small" />
+                                            </IconButton>
+                                            <IconButton
+                                                size="small"
+                                                aria-label={`Descer ${card.titulo}`}
+                                                disabled={posNaAba === cardsDaAba.length - 1}
+                                                onClick={() => setOrdem(moverCard(ordem, card.id, 1, idsDaAbaAtiva))}
+                                            >
+                                                <ArrowDownwardIcon fontSize="small" />
+                                            </IconButton>
+                                        </Box>
+                                    )}
+                                </Box>
+                            )}
+                            {card.render(ctx)}
+                        </Paper>
+                    </Grid>
+                ))}
             </Grid>
 
             <Snackbar

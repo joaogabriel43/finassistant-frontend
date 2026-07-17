@@ -47,10 +47,21 @@ const Sidebar = () => {
       >
         {/* Linha 1: Logo ←→ Controles */}
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          {/* Logo clicável — convenção universal de web: marca leva à home */}
           <Typography
+            component={NavLink}
+            to="/dashboard"
             variant="h6"
             fontWeight={700}
-            sx={{ color: '#7C6AF7', letterSpacing: '-0.5px', lineHeight: 1.2 }}
+            data-testid="logo-fortunai"
+            sx={{
+              color: '#7C6AF7',
+              letterSpacing: '-0.5px',
+              lineHeight: 1.2,
+              textDecoration: 'none',
+              cursor: 'pointer',
+              '&:hover': { opacity: 0.85 },
+            }}
           >
             FortunAI
           </Typography>
