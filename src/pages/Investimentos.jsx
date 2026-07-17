@@ -12,6 +12,7 @@ import EstrategiaForm from '../components/investimentos/EstrategiaForm';
 import EstrategiaSetoresPanel from '../components/investimentos/EstrategiaSetoresPanel';
 import SaudeCarteiraPanel from '../components/investimentos/SaudeCarteiraPanel';
 import PrecoTetoPanel from '../components/investimentos/PrecoTetoPanel';
+import CorrelacaoPanel from '../components/investimentos/CorrelacaoPanel';
 import AdicionarAtivoForm from '../components/investimentos/AdicionarAtivoForm';
 import EditarAtivoDialog from '../components/investimentos/EditarAtivoDialog';
 import RemoverAtivoDialog from '../components/investimentos/RemoverAtivoDialog';
@@ -262,6 +263,10 @@ const Investimentos = () => {
                 <Grid size={{ xs: 12 }}>
                     <Paper sx={cardStyle}>
                         <PrecoTetoPanel refreshKey={refreshKey} />
+                    </Paper>
+
+                    <Paper sx={{ p: 3, mt: 3 }}>
+                        <CorrelacaoPanel refreshKey={refreshKey} />
                     </Paper>
                 </Grid>
             </Grid>

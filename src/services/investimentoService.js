@@ -223,6 +223,12 @@ const sugerirAporte = async (valor) => {
 // { yieldDesejado, ativos: [{ ticker, precoAtual?, origemPreco?, bazin, graham }],
 //   disclaimer }. Carteira sem ações → ativos: []. yield ≤ 0 → 400.
 // Toda a análise vem do backend — o front apenas consome e formata.
+// Análise de risco por correlação (ADR-030)
+const obterAnaliseCorrelacao = async () => {
+  const { data } = await api.get('/investimentos/risco/correlacao');
+  return data;
+};
+
 const obterPrecoTeto = async (yieldDesejado) => {
   try {
     const url =
@@ -270,5 +276,6 @@ export const investimentoService = {
   obterAlertas,
   sugerirAporte,
   obterPrecoTeto,
+  obterAnaliseCorrelacao,
   avaliarPrecoTetoAvulso,
 };
