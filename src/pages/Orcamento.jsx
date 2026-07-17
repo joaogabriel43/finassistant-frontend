@@ -18,6 +18,8 @@ import NfceScannerModal from '../components/orcamento/NfceScannerModal';
 import RecorrenciasCard from '../components/orcamento/RecorrenciasCard';
 import OrcamentoLimitesCard from '../components/orcamento/OrcamentoLimitesCard';
 import CartoesCard from '../components/orcamento/CartoesCard';
+import CalendarioGastosCard from '../components/orcamento/CalendarioGastosCard';
+import EntradasSaidasChart from '../components/orcamento/EntradasSaidasChart';
 import { useExportacao } from '../hooks/useExportacao';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -165,6 +167,10 @@ const Orcamento = () => {
 
             {/* Cartões de crédito (ADR-035) */}
             <CartoesCard />
+
+            {/* Entradas × Saídas + Calendário de gastos (ADR-036) */}
+            <EntradasSaidasChart />
+            <CalendarioGastosCard />
 
             {/* Comparativo Mensal */}
             <Card sx={{ mb: 3 }}>
