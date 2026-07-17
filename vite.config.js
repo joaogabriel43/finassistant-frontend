@@ -69,10 +69,10 @@ export default defineConfig({
       output: {
         manualChunks: {
           // React core — separated for long-term cache
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-react': ['react', 'react-dom', 'react-router-dom', '@emotion/react', '@emotion/styled'],
 
           // MUI — separate from main bundle
-          'vendor-mui': ['@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
+          'vendor-mui': ['@mui/material', '@mui/icons-material'],
 
           // Recharts — heavy, changes rarely, benefits from long cache
           'vendor-recharts': ['recharts'],
