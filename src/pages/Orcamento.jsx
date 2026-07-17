@@ -16,6 +16,7 @@ import AnomaliaAlert from '../components/orcamento/AnomaliaAlert';
 import ImportacaoExtratoModal from '../components/orcamento/ImportacaoExtratoModal';
 import NfceScannerModal from '../components/orcamento/NfceScannerModal';
 import RecorrenciasCard from '../components/orcamento/RecorrenciasCard';
+import OrcamentoLimitesCard from '../components/orcamento/OrcamentoLimitesCard';
 import { useExportacao } from '../hooks/useExportacao';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -157,6 +158,9 @@ const Orcamento = () => {
                     </Card>
                 </Grid>
             </Grid>
+
+            {/* Orçamento por categoria (ADR-034) */}
+            <OrcamentoLimitesCard />
 
             {/* Comparativo Mensal */}
             <Card sx={{ mb: 3 }}>
