@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import HomeRoute from './components/HomeRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import PageLoader from './components/ui/PageLoader';
 import ConsentimentoModal from './components/ConsentimentoModal';
@@ -10,6 +11,7 @@ import PWAInstallBanner from './components/pwa/PWAInstallBanner';
 import OfflinePage from './components/pwa/OfflinePage';
 import api from './services/api';
 
+const LandingPage             = lazy(() => import('./pages/LandingPage'));
 const LoginPage               = lazy(() => import('./pages/LoginPage'));
 const Registro                = lazy(() => import('./pages/Registro'));
 const Dashboard               = lazy(() => import('./pages/Dashboard'));
@@ -89,6 +91,8 @@ function App() {
                   <Suspense fallback={<PageLoader />}>
                     <Routes>
                         {/* Rotas Públicas — acessíveis sem login (inclui páginas legais LGPD) */}
+                        {/* Landing page (ADR-039): visitante vê a apresentação; logado vai ao dashboard */}
+                        <Route path="/" element={<HomeRoute landing={<LandingPage />} />} />
                         <Route path="/login" element={<LoginPage />} />
                         <Route path="/registrar" element={<Registro />} />
                         <Route path="/status" element={<StatusPage />} />
@@ -97,7 +101,6 @@ function App() {
 
                         {/* Rotas Protegidas aninhadas sob o ProtectedRoute */}
                         <Route element={<ProtectedRoute />}>
-                            <Route path="/" element={<Navigate to="/dashboard" replace />} />
                             <Route path="/dashboard" element={<Dashboard />} />
                             <Route path="/chat" element={<Chat />} />
                             <Route path="/orcamento" element={<Orcamento />} />
