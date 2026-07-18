@@ -22,6 +22,7 @@ import CreditCardIcon from '@mui/icons-material/CreditCard';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import { formatBRL } from '@/components/ui';
 import api from '../../services/api';
 import { extrairMensagemErroApi } from '../../utils/apiErrorUtils';
@@ -47,6 +48,44 @@ const CartoesCard = () => {
 
   const [novo, setNovo] = useState({ nome: '', bandeira: '', limite: '', diaFechamento: '', diaVencimento: '' });
   const [compra, setCompra] = useState({ descricao: '', valor: '', categoria: '', parcelas: '1' });
+
+  // Detalhes da fatura (ADR-040): quebra por categoria + assinaturas do cartão
+  const [dialogFatura, setDialogFatura] = useState(null); // cartão alvo
+  const [fatura, setFatura] = useState(null);
+  const [assinaturas, setAssinaturas] = useState(null);
+  const [carregandoFatura, setCarregandoFatura] = useState(false);
+
+  const abrirFatura = async (cartao) => {
+    setDialogFatura(cartao);
+    setCarregandoFatura(true);
+    setFatura(null);
+    setAssinaturas(null);
+    const agora = new Date();
+    try {
+      const [fat, ass] = await Promise.all([
+        api.get(`/cartoes/${cartao.id}/fatura?mes=${agora.getMonth() + 1}&ano=${agora.getFullYear()}`),
+        api.get(`/cartoes/${cartao.id}/assinaturas`).catch(() => ({ data: null })),
+      ]);
+      setFatura(fat.data);
+      setAssinaturas(ass.data);
+    } catch (e) {
+      setErro(extrairMensagemErroApi(e, 'Não foi possível carregar a fatura.'));
+      setDialogFatura(null);
+    } finally {
+      setCarregandoFatura(false);
+    }
+  };
+
+  const excluirParcelamento = async (parcelamentoId) => {
+    try {
+      await api.delete(`/cartoes/parcelamentos/${parcelamentoId}`);
+      // recarrega a fatura aberta E o resumo dos cartões
+      if (dialogFatura) await abrirFatura(dialogFatura);
+      carregar();
+    } catch (e) {
+      setErro(extrairMensagemErroApi(e, 'Não foi possível excluir o parcelamento.'));
+    }
+  };
 
   const carregar = useCallback(() => {
     setCarregando(true);
@@ -148,6 +187,9 @@ const CartoesCard = () => {
                   {c.bandeira && <Chip size="small" variant="outlined" label={c.bandeira} />}
                 </Box>
                 <Box>
+                  <IconButton size="small" aria-label={`detalhes da fatura ${c.nome}`} onClick={() => abrirFatura(c)}>
+                    <ReceiptLongIcon fontSize="small" />
+                  </IconButton>
                   <IconButton size="small" aria-label="lançar compra" onClick={() => setDialogCompra(c)}>
                     <ShoppingCartIcon fontSize="small" />
                   </IconButton>
@@ -202,6 +244,91 @@ const CartoesCard = () => {
         <DialogActions>
           <Button onClick={() => setDialogNovo(false)}>Cancelar</Button>
           <Button variant="contained" disabled={salvando} onClick={criarCartao}>Criar</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Dialog: detalhes da fatura — por categoria, assinaturas e parcelamentos (ADR-040) */}
+      <Dialog open={Boolean(dialogFatura)} onClose={() => setDialogFatura(null)} fullWidth maxWidth="sm">
+        <DialogTitle>Fatura {dialogFatura ? `— ${dialogFatura.nome}` : ''}</DialogTitle>
+        <DialogContent>
+          {carregandoFatura ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
+              <CircularProgress size={26} />
+            </Box>
+          ) : fatura && (
+            <>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                Ciclo {fatura.inicioCiclo} a {fatura.fechamento} · vence em {fatura.vencimento}
+              </Typography>
+              <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamilyMono, mb: 2 }}>
+                {formatBRL(fatura.total)}
+              </Typography>
+
+              {fatura.porCategoria?.length > 0 && (
+                <>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>Por categoria</Typography>
+                  {fatura.porCategoria.map((cat) => (
+                    <Box key={cat.categoria} data-testid={`fatura-cat-${cat.categoria}`}
+                         sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                      <Typography variant="body2">{cat.categoria}</Typography>
+                      <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamilyMono }}>
+                        {formatBRL(cat.total)}
+                      </Typography>
+                    </Box>
+                  ))}
+                </>
+              )}
+
+              {assinaturas?.recorrencias?.length > 0 && (
+                <>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, mt: 2, mb: 1 }}>
+                    Assinaturas neste cartão
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
+                    {assinaturas.recorrencias.map((r) => (
+                      <Chip key={r.nome} size="small" variant="outlined"
+                            label={`${r.nome} · ${formatBRL(r.valorMedio)}`} />
+                    ))}
+                  </Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Comprometimento mensal estimado: {formatBRL(assinaturas.totalMensalComprometido)}
+                  </Typography>
+                </>
+              )}
+
+              {fatura.itens?.length > 0 && (
+                <>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, mt: 2, mb: 1 }}>Lançamentos</Typography>
+                  {fatura.itens.map((item) => (
+                    <Box key={item.transacaoId}
+                         sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+                      <Typography variant="body2" sx={{ flexGrow: 1 }} noWrap>
+                        {item.descricao}
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamilyMono, mx: 1 }}>
+                        {formatBRL(item.valor)}
+                      </Typography>
+                      {item.parcelada && item.parcelamentoId && (
+                        <IconButton size="small"
+                                    aria-label={`excluir parcelamento de ${item.descricao}`}
+                                    title="Excluir TODAS as parcelas deste parcelamento"
+                                    onClick={() => {
+                                      if (window.confirm('Excluir TODAS as parcelas deste parcelamento?')) {
+                                        excluirParcelamento(item.parcelamentoId);
+                                      }
+                                    }}>
+                          <DeleteOutlineIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                    </Box>
+                  ))}
+                </>
+              )}
+            </>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogFatura(null)}>Fechar</Button>
         </DialogActions>
       </Dialog>
 
