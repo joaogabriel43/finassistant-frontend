@@ -193,7 +193,7 @@ const CorrelacaoPanel = ({ refreshKey }) => {
                         <Box component="table" sx={{ borderCollapse: 'collapse', width: '100%', maxWidth: 460 }}>
                             <Box component="thead">
                                 <Box component="tr">
-                                    {['Ativo', 'Beta', 'Alpha (a.a.)'].map((h) => (
+                                    {['Ativo', 'Beta', 'Alpha (a.a.)', 'Sharpe (a.a.)'].map((h) => (
                                         <Box key={h} component="th" sx={{
                                             textAlign: h === 'Ativo' ? 'left' : 'right', py: 0.5, px: 1,
                                             borderBottom: `1px solid ${theme.palette.divider}`,
@@ -223,6 +223,12 @@ const CorrelacaoPanel = ({ refreshKey }) => {
                                                 : theme.palette.error.main,
                                         }}>
                                             {fmtAlphaPct(item.alphaAnualizado)}
+                                        </Box>
+                                        <Box component="td" sx={{
+                                            py: 0.5, px: 1, textAlign: 'right', typography: 'body2',
+                                            fontFamily: theme.typography.fontFamilyMono,
+                                        }}>
+                                            {item.sharpeAnualizado != null ? item.sharpeAnualizado.toFixed(2) : '—'}
                                         </Box>
                                     </Box>
                                 ))}

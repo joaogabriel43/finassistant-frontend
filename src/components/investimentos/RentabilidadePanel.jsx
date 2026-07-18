@@ -203,6 +203,24 @@ const RentabilidadePanel = () => {
         />
       </Box>
 
+      {/* Carteira vs inflação (ADR-044): comparação lado a lado com o IPCA 12m oficial */}
+      {dados?.ipcaAcumulado12mPct != null && (
+        <Box data-testid="chip-ipca-12m" sx={{ mt: 1.5, display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            IPCA acumulado 12m: <b style={{ fontFamily: theme.typography.fontFamilyMono }}>
+              {Number(dados.ipcaAcumulado12mPct).toFixed(2)}%</b>
+          </Typography>
+          <Typography variant="caption" sx={{
+            fontWeight: 700,
+            color: Number(dados?.retornoTotalPercentual) >= Number(dados.ipcaAcumulado12mPct)
+              ? theme.palette.success.main : theme.palette.error.main,
+          }}>
+            {Number(dados?.retornoTotalPercentual) >= Number(dados.ipcaAcumulado12mPct)
+              ? '· sua carteira supera a inflação' : '· sua carteira está abaixo da inflação'}
+          </Typography>
+        </Box>
+      )}
+
       {/* Gráfico de evolução temporal (linha) */}
       <GraficoEvolucao evolucao={evolucao} theme={theme} />
 
