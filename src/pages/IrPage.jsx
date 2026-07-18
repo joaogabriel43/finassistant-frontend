@@ -152,6 +152,8 @@ const ResumoCard = ({ apuracao, onGerarDarf, loadingDarf, darf, errorDarf }) => 
             { label: 'Lucro Bruto', value: apuracao.lucroBruto },
             { label: 'Prejuízos Compensados', value: apuracao.prejuizoAnteriorCompensado, highlight: 'warning' },
             { label: 'Lucro Líquido', value: apuracao.lucroLiquido },
+            // IRRF "dedo-duro" retido pela corretora, já abatido do IR devido (ADR-032/041)
+            { label: 'IRRF já retido (deduzido)', value: apuracao.irrfDeduzido, highlight: 'warning' },
           ].map(({ label, value, highlight }) => (
             <Grid size={{ xs: 6, sm: 3 }} key={label}>
               <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'rgba(255,255,255,0.04)' }}>
