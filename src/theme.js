@@ -121,6 +121,21 @@ export const theme = createTheme({
         },
       },
     },
+    // Tabs: o feedback de foco é o indicator roxo + leve fundo — nunca o
+    // retângulo branco de outline do navegador (fix visual do Lote K).
+    MuiTab: {
+      styleOverrides: {
+        root: {
+          outline: 'none',
+          '&.Mui-focusVisible': {
+            outline: 'none',
+            backgroundColor: 'rgba(124,106,247,0.10)',
+            borderRadius: tokens.radius.md,
+          },
+          '&:focus': { outline: 'none' },
+        },
+      },
+    },
     MuiPaper: {
       styleOverrides: {
         root: {

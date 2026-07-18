@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     Box, Grid, Card, CardContent, Typography, Button,
     Select, MenuItem, FormControl, InputLabel, Snackbar, Alert,
-    CircularProgress, Divider, Skeleton,
+    CircularProgress, Divider, Skeleton, Tab, Tabs,
 } from '@mui/material';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
@@ -37,6 +37,15 @@ const MESES = [
 const anoAtual = new Date().getFullYear();
 const ANOS = [anoAtual - 2, anoAtual - 1, anoAtual, anoAtual + 1];
 
+// Sub-abas do Orçamento (Lote K — mesmo padrão de organização do ADR-037)
+const ABAS_ORCAMENTO = [
+    { id: 'visao-geral', label: 'Visão Geral' },
+    { id: 'categorias', label: 'Categorias & Limites' },
+    { id: 'cartoes', label: 'Cartões' },
+    { id: 'analises', label: 'Análises' },
+    { id: 'transacoes', label: 'Transações' },
+];
+
 const Orcamento = () => {
     const { user } = useAuth();
     const [pageLoading, setPageLoading] = useState(true);
@@ -47,6 +56,7 @@ const Orcamento = () => {
     const [mesSelecionado, setMesSelecionado] = useState(now.getMonth() + 1);
     const [anoSelecionado, setAnoSelecionado] = useState(now.getFullYear());
     const { loading: exportLoading, error: exportError, downloadArquivo, clearError } = useExportacao();
+    const [abaAtiva, setAbaAtiva] = useState('visao-geral');
     const [recorrencias, setRecorrencias] = useState([]);
     const [totalMensalComprometido, setTotalMensalComprometido] = useState(0);
     const [loadingRecorrencias, setLoadingRecorrencias] = useState(true);
@@ -142,56 +152,68 @@ const Orcamento = () => {
                 }}
             />
 
-            {/* Anomalias detectadas */}
+            {/* Anomalias detectadas — visíveis em qualquer aba */}
             <AnomaliaAlert />
 
-            {/* Top section: form (left) + chart (right) */}
-            <Grid container spacing={3} sx={{ mb: 3 }}>
-                <Grid size={{ xs: 12, md: 6 }}>
-                    <Card sx={{ height: '100%' }}>
+            {/* Sub-abas por tema (Lote K, padrão ADR-037) */}
+            <Tabs value={abaAtiva} onChange={(_e, v) => setAbaAtiva(v)}
+                variant="scrollable" scrollButtons="auto" allowScrollButtonsMobile
+                sx={{ mb: 3, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                {ABAS_ORCAMENTO.map((aba) => (
+                    <Tab key={aba.id} value={aba.id} label={aba.label} data-testid={`tab-orcamento-${aba.id}`} />
+                ))}
+            </Tabs>
+
+            {abaAtiva === 'visao-geral' && (
+                <Grid container spacing={3} sx={{ mb: 3 }}>
+                    <Grid size={{ xs: 12, md: 6 }}>
+                        <Card sx={{ height: '100%' }}>
+                            <CardContent>
+                                <AdicionarTransacaoForm onTransacaoAdicionada={handleTransacaoAdicionada} />
+                            </CardContent>
+                        </Card>
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 6 }}>
+                        <Card sx={{ height: '100%' }}>
+                            <CardContent>
+                                <GastosPorCategoriaChart key={refreshKey} />
+                            </CardContent>
+                        </Card>
+                    </Grid>
+                </Grid>
+            )}
+
+            {abaAtiva === 'categorias' && (
+                <>
+                    {/* Categorias gerenciadas (ADR-038) + limites mensais (ADR-034) */}
+                    <MinhasCategoriasCard />
+                    <OrcamentoLimitesCard />
+                </>
+            )}
+
+            {abaAtiva === 'cartoes' && <CartoesCard />}
+
+            {abaAtiva === 'analises' && (
+                <>
+                    <EntradasSaidasChart />
+                    <CalendarioGastosCard />
+                    <Card sx={{ mb: 3 }}>
                         <CardContent>
-                            <AdicionarTransacaoForm onTransacaoAdicionada={handleTransacaoAdicionada} />
+                            <ComparativoCard />
                         </CardContent>
                     </Card>
-                </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
-                    <Card sx={{ height: '100%' }}>
-                        <CardContent>
-                            <GastosPorCategoriaChart key={refreshKey} />
-                        </CardContent>
-                    </Card>
-                </Grid>
-            </Grid>
+                    <Box sx={{ mb: 3 }}>
+                        <RecorrenciasCard
+                            recorrencias={recorrencias}
+                            totalMensalComprometido={totalMensalComprometido}
+                            loading={loadingRecorrencias}
+                        />
+                    </Box>
+                </>
+            )}
 
-            {/* Categorias gerenciadas com cores e subcategorias (ADR-038) */}
-            <MinhasCategoriasCard />
-
-            {/* Orçamento por categoria (ADR-034) */}
-            <OrcamentoLimitesCard />
-
-            {/* Cartões de crédito (ADR-035) */}
-            <CartoesCard />
-
-            {/* Entradas × Saídas + Calendário de gastos (ADR-036) */}
-            <EntradasSaidasChart />
-            <CalendarioGastosCard />
-
-            {/* Comparativo Mensal */}
-            <Card sx={{ mb: 3 }}>
-                <CardContent>
-                    <ComparativoCard />
-                </CardContent>
-            </Card>
-
-            {/* Assinaturas Recorrentes */}
-            <Box sx={{ mb: 3 }}>
-                <RecorrenciasCard
-                    recorrencias={recorrencias}
-                    totalMensalComprometido={totalMensalComprometido}
-                    loading={loadingRecorrencias}
-                />
-            </Box>
-
+            {abaAtiva === 'transacoes' && (
+            <>
             {/* Exportar */}
             <Card sx={{ mb: 3 }}>
                 <CardContent>
@@ -268,6 +290,8 @@ const Orcamento = () => {
 
             {/* Bottom: full-width transactions table */}
             <ListaTransacoes refreshKey={refreshKey} onChanged={handleTransacaoAlterada} />
+            </>
+            )}
 
             <Snackbar
                 open={!!exportError}
