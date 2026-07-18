@@ -17,6 +17,7 @@ import ImportacaoExtratoModal from '../components/orcamento/ImportacaoExtratoMod
 import NfceScannerModal from '../components/orcamento/NfceScannerModal';
 import RecorrenciasCard from '../components/orcamento/RecorrenciasCard';
 import OrcamentoLimitesCard from '../components/orcamento/OrcamentoLimitesCard';
+import MinhasCategoriasCard from '../components/orcamento/MinhasCategoriasCard';
 import CartoesCard from '../components/orcamento/CartoesCard';
 import CalendarioGastosCard from '../components/orcamento/CalendarioGastosCard';
 import EntradasSaidasChart from '../components/orcamento/EntradasSaidasChart';
@@ -161,6 +162,9 @@ const Orcamento = () => {
                     </Card>
                 </Grid>
             </Grid>
+
+            {/* Categorias gerenciadas com cores e subcategorias (ADR-038) */}
+            <MinhasCategoriasCard />
 
             {/* Orçamento por categoria (ADR-034) */}
             <OrcamentoLimitesCard />

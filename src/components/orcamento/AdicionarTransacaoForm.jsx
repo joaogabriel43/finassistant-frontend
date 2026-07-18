@@ -62,12 +62,31 @@ const AdicionarTransacaoForm = ({ onTransacaoAdicionada }) => {
     useEffect(() => {
         if (!user || !user.id) return;
         setIsLoadingCategorias(true);
-        api.get(`/orcamento/categorias/${user.id}`)
-            .then((res) => {
-                const options = (res.data || []).map((cat) => ({ value: cat, label: cat }));
+        // União: categorias gerenciadas (ADR-038, vêm primeiro) + categorias já
+        // usadas em transações; dedupe case-insensitive. Texto livre continua valendo.
+        Promise.all([
+            api.get('/orcamento/categorias-gerenciadas').then((r) => r.data ?? []).catch(() => []),
+            api.get(`/orcamento/categorias/${user.id}`).then((r) => r.data ?? []).catch(() => []),
+        ])
+            .then(([gerenciadas, usadas]) => {
+                const options = [];
+                const vistos = new Set();
+                gerenciadas.forEach((c) => {
+                    const chave = c.nome.trim().toLowerCase();
+                    if (!vistos.has(chave)) {
+                        vistos.add(chave);
+                        options.push({ value: c.nome, label: c.nome });
+                    }
+                });
+                usadas.forEach((cat) => {
+                    const chave = String(cat).trim().toLowerCase();
+                    if (!vistos.has(chave)) {
+                        vistos.add(chave);
+                        options.push({ value: cat, label: cat });
+                    }
+                });
                 setCategoriasExistentes(options);
             })
-            .catch((err) => console.error('Erro ao buscar categorias', err))
             .finally(() => setIsLoadingCategorias(false));
     }, [user]);
 

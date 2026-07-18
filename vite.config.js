@@ -97,6 +97,8 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/setupTests.js'],
-    exclude: ['e2e/**', 'node_modules/**'],
+    // .claude/** exclui worktrees de agente criados dentro do repo — sem isso o
+    // vitest varre a cópia inteira (specs e2e do Playwright quebram e testes duplicam)
+    exclude: ['e2e/**', 'node_modules/**', '.claude/**', '**/.claude/**'],
   }
 })

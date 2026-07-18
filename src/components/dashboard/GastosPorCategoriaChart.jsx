@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { corDaCategoria } from '../../utils/categoriaCores';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
@@ -15,7 +16,16 @@ const GastosPorCategoriaChart = ({ showTitle = true }) => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    // Categorias gerenciadas (ADR-038): cor da fatia por nome; sem match → paleta padrão
+    const [categoriasGerenciadas, setCategoriasGerenciadas] = useState([]);
     const { user } = useAuth();
+
+    useEffect(() => {
+        if (!user || !user.id) return;
+        api.get('/orcamento/categorias-gerenciadas')
+            .then((res) => setCategoriasGerenciadas(res.data ?? []))
+            .catch(() => setCategoriasGerenciadas([]));
+    }, [user]);
 
     useEffect(() => {
         if (!user || !user.id) return;
@@ -86,7 +96,8 @@ const GastosPorCategoriaChart = ({ showTitle = true }) => {
                         nameKey="name"
                     >
                         {data.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            <Cell key={`cell-${index}`}
+                                fill={corDaCategoria(entry.name, categoriasGerenciadas, COLORS[index % COLORS.length])} />
                         ))}
                     </Pie>
                     <Tooltip formatter={(value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)} />
