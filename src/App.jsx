@@ -27,6 +27,7 @@ const StatusPage              = lazy(() => import('./pages/StatusPage'));
 const NotFound                = lazy(() => import('./pages/NotFound'));
 const PlanoPage               = lazy(() => import('./pages/PlanoPage'));
 const IrPage                  = lazy(() => import('./pages/IrPage'));
+const ResumoInteligente       = lazy(() => import('./pages/ResumoInteligente'));
 const TermosUsoPage           = lazy(() => import('./pages/TermosUsoPage'));
 const PoliticaPrivacidadePage = lazy(() => import('./pages/PoliticaPrivacidadePage'));
 
@@ -114,6 +115,7 @@ function App() {
                             <Route path="/calculadoras" element={<CalculadorasPage />} />
                             <Route path="/plano" element={<PlanoPage />} />
                             <Route path="/ir" element={<IrPage />} />
+                            <Route path="/resumo" element={<ResumoInteligente />} />
                         </Route>
 
                         {/* Rota Catch-all para caminhos não encontrados */}

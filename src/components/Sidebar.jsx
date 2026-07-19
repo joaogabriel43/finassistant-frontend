@@ -8,6 +8,7 @@ import usePlano from '../hooks/usePlano'
 
 const NAV_LINKS = [
   { to: '/dashboard',       label: 'Dashboard' },
+  { to: '/resumo',          label: 'Resumo do Mês' },
   { to: '/chat',            label: 'Chat',            tutorial: 'chat' },
   { to: '/orcamento',       label: 'Orçamento',       tutorial: 'orcamento' },
   { to: '/investimentos',   label: 'Investimentos',   tutorial: 'investimentos' },
