@@ -65,7 +65,7 @@ const ExclusaoContaModal = ({ open, onClose }) => {
     >
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: '#EF4444' }}>
         <WarningAmberIcon />
-        <Typography variant="h6" fontWeight={700} sx={{ color: '#EF4444' }} data-testid="exclusao-titulo">
+        <Typography variant="h6" component="span" fontWeight={700} sx={{ color: '#EF4444' }} data-testid="exclusao-titulo">
           Excluir conta permanentemente
         </Typography>
       </DialogTitle>

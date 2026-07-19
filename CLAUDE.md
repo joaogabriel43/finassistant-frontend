@@ -13,9 +13,9 @@
 - Health: https://fortunai-production.up.railway.app/api/status
 
 ## Estado Atual
-- 96 testes backend + 71 frontend = 167 total GREEN
+- 958 testes backend + 441 frontend GREEN (medidos em clone limpo: `mvnw clean install -Pintegration-tests` e `npm ci && npx vitest run` — 2026-07-19)
 - CI/CD: GitHub Actions (push na main = deploy automático)
-- Deploy: Railway (backend) + Vercel (frontend)
+- Deploy: Vercel (frontend) no ar; backend aguardando migração Railway (expirado) → Render + Neon
 
 ## Features Implementadas
 - Auth (JWT), Dashboard (Hero + Score Saúde + Gráficos)
@@ -49,3 +49,21 @@ NUNCA inverta esse contrato
 - Tela de perfil do usuário
 - Notificações in-app
 - Onboarding para novos usuários
+
+## Erros Conhecidos e Como Evitá-los
+
+### [2026-07-19] Erro: heading aninhado em DialogTitle (React 19)
+**O que aconteceu**: `Typography variant="h6"` usado dentro de `DialogTitle` do MUI gera `<h6>` dentro do `<h2>` que o `DialogTitle` já renderiza. React 19 loga isso como erro de hidratação no console ("In HTML, <h6> cannot be a child of <h2>").
+**Por que**: o `variant` do `Typography` define a tag HTML por padrão (h6 → `<h6>`), e o `DialogTitle` já é semanticamente um `<h2>`.
+**Como prevenir**: sempre que usar `Typography` dentro de `DialogTitle`, definir `component="span"` (ou `div`) explicitamente, mantendo o `variant` apenas para o estilo visual.
+**Exemplo**: `<Typography variant="h6" component="span">Título</Typography>` — corrigido em [ConsentimentoModal.jsx](src/components/ConsentimentoModal.jsx) e [ExclusaoContaModal.jsx](src/components/ExclusaoContaModal.jsx).
+**Varredura feita**: `grep -rn -B3 'Typography variant="h6"' src --include="*.jsx" | grep -i dialogtitle` — esses eram os dois únicos casos no projeto.
+
+## Configurações do Ambiente
+
+### Vitest no Windows: timeout de forks com suíte completa
+`npx vitest run` rodando a suíte inteira pode falhar em ~11 arquivos com "[vitest-pool]: Failed to start forks worker" / "Timeout waiting for worker to respond", por pressão de recursos ao subir muitos workers em paralelo. Os testes em si não têm relação com o erro — reexecutar os arquivos afetados com `--maxWorkers=1` resolve. Considerar fixar `test.maxWorkers` (ou `poolOptions.forks.maxForks`) no `vitest.config` se o problema persistir.
+**Atenção ao contar testes**: uma execução com forks falhando reporta um total PARCIAL (ex.: 273) sem falhar visivelmente. Sempre conferir o número de arquivos (`Test Files X passed (X)`) — se o total de arquivos for menor que o esperado, a contagem de testes está incompleta.
+
+## 📝 Changelog do CLAUDE.md
+- 2026-07-19: adicionadas seções "Erros Conhecidos" e "Configurações do Ambiente" (heading aninhado em DialogTitle; timeout de forks do Vitest); corrigida a contagem de testes em "Estado Atual" para os números reais medidos em clone limpo (958 backend / 441 frontend).

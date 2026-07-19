@@ -55,7 +55,7 @@ const ConsentimentoModal = ({ open, onAceitar }) => {
     >
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, pb: 1 }}>
         <GavelIcon sx={{ color: '#7C6AF7' }} />
-        <Typography variant="h6" fontWeight={700} data-testid="consentimento-titulo">
+        <Typography variant="h6" component="span" fontWeight={700} data-testid="consentimento-titulo">
           Termos e Política atualizados
         </Typography>
       </DialogTitle>
