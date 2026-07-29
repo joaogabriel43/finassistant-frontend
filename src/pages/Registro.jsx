@@ -8,6 +8,7 @@ import authService from '../services/authService';
 import api from '../services/api';
 import { regrasSenha, senhaValida } from '../utils/senhaPolicy';
 import { extrairMensagemErroApi } from '../utils/apiErrorUtils';
+import PasswordField from '../components/PasswordField';
 
 const VERSAO_TERMOS = '1.0';
 const VERSAO_PRIVACIDADE = '1.0';
@@ -15,6 +16,7 @@ const VERSAO_PRIVACIDADE = '1.0';
 const Registro = () => {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
+    const [confirmarSenha, setConfirmarSenha] = useState('');
     const [aceitouTermos, setAceitouTermos] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -22,10 +24,14 @@ const Registro = () => {
 
     const regras = regrasSenha(senha);
     const politicaOk = senhaValida(senha);
+    // Confirmação: só considera divergência quando o usuário já digitou algo
+    // no campo de confirmação — evita mostrar erro antes da interação.
+    const senhasDivergem = confirmarSenha.length > 0 && confirmarSenha !== senha;
+    const confirmacaoOk = confirmarSenha.length > 0 && !senhasDivergem;
 
     const handleRegister = async (e) => {
         e.preventDefault();
-        if (!aceitouTermos || !politicaOk) return;
+        if (!aceitouTermos || !politicaOk || !confirmacaoOk) return;
         setError('');
         setSuccess('');
         try {
@@ -111,9 +117,8 @@ const Registro = () => {
                         InputLabelProps={{ shrink: true }}
                         sx={inputSx}
                     />
-                    <TextField
+                    <PasswordField
                         variant="outlined"
-                        type="password"
                         label="Senha"
                         fullWidth
                         margin="normal"
@@ -141,6 +146,28 @@ const Registro = () => {
                             </Typography>
                         ))}
                     </Box>
+
+                    <PasswordField
+                        variant="outlined"
+                        label="Confirmar senha"
+                        fullWidth
+                        margin="normal"
+                        value={confirmarSenha}
+                        onChange={(e) => setConfirmarSenha(e.target.value)}
+                        required
+                        error={senhasDivergem}
+                        InputLabelProps={{ shrink: true }}
+                        sx={inputSx}
+                    />
+                    {senhasDivergem && (
+                        <Typography
+                            variant="caption"
+                            component="div"
+                            sx={{ color: 'error.main', mt: -1, mb: 0.5 }}
+                        >
+                            As senhas não coincidem
+                        </Typography>
+                    )}
 
                     {/* LGPD: aceite obrigatório dos Termos de Uso e Política de Privacidade */}
                     <FormControlLabel
@@ -193,7 +220,7 @@ const Registro = () => {
                         type="submit"
                         variant="contained"
                         fullWidth
-                        disabled={!aceitouTermos || !politicaOk}
+                        disabled={!aceitouTermos || !politicaOk || !confirmacaoOk}
                         sx={{ mt: 2, py: 1.5, bgcolor: '#7C6AF7', '&:hover': { bgcolor: '#6355d4' } }}
                     >
                         Criar conta

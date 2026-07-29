@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Paper, Typography, TextField, Button, Alert, Link } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
+import PasswordField from './PasswordField';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -93,14 +94,13 @@ const Login = () => {
               '& .MuiInputLabel-root.Mui-focused': { color: '#a78bfa' },
             }}
           />
-          <TextField
+          <PasswordField
             variant="outlined"
             margin="normal"
             required
             fullWidth
             name="senha"
             label="Senha"
-            type="password"
             id="senha"
             autoComplete="current-password"
             value={senha}
