@@ -7,6 +7,7 @@ import CameraAltIcon from '@mui/icons-material/CameraAlt'
 import { useAuth } from '../contexts/AuthContext'
 import { configuracaoService } from '../services/configuracaoService'
 import ExclusaoContaModal from '../components/ExclusaoContaModal'
+import { extrairMensagemErroApi } from '../utils/apiErrorUtils'
 
 function TabPanel({ children, value, index }) {
   if (value !== index) return null
@@ -41,13 +42,16 @@ function TabPerfil({ onSuccess }) {
   const handleFoto = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
+    setError('')
     setLoading(true)
     try {
       await configuracaoService.uploadFoto(file)
       await updateUser()
       onSuccess('Foto atualizada com sucesso')
-    } catch {
-      setError('Erro ao enviar foto. Verifique o formato e tamanho.')
+    } catch (err) {
+      // O backend distingue 422 (formato/tamanho invalido), 413 (limite do multipart)
+      // e 502 (falha no Cloudinary) com mensagem propria — exibir a real, nao a generica.
+      setError(extrairMensagemErroApi(err, 'Erro ao enviar foto. Verifique o formato e tamanho.'))
     } finally {
       setLoading(false)
     }
@@ -80,7 +84,9 @@ function TabPerfil({ onSuccess }) {
           >
             <CameraAltIcon sx={{ fontSize: 14, color: '#fff' }} />
           </Box>
-          <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleFoto} />
+          {/* Espelha a validacao do backend (CloudinaryService: JPEG/PNG, 5 MB) — o seletor
+              nao deve oferecer formatos que o servidor recusaria com 422. */}
+          <input ref={fileRef} type="file" accept="image/jpeg,image/png" hidden onChange={handleFoto} />
         </Box>
         <Box>
           <Typography variant="subtitle1" fontWeight={600}>{displayName || 'Usuario'}</Typography>

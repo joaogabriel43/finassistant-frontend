@@ -152,6 +152,45 @@ describe('Configuracoes — pagina de configuracoes', () => {
     expect(screen.getByText(/digest semanal/i)).toBeInTheDocument()
   })
 
+  // ── Upload de foto de perfil (alinhado ao backend — ADR-047) ───────────────
+
+  const dispararUploadFoto = (container) => {
+    const input = container.querySelector('input[type="file"]')
+    const file = new File(['bytes'], 'foto.png', { type: 'image/png' })
+    fireEvent.change(input, { target: { files: [file] } })
+    return input
+  }
+
+  it('aba Perfil: seletor de foto aceita apenas os formatos que o backend valida', () => {
+    const { container } = render(<Configuracoes />)
+    const input = container.querySelector('input[type="file"]')
+    expect(input).toHaveAttribute('accept', 'image/jpeg,image/png')
+  })
+
+  it('aba Perfil: exibe a mensagem real do backend quando o upload falha (422)', async () => {
+    mockService.uploadFoto.mockRejectedValue({
+      response: { status: 422, data: { message: 'Formato de imagem inválido. Apenas JPEG e PNG são aceitos.' } },
+    })
+    const { container } = render(<Configuracoes />)
+
+    await act(async () => { dispararUploadFoto(container) })
+
+    await waitFor(() => {
+      expect(screen.getByText(/apenas jpeg e png são aceitos/i)).toBeInTheDocument()
+    })
+  })
+
+  it('aba Perfil: cai na mensagem generica quando o erro nao traz corpo do backend', async () => {
+    mockService.uploadFoto.mockRejectedValue(new Error('Network Error'))
+    const { container } = render(<Configuracoes />)
+
+    await act(async () => { dispararUploadFoto(container) })
+
+    await waitFor(() => {
+      expect(screen.getByText(/erro ao enviar foto/i)).toBeInTheDocument()
+    })
+  })
+
   // Testes atualizados para o novo fluxo LGPD (ExclusaoContaModal com "EXCLUIR")
 
   it('aba Conta exibe seção Zona de Perigo com botão de exclusão', () => {
