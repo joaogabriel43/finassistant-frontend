@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Paper, Typography, TextField, Button, Alert, Link } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
+import { logErroSeguro } from '../utils/apiErrorUtils';
 import PasswordField from './PasswordField';
 
 const Login = () => {
@@ -29,7 +30,8 @@ const Login = () => {
       } else {
         setError('Email ou senha inválidos. Por favor, tente novamente.');
       }
-      console.error('Erro de autenticação:', err);
+      // SEC-03: nunca logar o erro cru — `err.config.data` carrega e-mail e senha.
+      logErroSeguro('Erro de autenticação', err);
     } finally {
       setLoading(false);
     }

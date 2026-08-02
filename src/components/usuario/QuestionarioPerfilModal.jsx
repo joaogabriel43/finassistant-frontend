@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Modal from 'react-modal';
 import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { logErroSeguro } from '../../utils/apiErrorUtils';
 
 Modal.setAppElement('#root');
 
@@ -43,7 +44,7 @@ export default function QuestionarioPerfilModal({ isOpen, onFinish }) {
       await api.post(`/api/usuario/questionario/${user.id}`, { respostas: respostasNum });
       onFinish?.();
     } catch (e) {
-      console.error('Erro ao salvar perfil', e);
+      logErroSeguro('Erro ao salvar perfil', e);
       alert('Não foi possível salvar seu perfil agora.');
     } finally {
       setSubmitting(false);

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
+import { logErroSeguro } from '../../utils/apiErrorUtils';
 import { Box, Typography } from '@mui/material';
 
 const COLORS = ['#7C6AF7', '#00D4AA', '#FF4D6A', '#FFB547', '#4FC3F7'];
@@ -20,7 +21,7 @@ const AlocacaoAtivosChart = ({ refreshKey = 0 }) => {
                 const formatted = (response.data || []).map((item) => ({ name: item.tipo, value: item.valorTotal }));
                 setData(formatted);
             })
-            .catch((err) => console.error(err));
+            .catch((err) => logErroSeguro('Falha ao carregar alocação de ativos', err));
     }, [user, refreshKey]);
 
     return (

@@ -29,3 +29,28 @@ export const extrairMensagemErroApi = (error, fallback) => {
   }
   return fallback;
 };
+
+/**
+ * Loga um erro de API no console SEM vazar dado sensível (SEC-03).
+ *
+ * Um erro Axios carrega `config.headers.Authorization` (o JWT) e `config.data`
+ * (o corpo enviado — no login, e-mail e senha). Passar o objeto cru para o
+ * `console.error` despeja tudo isso no console do navegador, onde qualquer
+ * extensão ou pessoa com acesso à máquina lê. Esta função extrai apenas o que
+ * serve ao diagnóstico — contexto, status HTTP e a mensagem do backend — e
+ * emite somente strings.
+ *
+ * Use SEMPRE esta função no lugar de `console.error(erro)` em blocos catch de
+ * chamadas à API.
+ *
+ * @param {string} contexto o que estava sendo feito (ex.: 'Falha ao salvar estratégia')
+ * @param {unknown} error erro capturado (Axios ou genérico)
+ * @param {'error'|'warn'} nivel severidade — 'warn' para falhas que o app absorve
+ *        com degradação graciosa (ex.: histórico não carregou, chat segue vazio)
+ */
+export const logErroSeguro = (contexto, error, nivel = 'error') => {
+  const status = error?.response?.status;
+  const mensagem = extrairMensagemErroApi(error, error?.message || 'erro desconhecido');
+  const emitir = nivel === 'warn' ? console.warn : console.error;
+  emitir(`[${contexto}]`, status ? `status=${status}` : 'sem resposta do servidor', '—', mensagem);
+};

@@ -15,10 +15,8 @@ api.interceptors.request.use(async config => {
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
-    // Log de diagnóstico
-    try {
-        console.log('Interceptor do Axios: BaseURL:', api.defaults.baseURL, 'Token presente?', !!token);
-    } catch (_) { /* ignore logging errors */ }
+    // SEC-03: nada de log de diagnóstico aqui — este interceptor roda em TODA
+    // requisição e o console do navegador não é lugar para estado de sessão.
     return config;
 });
 

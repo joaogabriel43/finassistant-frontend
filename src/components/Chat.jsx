@@ -8,6 +8,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { formatCurrencyInText } from '../utils/formatters';
+import { logErroSeguro } from '../utils/apiErrorUtils';
 import UploadComprovanteModal from './comprovantes/UploadComprovanteModal';
 import PremiumBanner from './plano/PremiumBanner';
 
@@ -104,7 +105,7 @@ const Chat = () => {
                 });
             } catch (e) {
                 if (cancelado) return;
-                console.warn('Falha ao carregar histórico — iniciando chat vazio', e);
+                logErroSeguro('Falha ao carregar histórico — iniciando chat vazio', e, 'warn');
             } finally {
                 if (!cancelado) setLoadingHistorico(false);
             }
@@ -146,7 +147,7 @@ const Chat = () => {
             document.body.removeChild(a);
             URL.revokeObjectURL(objectUrl);
         } catch (e) {
-            console.error('Falha no download autenticado:', e);
+            logErroSeguro('Falha no download autenticado', e);
         }
     };
 
@@ -172,7 +173,7 @@ const Chat = () => {
             const botMessage = { text: data.resposta, sender: 'bot', acao: data.acao || null };
             setMessages((prev) => [...prev.filter((m) => !m.typing), botMessage]);
         } catch (error) {
-            console.error('Falha ao enviar mensagem:', error);
+            logErroSeguro('Falha ao enviar mensagem', error);
             if (error.response?.status === 429 || error.response?.status === 403) {
                 const data = error.response.data;
                 setMessages((prev) => prev.filter((m) => !m.typing));
@@ -207,7 +208,7 @@ const Chat = () => {
         try {
             await limparHistoricoBackend();
         } catch (e) {
-            console.warn('Falha ao limpar histórico no backend', e);
+            logErroSeguro('Falha ao limpar histórico no backend', e, 'warn');
         }
         setMessages([MENSAGEM_BEM_VINDO]);
     };

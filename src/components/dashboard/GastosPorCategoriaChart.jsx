@@ -3,6 +3,7 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recha
 import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { corDaCategoria } from '../../utils/categoriaCores';
+import { logErroSeguro } from '../../utils/apiErrorUtils';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
@@ -47,7 +48,7 @@ const GastosPorCategoriaChart = ({ showTitle = true }) => {
                 setError(null);
             } catch (err) {
                 setError('Não foi possível carregar os dados do gráfico.');
-                console.error(err);
+                logErroSeguro('Falha ao carregar gastos por categoria', err);
             } finally {
                 setLoading(false);
             }

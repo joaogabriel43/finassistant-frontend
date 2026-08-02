@@ -23,6 +23,7 @@ import { investimentoService } from '../services/investimentoService';
 import { useExportacao } from '../hooks/useExportacao';
 import api from '../services/api';
 import { mesclarOrdem, moverCard } from '../utils/ordemCards';
+import { logErroSeguro } from '../utils/apiErrorUtils';
 import {
     Box,
     Button,
@@ -261,9 +262,7 @@ const Investimentos = () => {
         }, 100);
     };
 
-    // Adiciona log de navegação para depuração e direciona para a rota do questionário-perfil
     const handleRefazerQuestionario = () => {
-        console.log('Navegando para /questionario-perfil...');
         navigate('/questionario-perfil');
     };
 
@@ -300,7 +299,7 @@ const Investimentos = () => {
             // Força o refresh da tabela
             setRefreshKey((k) => k + 1);
         } catch (error) {
-            console.error('Erro ao processar a venda:', error);
+            logErroSeguro('Erro ao processar a venda', error);
             alert('Erro ao processar a venda.');
         } finally {
             setSelling(false);

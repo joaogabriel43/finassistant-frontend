@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { logErroSeguro } from '../../utils/apiErrorUtils';
 
 Modal.setAppElement('#root');
 
@@ -34,7 +35,7 @@ const EditarTransacaoModal = ({ isOpen, onRequestClose, transacao, onUpdate }) =
             if (onUpdate) onUpdate();
             onRequestClose();
         } catch (error) {
-            console.error('Erro ao editar transação', error);
+            logErroSeguro('Erro ao editar transação', error);
             alert('Falha ao editar a transação.');
         }
     };

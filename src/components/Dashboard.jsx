@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
+import { logErroSeguro } from '../utils/apiErrorUtils';
 import { Grid, Card, CardContent, Typography, Box, List, ListItem, ListItemText } from '@mui/material';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 
@@ -22,7 +23,7 @@ const Dashboard = () => {
                 setComposition(comp);
             } catch (err) {
                 setError('Falha ao carregar os dados do dashboard.');
-                console.error(err);
+                logErroSeguro('Falha ao carregar o dashboard', err);
             } finally {
                 setLoading(false);
             }

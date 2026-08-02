@@ -15,6 +15,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
+import { logErroSeguro } from '../utils/apiErrorUtils';
 
 const questions = [
     { text: 'Qual seu principal objetivo ao investir?', options: ['Preservar meu patrimônio', 'Aumentar meu capital gradualmente', 'Maximizar o retorno, mesmo com riscos'] },
@@ -66,7 +67,7 @@ const Questionario = () => {
             await updateUser();
             navigate('/dashboard');
         } catch (error) {
-            console.error('Erro ao salvar perfil', error?.response || error);
+            logErroSeguro('Erro ao salvar perfil', error);
         } finally {
             setSubmitting(false);
         }

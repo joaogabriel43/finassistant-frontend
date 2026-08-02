@@ -19,6 +19,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import SellIcon from '@mui/icons-material/Sell';
 import { formatBRL } from '../ui';
+import { logErroSeguro } from '../../utils/apiErrorUtils';
 
 const PortfolioTable = ({
     onSellRequest = () => {},
@@ -41,7 +42,7 @@ const PortfolioTable = ({
         } catch (err) {
             setError('Não foi possível carregar os dados do portfólio.');
             // eslint-disable-next-line no-console
-            console.error(err);
+            logErroSeguro('Falha ao carregar o portfólio', err);
         } finally {
             setLoading(false);
         }

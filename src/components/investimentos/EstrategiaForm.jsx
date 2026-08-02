@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { logErroSeguro } from '../../utils/apiErrorUtils';
 import {
     Box,
     Button,
@@ -36,7 +37,6 @@ export default function EstrategiaForm() {
 
     const carregar = async () => {
         if (!user?.id) return;
-        console.log('EstrategiaForm.jsx: Tentando carregar. Token no localStorage:', localStorage.getItem('authToken'));
         try {
             // Atualizado para endpoint legacy
             const res = await api.get(`/investimentos/estrategia-legacy`);
@@ -48,7 +48,7 @@ export default function EstrategiaForm() {
                 setLinhas(novas);
             }
         } catch (e) {
-            console.error('EstrategiaForm.jsx: Falha ao carregar estratégia', e);
+            logErroSeguro('Falha ao carregar estratégia', e);
             setLinhas([{ tipo: 'ACAO', pct: 25 }, { tipo: 'FUNDO_IMOBILIARIO', pct: 25 }, { tipo: 'RENDA_FIXA', pct: 50 }]);
         }
     };
@@ -77,7 +77,7 @@ export default function EstrategiaForm() {
             await api.post(`/investimentos/estrategia-legacy`, { alocacaoAlvo: mapa });
             setMensagem('Estratégia salva com sucesso.');
         } catch (e) {
-            console.error(e);
+            logErroSeguro('Falha ao salvar estratégia', e);
             setMensagem('Falha ao salvar estratégia.');
         } finally {
             setSalvando(false);

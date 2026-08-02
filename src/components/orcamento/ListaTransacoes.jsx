@@ -19,6 +19,7 @@ import EditarTransacaoModal from './EditarTransacaoModal';
 import ConfirmarExclusaoDialog from './ConfirmarExclusaoDialog';
 import { formatarDataLocal } from '../../utils/dateUtils';
 import { formatCurrency } from '../../utils/formatters';
+import { logErroSeguro } from '../../utils/apiErrorUtils';
 
 const formatBRL = (value) => formatCurrency(value);
 
@@ -42,7 +43,7 @@ const ListaTransacoes = ({ refreshKey, onChanged }) => {
             const list = Array.isArray(res.data) ? res.data : [];
             setTransacoes(list.sort((a, b) => new Date(b.data) - new Date(a.data)));
         } catch (e) {
-            console.error(e);
+            logErroSeguro('Falha ao carregar transações', e);
         } finally {
             setLoading(false);
         }
@@ -62,7 +63,7 @@ const ListaTransacoes = ({ refreshKey, onChanged }) => {
             setTransacoes(prev => prev.filter(t => t.id !== transacaoParaExcluir));
             if (onChanged) onChanged();
         } catch (error) {
-            console.error('Falha ao excluir transação', error);
+            logErroSeguro('Falha ao excluir transação', error);
         } finally {
             setTransacaoParaExcluir(null);
         }
