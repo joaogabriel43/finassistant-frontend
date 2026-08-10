@@ -272,11 +272,47 @@ const avaliarPrecoTetoAvulso = async (payload) => {
   }
 };
 
+// ── Importação em lote de investimentos via CSV (ADR-052) ──────────────────
+
+// Faz upload do CSV (formato Investidor10) e retorna o preview segregado em
+// prontos/eventosCorporativos/erros, sem persistir nada. `file` é um objeto
+// File/Blob do input de upload.
+const previewImportacaoLote = async (file) => {
+  try {
+    const formData = new FormData();
+    formData.append('arquivo', file);
+    const response = await api.post('/investimentos/portfolio/ativos/lote/preview', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Erro ao analisar CSV de importação em lote:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+// Confirma a importação dos itens PRONTOS selecionados pelo usuário — cada
+// item já traz o previewId emitido no preview (vínculo SEC-14). `itens` é o
+// array `preview.prontos` (ou um subconjunto filtrado pelo usuário).
+const confirmarImportacaoLote = async (itens) => {
+  try {
+    const response = await api.post('/investimentos/portfolio/ativos/lote/confirmar', itens);
+    return response.data;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Erro ao confirmar importação em lote:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 export const investimentoService = {
   venderAtivo,
   adicionarAtivo,
   editarAtivo,
   removerAtivo,
+  previewImportacaoLote,
+  confirmarImportacaoLote,
   getRendaPassiva,
   getRentabilidade,
   getBenchmarkJanelas,

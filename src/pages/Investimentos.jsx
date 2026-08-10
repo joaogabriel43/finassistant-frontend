@@ -17,6 +17,7 @@ import FronteiraPanel from '../components/investimentos/FronteiraPanel';
 import AdicionarAtivoForm from '../components/investimentos/AdicionarAtivoForm';
 import EditarAtivoDialog from '../components/investimentos/EditarAtivoDialog';
 import RemoverAtivoDialog from '../components/investimentos/RemoverAtivoDialog';
+import ImportacaoLoteInvestimentosModal from '../components/investimentos/ImportacaoLoteInvestimentosModal';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { investimentoService } from '../services/investimentoService';
@@ -42,6 +43,7 @@ import {
     Typography,
 } from '@mui/material';
 import TableChartIcon from '@mui/icons-material/TableChart';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import ViewAgendaIcon from '@mui/icons-material/ViewAgenda';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
@@ -178,6 +180,7 @@ const Investimentos = () => {
     }, [user?.id]);
 
     const [alertasModalOpen, setAlertasModalOpen] = useState(false);
+    const [importarModalOpen, setImportarModalOpen] = useState(false);
 
     // Estado para venda de ativo (Modal)
     const [modalOpen, setModalOpen] = useState(false);
@@ -391,6 +394,14 @@ const Investimentos = () => {
                             </Button>
                             <Button
                                 variant="outlined"
+                                startIcon={<UploadFileIcon />}
+                                onClick={() => setImportarModalOpen(true)}
+                                data-testid="btn-importar-lote"
+                            >
+                                Importar CSV
+                            </Button>
+                            <Button
+                                variant="outlined"
                                 startIcon={<NotificationsActiveIcon />}
                                 onClick={() => setAlertasModalOpen(true)}
                             >
@@ -407,6 +418,13 @@ const Investimentos = () => {
             <ConfigurarAlertasModal
                 open={alertasModalOpen}
                 onClose={() => setAlertasModalOpen(false)}
+            />
+
+            {/* Importação em lote de investimentos via CSV (ADR-052) */}
+            <ImportacaoLoteInvestimentosModal
+                open={importarModalOpen}
+                onClose={() => setImportarModalOpen(false)}
+                onImportado={() => handlePortfolioChanged('Importação concluída com sucesso!')}
             />
 
             {/* Sub-abas por tema (ADR-037) */}
