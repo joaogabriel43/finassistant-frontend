@@ -9,13 +9,13 @@
 
 ## URLs de Produção
 - Frontend: https://fortunai-frontend.vercel.app
-- Backend: https://fortunai-production.up.railway.app
-- Health: https://fortunai-production.up.railway.app/api/status
+- Backend: https://finassistant-api.onrender.com
+- Health: https://finassistant-api.onrender.com/actuator/health
 
 ## Estado Atual
 - 958 testes backend + 441 frontend GREEN (medidos em clone limpo: `mvnw clean install -Pintegration-tests` e `npm ci && npx vitest run` — 2026-07-19)
 - CI/CD: GitHub Actions (push na main = deploy automático)
-- Deploy: Vercel (frontend) no ar; backend aguardando migração Railway (expirado) → Render + Neon
+- Deploy: Vercel (frontend) + Render (backend) + Neon (PostgreSQL)
 
 ## Features Implementadas
 - Auth (JWT), Dashboard (Hero + Score Saúde + Gráficos)

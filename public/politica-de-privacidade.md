@@ -48,7 +48,8 @@ Seus dados **não são vendidos** a terceiros. Compartilhamos apenas com:
 - **Google Gemini**: mensagens do chat para processamento de linguagem natural (sem dados sensíveis)
 - **Alpha Vantage/BRAPI**: busca de cotações (sem dados do usuário)
 - **Cloudinary**: armazenamento de foto de perfil
-- **Railway**: infraestrutura de hospedagem (dados em servidores seguros)
+- **Render**: infraestrutura de hospedagem do backend
+- **Neon**: banco de dados PostgreSQL gerenciado
 
 ## 5. Seus Direitos (LGPD Art. 18)
 

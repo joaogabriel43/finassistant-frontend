@@ -14,7 +14,7 @@
 | | URL |
 |---|---|
 | **App** | https://fortunai-frontend.vercel.app |
-| **API** | https://fortunai-production.up.railway.app |
+| **API** | https://finassistant-api.onrender.com |
 
 Interface React do **FortunAI**, assistente financeiro pessoal inteligente. Dashboard premium com tema dark fintech, chat com IA, gestao de orcamento, portfolio de investimentos, FIRE Calculator e mais.
 
@@ -98,7 +98,7 @@ npm run build
 Crie `.env` na raiz para producao:
 
 ```env
-VITE_API_URL=https://seu-backend.railway.app
+VITE_API_URL=https://finassistant-api.onrender.com/api
 ```
 
 ---

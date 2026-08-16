@@ -5,13 +5,13 @@ import { test, expect, request as playwrightRequest } from '@playwright/test'
  * 5 testes rápidos (< 30s total) que verificam o sistema está UP.
  *
  * Uso local:   PLAYWRIGHT_BASE_URL=https://fortunai-frontend.vercel.app \
- *              PLAYWRIGHT_API_URL=https://fortunai-production.up.railway.app \
+ *              PLAYWRIGHT_API_URL=https://finassistant-api.onrender.com \
  *              npx playwright test e2e/smoke.spec.ts
  *
  * No CI: executado pelo job "smoke" pós-deploy.
  */
 
-const API_URL = process.env.PLAYWRIGHT_API_URL || 'https://fortunai-production.up.railway.app'
+const API_URL = process.env.PLAYWRIGHT_API_URL || 'https://finassistant-api.onrender.com'
 
 test.describe('Smoke Tests — Produção', () => {
 
