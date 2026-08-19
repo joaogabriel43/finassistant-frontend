@@ -1,0 +1,135 @@
+import React from 'react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { vi, describe, it, expect, beforeEach } from 'vitest'
+import AdicionarTransacaoForm from '../AdicionarTransacaoForm'
+import { MesOrcamentoProvider, useMesOrcamento } from '../../../contexts/MesOrcamentoContext'
+
+vi.mock('../../../contexts/AuthContext', () => ({
+  useAuth: () => ({ user: { id: 'user-123' } }),
+}))
+
+vi.mock('../../../services/api', () => ({
+  default: {
+    get: vi.fn(),
+    post: vi.fn(),
+  },
+}))
+
+vi.mock('react-select/creatable', () => ({
+  default: ({ onChange, placeholder }) => (
+    <input
+      data-testid="categoria-select"
+      placeholder={placeholder}
+      onChange={(e) => onChange({ value: e.target.value, label: e.target.value })}
+    />
+  ),
+}))
+
+import api from '../../../services/api'
+
+const hoje = () => new Date().toISOString().split('T')[0]
+
+const pad = (n) => String(n).padStart(2, '0')
+
+// Componente auxiliar de teste — expõe navegar() do contexto real para
+// simular o usuário trocando o mês de referência pelo SeletorMesOrcamento,
+// sem precisar renderizar o seletor visual em si.
+const Navegador = () => {
+  const { navegar } = useMesOrcamento()
+  return (
+    <>
+      <button onClick={() => navegar(-1)}>ir para mês passado</button>
+      <button onClick={() => navegar(1)}>ir para mês futuro</button>
+    </>
+  )
+}
+
+const renderComNavegacao = () =>
+  render(
+    <MesOrcamentoProvider>
+      <Navegador />
+      <AdicionarTransacaoForm />
+    </MesOrcamentoProvider>
+  )
+
+const preencherCamposBase = async () => {
+  fireEvent.change(screen.getByLabelText(/Valor/i), { target: { value: '100' } })
+  fireEvent.change(screen.getByTestId('categoria-select'), {
+    target: { value: 'alimentacao' },
+  })
+  fireEvent.change(screen.getByLabelText(/Descrição/i), {
+    target: { value: 'almoço' },
+  })
+}
+
+beforeEach(() => {
+  vi.clearAllMocks()
+  api.get.mockResolvedValue({ data: [] })
+  api.post.mockResolvedValue({ data: {} })
+})
+
+describe('AdicionarTransacaoForm — mês de referência não-atual', () => {
+  it('ao navegar para um mês passado, pré-preenche a data com o último dia daquele mês e mostra aviso', () => {
+    renderComNavegacao()
+
+    fireEvent.click(screen.getByText('ir para mês passado'))
+
+    const hojeDate = new Date()
+    const mesPassado = hojeDate.getMonth() === 0 ? 12 : hojeDate.getMonth()
+    const anoPassado = hojeDate.getMonth() === 0 ? hojeDate.getFullYear() - 1 : hojeDate.getFullYear()
+    const ultimoDia = new Date(anoPassado, mesPassado, 0).getDate()
+    const dataEsperada = `${anoPassado}-${pad(mesPassado)}-${pad(ultimoDia)}`
+
+    const campoData = document.querySelector('input[type="date"]')
+    expect(campoData.value).toBe(dataEsperada)
+    expect(screen.getByText(/Adicionando a/i)).toBeInTheDocument()
+  })
+
+  it('envia a data pré-preenchida do mês passado no payload ao submeter sem alterar a data', async () => {
+    renderComNavegacao()
+
+    fireEvent.click(screen.getByText('ir para mês passado'))
+    await preencherCamposBase()
+
+    fireEvent.click(screen.getByRole('button', { name: /adicionar/i }))
+
+    const hojeDate = new Date()
+    const mesPassado = hojeDate.getMonth() === 0 ? 12 : hojeDate.getMonth()
+    const anoPassado = hojeDate.getMonth() === 0 ? hojeDate.getFullYear() - 1 : hojeDate.getFullYear()
+    const ultimoDia = new Date(anoPassado, mesPassado, 0).getDate()
+    const dataEsperada = `${anoPassado}-${pad(mesPassado)}-${pad(ultimoDia)}`
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith(
+        '/orcamento/transacao/user-123',
+        expect.objectContaining({ data: dataEsperada })
+      )
+    })
+  })
+
+  it('ao navegar para um mês futuro, a data continua igual a hoje e mostra aviso de que não aceita data futura', () => {
+    renderComNavegacao()
+
+    fireEvent.click(screen.getByText('ir para mês futuro'))
+
+    const campoData = document.querySelector('input[type="date"]')
+    expect(campoData.value).toBe(hoje())
+    expect(screen.getByText(/não aceita transações com data futura/i)).toBeInTheDocument()
+  })
+
+  it('envia a data de hoje no payload mesmo estando num mês futuro selecionado', async () => {
+    renderComNavegacao()
+
+    fireEvent.click(screen.getByText('ir para mês futuro'))
+    await preencherCamposBase()
+
+    fireEvent.click(screen.getByRole('button', { name: /adicionar/i }))
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith(
+        '/orcamento/transacao/user-123',
+        expect.objectContaining({ data: hoje() })
+      )
+    })
+  })
+})

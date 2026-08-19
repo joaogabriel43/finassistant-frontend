@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '../../../theme';
 import CartoesCard from '../CartoesCard';
+import { MesOrcamentoProvider } from '../../../contexts/MesOrcamentoContext';
 
 vi.mock('../../../services/api', () => ({
   default: { get: vi.fn(), post: vi.fn(), delete: vi.fn() },
@@ -13,7 +14,9 @@ import api from '../../../services/api';
 const renderCard = () =>
   render(
     <ThemeProvider theme={theme}>
-      <CartoesCard />
+      <MesOrcamentoProvider>
+        <CartoesCard />
+      </MesOrcamentoProvider>
     </ThemeProvider>
   );
 

@@ -2,6 +2,7 @@ import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import AdicionarTransacaoForm from '../AdicionarTransacaoForm'
+import { MesOrcamentoProvider } from '../../../contexts/MesOrcamentoContext'
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
@@ -32,6 +33,13 @@ import api from '../../../services/api'
 
 const hoje = () => new Date().toISOString().split('T')[0] // "yyyy-MM-dd"
 
+const renderForm = (props) =>
+  render(
+    <MesOrcamentoProvider>
+      <AdicionarTransacaoForm {...props} />
+    </MesOrcamentoProvider>
+  )
+
 // Preenche os campos obrigatórios que JÁ existem no formulário.
 const preencherCamposBase = async () => {
   fireEvent.change(screen.getByLabelText(/Valor/i), { target: { value: '100' } })
@@ -57,7 +65,7 @@ beforeEach(() => {
 
 describe('AdicionarTransacaoForm — campo de data (RED)', () => {
   it('deve renderizar campo de data com valor padrão igual a hoje', () => {
-    render(<AdicionarTransacaoForm />)
+    renderForm()
 
     // Espera um input type="date" OU um input com aria-label/label relacionado a "data"
     const campoData =
@@ -70,7 +78,7 @@ describe('AdicionarTransacaoForm — campo de data (RED)', () => {
   })
 
   it('deve incluir data de hoje no payload quando não alterada', async () => {
-    render(<AdicionarTransacaoForm />)
+    renderForm()
 
     await preencherCamposBase()
 
@@ -85,7 +93,7 @@ describe('AdicionarTransacaoForm — campo de data (RED)', () => {
   })
 
   it('deve incluir data customizada no payload quando alterada pelo usuário', async () => {
-    render(<AdicionarTransacaoForm />)
+    renderForm()
 
     await preencherCamposBase()
 
@@ -109,7 +117,7 @@ describe('AdicionarTransacaoForm — campo de data (RED)', () => {
   })
 
   it('deve impedir submit com data futura', async () => {
-    render(<AdicionarTransacaoForm />)
+    renderForm()
 
     await preencherCamposBase()
 

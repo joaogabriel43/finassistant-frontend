@@ -4,6 +4,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { ThemeProvider } from '@mui/material/styles'
 import theme from '../../../theme'
 import CartoesCard from '../CartoesCard'
+import { MesOrcamentoProvider } from '../../../contexts/MesOrcamentoContext'
 
 vi.mock('../../../services/api', () => ({
     default: { get: vi.fn(), post: vi.fn(), delete: vi.fn() },
@@ -37,7 +38,9 @@ const ASSINATURAS = {
 const renderCard = () =>
     render(
         <ThemeProvider theme={theme}>
-            <CartoesCard />
+            <MesOrcamentoProvider>
+                <CartoesCard />
+            </MesOrcamentoProvider>
         </ThemeProvider>
     )
 
