@@ -21,9 +21,11 @@ import MinhasCategoriasCard from '../components/orcamento/MinhasCategoriasCard';
 import CartoesCard from '../components/orcamento/CartoesCard';
 import CalendarioGastosCard from '../components/orcamento/CalendarioGastosCard';
 import EntradasSaidasChart from '../components/orcamento/EntradasSaidasChart';
+import SeletorMesOrcamento from '../components/orcamento/SeletorMesOrcamento';
 import { useExportacao } from '../hooks/useExportacao';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { MesOrcamentoProvider } from '../contexts/MesOrcamentoContext';
 
 const MESES = [
     { value: 1, label: 'Janeiro' }, { value: 2, label: 'Fevereiro' },
@@ -53,8 +55,10 @@ const Orcamento = () => {
     const [extratoModalOpen, setExtratoModalOpen] = useState(false);
     const [nfceOpen, setNfceOpen] = useState(false);
     const now = new Date();
-    const [mesSelecionado, setMesSelecionado] = useState(now.getMonth() + 1);
-    const [anoSelecionado, setAnoSelecionado] = useState(now.getFullYear());
+    // Filtro de período dos botões de exportação (Transações) — independente
+    // do mês de referência do MesOrcamentoContext, que rege navegação/lançamento.
+    const [mesExportacao, setMesExportacao] = useState(now.getMonth() + 1);
+    const [anoExportacao, setAnoExportacao] = useState(now.getFullYear());
     const { loading: exportLoading, error: exportError, downloadArquivo, clearError } = useExportacao();
     const [abaAtiva, setAbaAtiva] = useState('visao-geral');
     const [recorrencias, setRecorrencias] = useState([]);
@@ -113,6 +117,7 @@ const Orcamento = () => {
     }
 
     return (
+        <MesOrcamentoProvider>
         <Box sx={{ width: '100%', maxWidth: 1200, mx: 'auto', px: { xs: 1.5, md: 3 }, py: 2 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 1 }}>
                 <Typography variant="h5" sx={{ fontWeight: 700 }}>
@@ -154,6 +159,9 @@ const Orcamento = () => {
 
             {/* Anomalias detectadas — visíveis em qualquer aba */}
             <AnomaliaAlert />
+
+            {/* Mês de referência — persistente, compartilhado entre as sub-abas */}
+            <SeletorMesOrcamento />
 
             {/* Sub-abas por tema (Lote K, padrão ADR-037) */}
             <Tabs value={abaAtiva} onChange={(_e, v) => setAbaAtiva(v)}
@@ -224,9 +232,9 @@ const Orcamento = () => {
                         <FormControl size="small" sx={{ minWidth: 140 }}>
                             <InputLabel>Mês</InputLabel>
                             <Select
-                                value={mesSelecionado}
+                                value={mesExportacao}
                                 label="Mês"
-                                onChange={(e) => setMesSelecionado(e.target.value)}
+                                onChange={(e) => setMesExportacao(e.target.value)}
                             >
                                 {MESES.map((m) => (
                                     <MenuItem key={m.value} value={m.value}>{m.label}</MenuItem>
@@ -236,9 +244,9 @@ const Orcamento = () => {
                         <FormControl size="small" sx={{ minWidth: 100 }}>
                             <InputLabel>Ano</InputLabel>
                             <Select
-                                value={anoSelecionado}
+                                value={anoExportacao}
                                 label="Ano"
-                                onChange={(e) => setAnoSelecionado(e.target.value)}
+                                onChange={(e) => setAnoExportacao(e.target.value)}
                             >
                                 {ANOS.map((a) => (
                                     <MenuItem key={a} value={a}>{a}</MenuItem>
@@ -253,8 +261,8 @@ const Orcamento = () => {
                             startIcon={exportLoading ? <CircularProgress size={16} /> : <PictureAsPdfIcon />}
                             disabled={exportLoading}
                             onClick={() => downloadArquivo(
-                                `/api/exportacao/extrato?mes=${mesSelecionado}&ano=${anoSelecionado}`,
-                                `extrato_${String(mesSelecionado).padStart(2,'0')}_${anoSelecionado}.pdf`
+                                `/api/exportacao/extrato?mes=${mesExportacao}&ano=${anoExportacao}`,
+                                `extrato_${String(mesExportacao).padStart(2,'0')}_${anoExportacao}.pdf`
                             )}
                             data-testid="btn-extrato-pdf"
                         >
@@ -265,8 +273,8 @@ const Orcamento = () => {
                             startIcon={exportLoading ? <CircularProgress size={16} /> : <PictureAsPdfIcon />}
                             disabled={exportLoading}
                             onClick={() => downloadArquivo(
-                                `/api/exportacao/mensal?mes=${mesSelecionado}&ano=${anoSelecionado}`,
-                                `resumo_mensal_${String(mesSelecionado).padStart(2,'0')}_${anoSelecionado}.pdf`
+                                `/api/exportacao/mensal?mes=${mesExportacao}&ano=${anoExportacao}`,
+                                `resumo_mensal_${String(mesExportacao).padStart(2,'0')}_${anoExportacao}.pdf`
                             )}
                             data-testid="btn-mensal-pdf"
                         >
@@ -277,8 +285,8 @@ const Orcamento = () => {
                             startIcon={exportLoading ? <CircularProgress size={16} /> : <TableChartIcon />}
                             disabled={exportLoading}
                             onClick={() => downloadArquivo(
-                                `/api/exportacao/transacoes/csv?mes=${mesSelecionado}&ano=${anoSelecionado}`,
-                                `transacoes_${String(mesSelecionado).padStart(2,'0')}_${anoSelecionado}.csv`
+                                `/api/exportacao/transacoes/csv?mes=${mesExportacao}&ano=${anoExportacao}`,
+                                `transacoes_${String(mesExportacao).padStart(2,'0')}_${anoExportacao}.csv`
                             )}
                             data-testid="btn-transacoes-csv"
                         >
@@ -302,6 +310,7 @@ const Orcamento = () => {
                 <Alert severity="error" onClose={clearError}>{exportError}</Alert>
             </Snackbar>
         </Box>
+        </MesOrcamentoProvider>
     );
 };
 

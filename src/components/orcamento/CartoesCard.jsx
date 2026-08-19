@@ -26,6 +26,10 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import { formatBRL } from '@/components/ui';
 import api from '../../services/api';
 import { extrairMensagemErroApi } from '../../utils/apiErrorUtils';
+import { useMesOrcamento } from '../../contexts/MesOrcamentoContext';
+
+const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
 /**
  * Cartões de crédito virtuais (ADR-035): lista com fatura aberta e uso do limite,
@@ -39,6 +43,7 @@ const parseValorBR = (texto) => {
 
 const CartoesCard = () => {
   const theme = useTheme();
+  const { mes, ano, isMesAtual } = useMesOrcamento();
   const [cartoes, setCartoes] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
@@ -60,10 +65,9 @@ const CartoesCard = () => {
     setCarregandoFatura(true);
     setFatura(null);
     setAssinaturas(null);
-    const agora = new Date();
     try {
       const [fat, ass] = await Promise.all([
-        api.get(`/cartoes/${cartao.id}/fatura?mes=${agora.getMonth() + 1}&ano=${agora.getFullYear()}`),
+        api.get(`/cartoes/${cartao.id}/fatura?mes=${mes}&ano=${ano}`),
         api.get(`/cartoes/${cartao.id}/assinaturas`).catch(() => ({ data: null })),
       ]);
       setFatura(fat.data);
@@ -75,6 +79,13 @@ const CartoesCard = () => {
       setCarregandoFatura(false);
     }
   };
+
+  // Fatura aberta reflete o mês em que foi buscada — se o usuário navegar o
+  // seletor de mês com o diálogo aberto, fecha para evitar mostrar dados
+  // de um mês diferente do que o título indicaria.
+  useEffect(() => {
+    setDialogFatura((atual) => (atual ? null : atual));
+  }, [mes, ano]);
 
   const excluirParcelamento = async (parcelamentoId) => {
     try {
@@ -249,7 +260,14 @@ const CartoesCard = () => {
 
       {/* Dialog: detalhes da fatura — por categoria, assinaturas e parcelamentos (ADR-040) */}
       <Dialog open={Boolean(dialogFatura)} onClose={() => setDialogFatura(null)} fullWidth maxWidth="sm">
-        <DialogTitle>Fatura {dialogFatura ? `— ${dialogFatura.nome}` : ''}</DialogTitle>
+        <DialogTitle>
+          Fatura {dialogFatura ? `— ${dialogFatura.nome}` : ''}
+          {!isMesAtual && (
+            <Typography component="span" variant="body2" color="warning.main" sx={{ ml: 1 }}>
+              ({MESES[mes - 1]}/{ano})
+            </Typography>
+          )}
+        </DialogTitle>
         <DialogContent>
           {carregandoFatura ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>

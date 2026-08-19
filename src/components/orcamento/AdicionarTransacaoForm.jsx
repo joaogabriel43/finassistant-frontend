@@ -11,10 +11,14 @@ import {
     Alert,
 } from '@mui/material';
 import { useAuth } from '../../contexts/AuthContext';
+import { useMesOrcamento } from '../../contexts/MesOrcamentoContext';
 import api from '../../services/api';
 import CreatableSelect from 'react-select/creatable';
 
 const hoje = () => new Date().toISOString().split('T')[0]; // "yyyy-MM-dd"
+
+const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
 const selectStyles = {
     control: (base, state) => ({
@@ -49,6 +53,12 @@ const selectStyles = {
 
 const AdicionarTransacaoForm = ({ onTransacaoAdicionada }) => {
     const { user } = useAuth();
+    const { mes, ano, isMesAtual, primeiroDiaMes, ultimoDiaMes } = useMesOrcamento();
+    const hojeDate = new Date();
+    const isMesFuturo = !isMesAtual
+        && (ano > hojeDate.getFullYear() || (ano === hojeDate.getFullYear() && mes > hojeDate.getMonth() + 1));
+    const isMesPassado = !isMesAtual && !isMesFuturo;
+
     const [valor, setValor] = useState('');
     const [categoria, setCategoria] = useState(null);
     const [descricao, setDescricao] = useState('');
@@ -58,6 +68,14 @@ const AdicionarTransacaoForm = ({ onTransacaoAdicionada }) => {
     const [success, setSuccess] = useState('');
     const [categoriasExistentes, setCategoriasExistentes] = useState([]);
     const [isLoadingCategorias, setIsLoadingCategorias] = useState(true);
+
+    // O back-end nunca aceita data futura (@PastOrPresent — ver CLAUDE.md).
+    // Ao trocar o mês de referência: em mês passado, pré-preenche uma data
+    // dentro dele; em mês atual/futuro, a data de lançamento continua sendo hoje.
+    useEffect(() => {
+        setData(isMesPassado ? ultimoDiaMes : hoje());
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [mes, ano]);
 
     useEffect(() => {
         if (!user || !user.id) return;
@@ -108,7 +126,7 @@ const AdicionarTransacaoForm = ({ onTransacaoAdicionada }) => {
             setCategoria(null);
             setDescricao('');
             setTipo('SAIDA');
-            setData(hoje());
+            setData(isMesPassado ? ultimoDiaMes : hoje());
             if (onTransacaoAdicionada) onTransacaoAdicionada();
             if (!categoriasExistentes.find((opt) => opt.value === requestData.categoria)) {
                 setCategoriasExistentes((prev) => [...prev, { value: requestData.categoria, label: requestData.categoria }]);
@@ -175,7 +193,7 @@ const AdicionarTransacaoForm = ({ onTransacaoAdicionada }) => {
                     size="small"
                     value={data}
                     onChange={(e) => setData(e.target.value)}
-                    inputProps={{ max: hoje() }}
+                    inputProps={{ max: hoje(), min: isMesPassado ? primeiroDiaMes : undefined }}
                     slotProps={{ inputLabel: { shrink: true } }}
                     sx={{ gridColumn: '1 / -1' }}
                 />
@@ -186,6 +204,18 @@ const AdicionarTransacaoForm = ({ onTransacaoAdicionada }) => {
                     </Button>
                 </Box>
             </Box>
+
+            {isMesPassado && (
+                <Alert severity="info" sx={{ mt: 1.5 }}>
+                    Adicionando a {MESES[mes - 1]}/{ano}.
+                </Alert>
+            )}
+            {isMesFuturo && (
+                <Alert severity="warning" sx={{ mt: 1.5 }}>
+                    Você está visualizando {MESES[mes - 1]}/{ano}. Novos lançamentos sempre usam a data
+                    de hoje — o sistema não aceita transações com data futura.
+                </Alert>
+            )}
 
             {success && <Alert severity="success" sx={{ mt: 1.5 }}>{success}</Alert>}
             {error && <Alert severity="error" sx={{ mt: 1.5 }}>{error}</Alert>}
