@@ -3,7 +3,7 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Button, Typography, Box, CircularProgress, Alert, Chip,
   Table, TableHead, TableRow, TableCell, TableBody, TableContainer,
-  Checkbox, Paper, useTheme,
+  Checkbox, Paper, useTheme, TextField,
 } from '@mui/material';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -15,6 +15,40 @@ const LABEL_OPERACAO = {
   VENDA: 'Venda',
   DESDOBRAMENTO: 'Desdobramento',
   GRUPAMENTO: 'Grupamento',
+};
+
+const LABEL_FATOR = {
+  DESDOBRAMENTO: 'Proporção do desdobramento (ex: 2 para 1:2)',
+  GRUPAMENTO: 'Proporção do grupamento (ex: 0.1 para 10:1)',
+};
+
+// Ticker normalizado só para comparação — mesmo critério do backend
+// (normalizarTickerParaComparacao em ImportacaoLoteInvestimentoService).
+const normalizarTicker = (ticker) => {
+  if (!ticker) return '';
+  const normalizado = ticker.toUpperCase().trim();
+  return normalizado.endsWith('.SA') ? normalizado.slice(0, -3) : normalizado;
+};
+
+// Desempate cronológico (data, depois linha do CSV) — mesmo critério do FIX de
+// ordenação no backend (compararCronologicamente).
+const depoisDe = (dataItem, linhaItem, dataEvento, linhaEvento) => {
+  if (dataItem !== dataEvento) return dataItem > dataEvento;
+  return linhaItem > linhaEvento;
+};
+
+// Um evento corporativo só exige fator quando há uma VENDA do MESMO ticker
+// depois dele no lote (ADR-052, adendo) — os demais permanecem informativos.
+const eventoPrecisaFator = (evento, prontos) => (prontos ?? []).some((item) => (
+  item.operacao === 'VENDA'
+  && normalizarTicker(item.ticker) === normalizarTicker(evento.ticker)
+  && depoisDe(item.data, item.linha, evento.data, evento.linha)
+));
+
+const fatorValido = (valor) => {
+  if (valor === undefined || valor === null || valor === '') return false;
+  const numero = Number(valor);
+  return !Number.isNaN(numero) && numero > 0;
 };
 
 /**
@@ -42,6 +76,7 @@ const ImportacaoLoteInvestimentosModal = ({ open, onClose, onImportado }) => {
   const [file, setFile] = useState(null);
   const [dragOver, setDragOver] = useState(false);
   const [selecionados, setSelecionados] = useState({});
+  const [fatores, setFatores] = useState({});
   const fileInputRef = useRef(null);
 
   const handleClose = () => {
@@ -49,6 +84,7 @@ const ImportacaoLoteInvestimentosModal = ({ open, onClose, onImportado }) => {
     setFile(null);
     setDragOver(false);
     setSelecionados({});
+    setFatores({});
     resetar();
     onClose();
     if (importouComSucesso) onImportado?.();
@@ -75,18 +111,38 @@ const ImportacaoLoteInvestimentosModal = ({ open, onClose, onImportado }) => {
     && (preview?.prontos ?? []).every((_item, i) => selecionados[i] !== false);
 
   useMemo(() => {
-    // Ao chegar um novo preview, todos os itens prontos começam selecionados.
+    // Ao chegar um novo preview, todos os itens prontos começam selecionados
+    // e os fatores de evento corporativo são limpos.
     if (preview?.prontos) {
       setSelecionados(Object.fromEntries(preview.prontos.map((_item, i) => [i, true])));
+      setFatores({});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [preview]);
 
   const itensSelecionados = (preview?.prontos ?? []).filter((_item, i) => selecionados[i] !== false);
 
+  const eventosComStatus = (preview?.eventosCorporativos ?? []).map((evento) => ({
+    ...evento,
+    precisaFator: eventoPrecisaFator(evento, preview?.prontos),
+  }));
+
+  const eventosPendentesDeFator = eventosComStatus.filter(
+    (evento) => evento.precisaFator && !fatorValido(fatores[evento.linha]),
+  );
+
   const handleConfirmar = () => {
-    if (itensSelecionados.length === 0) return;
-    confirmarImportacao(itensSelecionados);
+    if (itensSelecionados.length === 0 || eventosPendentesDeFator.length > 0) return;
+    const eventosCorporativos = eventosComStatus
+      .filter((evento) => evento.precisaFator)
+      .map((evento) => ({
+        linha: evento.linha,
+        ticker: evento.ticker,
+        operacao: evento.operacao,
+        data: evento.data,
+        fator: Number(fatores[evento.linha]),
+      }));
+    confirmarImportacao(itensSelecionados, eventosCorporativos);
   };
 
   const toggleItem = (i) => {
@@ -96,6 +152,10 @@ const ImportacaoLoteInvestimentosModal = ({ open, onClose, onImportado }) => {
   const toggleTodos = () => {
     const novoValor = !marcarTodosProntos;
     setSelecionados(Object.fromEntries((preview?.prontos ?? []).map((_item, i) => [i, novoValor])));
+  };
+
+  const handleFatorChange = (linha, valor) => {
+    setFatores((prev) => ({ ...prev, [linha]: valor }));
   };
 
   // STEP 3: Sucesso
@@ -200,10 +260,33 @@ const ImportacaoLoteInvestimentosModal = ({ open, onClose, onImportado }) => {
                 {preview.eventosCorporativos.length} evento(s) corporativo(s) (desdobramento/grupamento)
                 não são importados automaticamente — ajuste a quantidade manualmente após a importação:
               </Typography>
-              {preview.eventosCorporativos.map((item) => (
-                <Typography key={`${item.linha}-${item.ticker}`} variant="caption" component="div">
-                  Linha {item.linha}: {item.ticker} — {LABEL_OPERACAO[item.operacao] ?? item.operacao} em {item.data}
-                </Typography>
+              {eventosComStatus.map((item) => (
+                <Box key={`${item.linha}-${item.ticker}`} sx={{ mb: item.precisaFator ? 1.5 : 0.5 }}>
+                  <Typography variant="caption" component="div">
+                    Linha {item.linha}: {item.ticker} — {LABEL_OPERACAO[item.operacao] ?? item.operacao} em {item.data}
+                  </Typography>
+                  {item.precisaFator && (
+                    <Box sx={{ mt: 0.5 }}>
+                      <TextField
+                        size="small"
+                        type="number"
+                        label={LABEL_FATOR[item.operacao] ?? 'Fator de ajuste'}
+                        value={fatores[item.linha] ?? ''}
+                        onChange={(e) => handleFatorChange(item.linha, e.target.value)}
+                        error={!fatorValido(fatores[item.linha])}
+                        helperText={
+                          fatorValido(fatores[item.linha])
+                            ? ' '
+                            : `Obrigatório: há venda de ${item.ticker} neste lote após este evento.`
+                        }
+                        required
+                        inputProps={{ step: 'any' }}
+                        data-testid={`input-fator-evento-${item.linha}`}
+                        sx={{ width: 340 }}
+                      />
+                    </Box>
+                  )}
+                </Box>
               ))}
             </Alert>
           )}
@@ -226,7 +309,7 @@ const ImportacaoLoteInvestimentosModal = ({ open, onClose, onImportado }) => {
           <Button
             variant="contained"
             onClick={handleConfirmar}
-            disabled={confirming || itensSelecionados.length === 0}
+            disabled={confirming || itensSelecionados.length === 0 || eventosPendentesDeFator.length > 0}
             data-testid="btn-confirmar-importacao"
           >
             {confirming ? 'Importando...' : `Importar ${itensSelecionados.length} operações`}

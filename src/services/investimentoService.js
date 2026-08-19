@@ -295,9 +295,15 @@ const previewImportacaoLote = async (file) => {
 // Confirma a importação dos itens PRONTOS selecionados pelo usuário — cada
 // item já traz o previewId emitido no preview (vínculo SEC-14). `itens` é o
 // array `preview.prontos` (ou um subconjunto filtrado pelo usuário).
-const confirmarImportacaoLote = async (itens) => {
+// `eventosCorporativos` (ADR-052, adendo) carrega o fator de ajuste informado
+// pelo usuário para eventos de Desdobramento/Grupamento com venda subsequente
+// do mesmo ticker no lote — array de { linha, ticker, operacao, data, fator }.
+const confirmarImportacaoLote = async (itens, eventosCorporativos = []) => {
   try {
-    const response = await api.post('/investimentos/portfolio/ativos/lote/confirmar', itens);
+    const response = await api.post('/investimentos/portfolio/ativos/lote/confirmar', {
+      itens,
+      eventosCorporativos,
+    });
     return response.data;
   } catch (error) {
     // eslint-disable-next-line no-console
