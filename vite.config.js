@@ -38,7 +38,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/fortunai-production\.up\.railway\.app\/api\/.*/i,
+            urlPattern: /^https:\/\/finassistant-api\.onrender\.com\/api\/.*/i,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
