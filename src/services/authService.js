@@ -25,6 +25,17 @@ export function logout() {
   const token = localStorage.getItem('authToken');
   localStorage.removeItem('authToken');
   localStorage.removeItem('refreshToken');
+  
+  // SEC-10: Limpar caches do PWA (Service Worker) para evitar vazamento de dados 
+  // do Cache Storage (como respostas JSON da API) para o proximo usuario no mesmo browser.
+  if ('caches' in window) {
+    caches.keys().then(names => {
+      for (let name of names) {
+        caches.delete(name);
+      }
+    });
+  }
+
   if (token) {
     api.post('/auth/logout', null, { headers: { Authorization: `Bearer ${token}` } })
       .catch(() => { /* revogação best-effort — sessão local já foi encerrada */ });

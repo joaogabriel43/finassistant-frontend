@@ -133,6 +133,15 @@ const Chat = () => {
             const token = localStorage.getItem('authToken');
             const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3333/api';
             const fullUrl = url.startsWith('http') ? url : `${baseUrl.replace(/\/api$/, '')}${url}`;
+
+            // SEC: nunca enviar JWT para domínio externo — validar same-origin
+            const backendOrigin = new URL(baseUrl).origin;
+            const targetOrigin = new URL(fullUrl).origin;
+            if (targetOrigin !== backendOrigin) {
+                console.warn('[Chat] Download bloqueado: URL aponta para domínio externo.');
+                return;
+            }
+
             const response = await fetch(fullUrl, {
                 headers: { Authorization: `Bearer ${token}` },
             });

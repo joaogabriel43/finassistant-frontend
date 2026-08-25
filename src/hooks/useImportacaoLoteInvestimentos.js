@@ -31,11 +31,11 @@ export function useImportacaoLoteInvestimentos() {
     }
   };
 
-  const confirmarImportacao = async (itens) => {
+  const confirmarImportacao = async (itens, eventosCorporativos = []) => {
     setConfirming(true);
     setError(null);
     try {
-      const data = await investimentoService.confirmarImportacaoLote(itens);
+      const data = await investimentoService.confirmarImportacaoLote(itens, eventosCorporativos);
       setResultado(data);
     } catch (err) {
       logErroSeguro('Erro ao confirmar importação em lote', err);

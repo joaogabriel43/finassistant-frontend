@@ -141,7 +141,7 @@ describe('ImportacaoLoteInvestimentosModal', () => {
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith(
         '/investimentos/portfolio/ativos/lote/confirmar',
-        [itemPronto()]
+        { itens: [itemPronto()], eventosCorporativos: [] }
       )
       expect(screen.getByText(/1 operações importadas com sucesso!/)).toBeInTheDocument()
     })
@@ -190,5 +190,124 @@ describe('ImportacaoLoteInvestimentosModal', () => {
     await waitFor(() => {
       expect(screen.getByText('Envie um arquivo .csv de até 5MB.')).toBeInTheDocument()
     })
+  })
+
+  const previewComEventoPendenteDeFator = () => ({
+    data: {
+      prontos: [
+        itemPronto({ linha: 2, ticker: 'FICT3', operacao: 'COMPRA', data: '2026-03-01' }),
+        itemPronto({ linha: 6, ticker: 'FICT3', operacao: 'VENDA', data: '2026-03-05' }),
+      ],
+      eventosCorporativos: [
+        {
+          linha: 4,
+          classe: 'Ações',
+          ticker: 'FICT3',
+          operacao: 'DESDOBRAMENTO',
+          data: '2026-03-03',
+          quantidade: 0,
+          precoUnitario: 0,
+          valorTotal: 0,
+          tipoAtivo: null,
+          erro: null,
+          previewId: null,
+        },
+      ],
+      erros: [],
+      totalLinhas: 3,
+      previewId: PREVIEW_ID,
+    },
+  })
+
+  it('deve exigir o fator de um evento corporativo com venda subsequente e bloquear o botão de importar', async () => {
+    api.post.mockResolvedValueOnce(previewComEventoPendenteDeFator())
+
+    render(<ImportacaoLoteInvestimentosModal open={true} onClose={vi.fn()} />)
+
+    const input = document.querySelector('input[type="file"]')
+    fireEvent.change(input, { target: { files: [createMockFile()] } })
+    fireEvent.click(screen.getByText('Analisar Arquivo'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('input-fator-evento-4')).toBeInTheDocument()
+    })
+
+    expect(screen.getByTestId('btn-confirmar-importacao')).toBeDisabled()
+  })
+
+  it('deve liberar o botão de importar ao preencher o fator do evento corporativo', async () => {
+    api.post.mockResolvedValueOnce(previewComEventoPendenteDeFator())
+
+    render(<ImportacaoLoteInvestimentosModal open={true} onClose={vi.fn()} />)
+
+    const input = document.querySelector('input[type="file"]')
+    fireEvent.change(input, { target: { files: [createMockFile()] } })
+    fireEvent.click(screen.getByText('Analisar Arquivo'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('input-fator-evento-4')).toBeInTheDocument()
+    })
+
+    const fatorInput = screen.getByTestId('input-fator-evento-4').querySelector('input')
+    fireEvent.change(fatorInput, { target: { value: '2' } })
+
+    await waitFor(() => {
+      expect(screen.getByTestId('btn-confirmar-importacao')).not.toBeDisabled()
+    })
+
+    api.post.mockResolvedValueOnce({
+      data: { mensagem: '2 operações importadas com sucesso!', totalImportadas: 2 },
+    })
+
+    fireEvent.click(screen.getByTestId('btn-confirmar-importacao'))
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith(
+        '/investimentos/portfolio/ativos/lote/confirmar',
+        {
+          itens: [
+            itemPronto({ linha: 2, ticker: 'FICT3', operacao: 'COMPRA', data: '2026-03-01' }),
+            itemPronto({ linha: 6, ticker: 'FICT3', operacao: 'VENDA', data: '2026-03-05' }),
+          ],
+          eventosCorporativos: [
+            { linha: 4, ticker: 'FICT3', operacao: 'DESDOBRAMENTO', data: '2026-03-03', fator: 2 },
+          ],
+        }
+      )
+    })
+  })
+
+  it('deve exibir a mensagem especifica de erro 422 do backend, nao um erro generico', async () => {
+    api.post.mockResolvedValueOnce(previewComEventoPendenteDeFator())
+
+    render(<ImportacaoLoteInvestimentosModal open={true} onClose={vi.fn()} />)
+
+    const input = document.querySelector('input[type="file"]')
+    fireEvent.change(input, { target: { files: [createMockFile()] } })
+    fireEvent.click(screen.getByText('Analisar Arquivo'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('input-fator-evento-4')).toBeInTheDocument()
+    })
+
+    const fatorInput = screen.getByTestId('input-fator-evento-4').querySelector('input')
+    fireEvent.change(fatorInput, { target: { value: '0.5' } })
+
+    await waitFor(() => {
+      expect(screen.getByTestId('btn-confirmar-importacao')).not.toBeDisabled()
+    })
+
+    const mensagemEspecifica = 'O evento de Desdobramento para FICT3 em 2026-03-03 (linha 4) tem uma venda '
+      + 'subsequente no mesmo lote e precisa do fator de ajuste antes de confirmar a importação.'
+    api.post.mockRejectedValueOnce({
+      response: { data: { message: mensagemEspecifica } },
+    })
+
+    fireEvent.click(screen.getByTestId('btn-confirmar-importacao'))
+
+    await waitFor(() => {
+      expect(screen.getByText(mensagemEspecifica)).toBeInTheDocument()
+    })
+    expect(screen.queryByText('Erro ao importar os ativos.')).not.toBeInTheDocument()
   })
 })
