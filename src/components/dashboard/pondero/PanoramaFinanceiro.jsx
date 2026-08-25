@@ -85,6 +85,14 @@ export default function PanoramaFinanceiro({
         backdropFilter: 'blur(18px)',
         boxShadow: t.palette.elevation.high,
         overflow: 'hidden',
+        // A placa é escura NOS DOIS temas, mas o anel de foco global do
+        // index.css usa --c-pri — que no tema claro é verde escuro e some
+        // sobre ela. Dentro do panorama o foco usa o acento, claro nos dois
+        // modos, para continuar visível (WCAG 2.2 AA, foco visível).
+        '& :focus-visible': {
+          outline: `3px solid ${t.palette.panorama.accent}`,
+          outlineOffset: '3px',
+        },
       })}
     >
       {/* Coluna editorial ------------------------------------------------ */}
