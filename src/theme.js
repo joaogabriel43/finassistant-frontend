@@ -1,238 +1,380 @@
-// src/theme.js — FortunAI MUI v7 theme
+// src/theme.js — Pondero MUI v7 theme
 // ───────────────────────────────────────────────────────────────────
-// Generated from the D4 "Bento Refinado" design tokens (d4-tokens.js).
-// Single source of truth: edit `tokens` below and both the MUI theme
-// (sx prop / styled) and the raw CSS variables (applyCssVars) stay in sync.
+// Fonte única da verdade dos tokens visuais (DESIGN.md + protótipo
+// `docs/brand/pondero-dashboard-prototype.html`).
 //
-// Dark-only by design — the D4 system ships a single dark surface palette.
+// Diferença estrutural em relação à versão D4 dark-only: o tema agora é
+// uma FÁBRICA por modo (`createAppTheme('light' | 'dark')`). O export
+// default continua sendo o tema escuro pronto, porque ~20 arquivos de
+// teste fazem `import theme from '@/theme'` — quebrar essa assinatura
+// custaria churn sem ganho algum.
 //
-// Fonts (Vite): install once, then the imports below bundle them.
-//   npm i @fontsource/hanken-grotesk @fontsource/jetbrains-mono
-
-import '@fontsource/hanken-grotesk/latin-400.css';
-import '@fontsource/hanken-grotesk/latin-500.css';
-import '@fontsource/hanken-grotesk/latin-600.css';
-import '@fontsource/hanken-grotesk/latin-700.css';
-import '@fontsource/hanken-grotesk/latin-800.css';
-import '@fontsource/jetbrains-mono/latin-400.css';
-import '@fontsource/jetbrains-mono/latin-500.css';
-import '@fontsource/jetbrains-mono/latin-600.css';
-import '@fontsource/jetbrains-mono/latin-700.css';
+// Fontes: DM Sans (UI), IBM Plex Mono (valores financeiros) e Fraunces
+// (apenas momentos editoriais) chegam pelo Google Fonts em index.html,
+// mesmo mecanismo que a Inter já usava — zero dependência nova.
 
 import { createTheme } from '@mui/material/styles';
 
-// ── Design tokens (clean, importable copy of d4-tokens.js) ──────────
-export const tokens = {
-  colors: {
-    bg:          '#08080c', // app background
-    panel:       '#0b0b11', // sidebar / chrome
-    surface:     '#101017', // cards (Paper)
-    raised:      '#16161f', // raised layer inside a card
-
-    line:        'rgba(255,255,255,0.07)',
-    lineStrong:  'rgba(255,255,255,0.12)',
-
-    text:        '#ECECF1',
-    textDim:     '#9494A6',
-    textFaint:   '#62626F',
-
-    primary:     '#7C6AF7',
-    primaryHi:   '#8B7BFF',
-    primaryLo:   '#5B4FD4',
-    primarySoft: 'rgba(124,106,247,0.14)',
-
-    pos:         '#2DD4A7',
-    neg:         '#FF5C77',
-    warn:        '#FFB547',
-    pink:        '#FF6FB3',
-
-    // input borders (merged from the previous theme — dark tokens)
-    inputBorder:      'rgba(255,255,255,0.12)',
-    inputBorderHover: 'rgba(255,255,255,0.24)',
-
-    // portfolio series — keep order stable so legend ↔ donut colors match
-    series: ['#7C6AF7', '#2DD4A7', '#FFB547', '#4FC3F7', '#FF6FB3'],
-  },
-  radius: { sm: 8, md: 12, lg: 16, xl: 20, pill: 999 },
-  space:  { 1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24, 8: 32 }, // 4pt scale
-  font: {
-    ui:   "'Hanken Grotesk', system-ui, -apple-system, sans-serif",
-    mono: "'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace",
-  },
-  motion: { ease: 'cubic-bezier(.22,.7,.3,1)', dur: 900 },
+// ── Famílias tipográficas ───────────────────────────────────────────
+export const font = {
+  ui: "'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif",
+  mono: "'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace",
+  display: "'Fraunces', Georgia, 'Times New Roman', serif",
 };
 
-const c = tokens.colors;
+export const radius = { sm: 8, md: 12, lg: 16, xl: 24, pill: 999 };
+export const space = { 1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24, 8: 32 };
+export const motion = { ease: 'cubic-bezier(.22,.7,.3,1)', dur: 900 };
 
-// ── createTheme: tokens → MUI palette / shape / spacing / typography ─
-export const theme = createTheme({
-  // MUI v7 native CSS variables — exposes palette as --fa-* custom props
-  // and gives proper SSR/dark-mode behaviour out of the box.
-  cssVariables: { cssVarPrefix: 'fa' },
+// Semânticas de estado — idênticas nos dois modos (DESIGN.md).
+const status = {
+  positive: '#76A968',
+  negative: '#C76562',
+  warning: '#C78C3D',
+  information: '#5F8F9A',
+};
 
-  palette: {
-    mode: 'dark',
-    primary: { main: c.primary, light: c.primaryHi, dark: c.primaryLo, contrastText: '#ffffff' },
-    secondary: { main: c.pink, contrastText: '#ffffff' },
-    success: { main: c.pos, contrastText: '#06140f' },
-    error:   { main: c.neg, contrastText: '#1a0509' },
-    warning: { main: c.warn, contrastText: '#1a1203' },
-    background: { default: c.bg, paper: c.surface },
-    text: { primary: c.text, secondary: c.textDim, disabled: c.textFaint },
-    divider: c.line,
+// ── Paletas por modo ────────────────────────────────────────────────
+// Valores transcritos de html[data-theme=...] do protótipo Pondero.
+// `series` mantém ordem estável para que legenda e donut nunca troquem
+// de cor entre renders.
+const palettes = {
+  light: {
+    bg: '#F4EEE3',
+    bgSoft: '#EEE5D7',
+    panel: '#FFFDF8',
+    surface: '#FFFDF8',
+    surfaceSoft: '#F8F4EA',
+    raised: '#FFFAF0',
+    strong: '#173029',
 
-    // ── custom palette extensions (read via theme.palette.*) ──────────
-    surfaces:  { bg: c.bg, panel: c.panel, surface: c.surface, raised: c.raised },
-    lines:     { subtle: c.line, strong: c.lineStrong },
-    accent:    { primarySoft: c.primarySoft, pink: c.pink, textFaint: c.textFaint },
-    series:    c.series,
+    text: '#19372F',
+    textDim: '#68776E',
+    textFaint: '#89948E',
+
+    primary: '#285F50',
+    primaryHi: '#31735F',
+    primaryLo: '#1E5143',
+    primarySoft: 'rgba(40,95,80,0.10)',
+    onPrimary: '#FFFDF8',
+
+    accentNatural: '#5E8138',
+    accentSoft: 'rgba(94,129,56,0.12)',
+    copper: '#D49A69',
+
+    line: 'rgba(25,55,47,0.13)',
+    lineStrong: 'rgba(25,55,47,0.22)',
+    inputBorder: 'rgba(25,55,47,0.20)',
+    inputBorderHover: 'rgba(25,55,47,0.34)',
+
+    shadowLow: '0 10px 28px rgba(30,55,45,0.08)',
+    shadowHigh: '0 24px 70px rgba(30,55,45,0.11)',
+
+    // Panorama G3-A: material translúcido apoiado direto no ambiente,
+    // sem placa opaca por baixo.
+    panorama: 'rgba(23,48,41,0.92)',
+    panoramaText: '#EFF2ED',
+    panoramaMuted: '#B9C5BF',
+    panoramaAccent: '#B8D979',
+    chartGrid: 'rgba(25,55,47,0.10)',
+
+    series: ['#285F50', '#5F8F9A', '#D49A69', '#5E8138', '#8C6BA0'],
   },
+  dark: {
+    bg: '#09100E',
+    bgSoft: '#0E1714',
+    panel: '#0E1714',
+    surface: '#101815',
+    surfaceSoft: '#121D19',
+    raised: '#17231F',
+    strong: '#1D352D',
 
-  // base 4px: theme.spacing(1) === 4px → space tokens map 1:1 (space[2]=spacing(2))
-  spacing: 4,
+    text: '#EFF2ED',
+    textDim: '#9AA69F',
+    textFaint: '#707D76',
 
-  shape: { borderRadius: tokens.radius.lg }, // 16
+    primary: '#B8D979',
+    primaryHi: '#C9E793',
+    primaryLo: '#9DBE60',
+    primarySoft: 'rgba(184,217,121,0.10)',
+    onPrimary: '#09100E',
 
-  // expose the full radius scale + mono family for components/sx
-  radius: tokens.radius,
-  motion: tokens.motion,
+    accentNatural: '#B8D979',
+    accentSoft: 'rgba(184,217,121,0.11)',
+    copper: '#D49A69',
 
-  typography: {
-    fontFamily: tokens.font.ui,
-    fontFamilyMono: tokens.font.mono, // custom — use for all monetary values
-    // tabular figures everywhere by default
-    h1: { fontWeight: 800, letterSpacing: '-0.02em' },
-    h2: { fontWeight: 800, letterSpacing: '-0.02em' },
-    h3: { fontWeight: 750, letterSpacing: '-0.015em' },
-    h4: { fontWeight: 750, letterSpacing: '-0.01em' },
-    h5: { fontWeight: 700 },
-    h6: { fontWeight: 700 },
-    button: { fontWeight: 650, textTransform: 'none', letterSpacing: 0 },
-    overline: { fontWeight: 600, letterSpacing: '0.08em', fontSize: '0.66rem' },
+    line: 'rgba(255,255,255,0.085)',
+    lineStrong: 'rgba(255,255,255,0.15)',
+    inputBorder: 'rgba(255,255,255,0.14)',
+    inputBorderHover: 'rgba(255,255,255,0.26)',
+
+    shadowLow: '0 12px 32px rgba(0,0,0,0.26)',
+    shadowHigh: '0 30px 88px rgba(0,0,0,0.35)',
+
+    panorama: 'rgba(23,35,31,0.82)',
+    panoramaText: '#EFF2ED',
+    panoramaMuted: '#9AA69F',
+    panoramaAccent: '#B8D979',
+    chartGrid: 'rgba(255,255,255,0.07)',
+
+    series: ['#B8D979', '#5F8F9A', '#D49A69', '#76A968', '#B39BC8'],
   },
+};
 
-  components: {
-    MuiCssBaseline: {
-      styleOverrides: {
-        body: {
-          fontFeatureSettings: '"tnum" 1',
-          backgroundColor: c.bg,
-          color: c.text,
-        },
+export const COLOR_MODES = ['light', 'dark'];
+
+/**
+ * Tokens do modo pedido. Mesmo formato do `tokens` exportado pela
+ * versão anterior do arquivo (colors/radius/space/font/motion).
+ * @param {'light'|'dark'} mode
+ */
+export function getTokens(mode = 'dark') {
+  const p = palettes[mode] ?? palettes.dark;
+  return {
+    colors: { ...p, ...status, pos: status.positive, neg: status.negative, warn: status.warning },
+    radius,
+    space,
+    font,
+    motion,
+  };
+}
+
+// Back-compat: `tokens` sem argumento continua sendo o conjunto escuro.
+export const tokens = getTokens('dark');
+
+/**
+ * Constrói o tema MUI para um modo. TODAS as extensões customizadas de
+ * palette (`surfaces`, `lines`, `accent`, `series`) existem nos DOIS
+ * modos — os ~24 call sites que as leem funcionam em claro e escuro sem
+ * nenhum condicional.
+ * @param {'light'|'dark'} mode
+ */
+export function createAppTheme(mode = 'dark') {
+  const c = palettes[mode] ?? palettes.dark;
+  const isDark = mode === 'dark';
+
+  return createTheme({
+    cssVariables: { cssVarPrefix: 'fa' },
+
+    palette: {
+      mode,
+      primary: { main: c.primary, light: c.primaryHi, dark: c.primaryLo, contrastText: c.onPrimary },
+      secondary: { main: c.copper, contrastText: isDark ? '#09100E' : '#19372F' },
+      success: { main: status.positive, contrastText: isDark ? '#06140F' : '#FFFDF8' },
+      error: { main: status.negative, contrastText: '#FFFDF8' },
+      warning: { main: status.warning, contrastText: isDark ? '#1A1203' : '#FFFDF8' },
+      info: { main: status.information, contrastText: '#FFFDF8' },
+      background: { default: c.bg, paper: c.surface },
+      text: { primary: c.text, secondary: c.textDim, disabled: c.textFaint },
+      divider: c.line,
+
+      // ── custom palette extensions (read via theme.palette.*) ────────
+      surfaces: {
+        bg: c.bg,
+        bgSoft: c.bgSoft,
+        panel: c.panel,
+        surface: c.surface,
+        surfaceSoft: c.surfaceSoft,
+        raised: c.raised,
+        strong: c.strong,
       },
+      lines: { subtle: c.line, strong: c.lineStrong },
+      accent: {
+        primarySoft: c.primarySoft,
+        natural: c.accentNatural,
+        naturalSoft: c.accentSoft,
+        copper: c.copper,
+        // `pink` sobrevive como alias: componentes legados leem esse nome.
+        pink: c.copper,
+        textFaint: c.textFaint,
+      },
+      // Panorama G3-A — material próprio, não é uma "surface" comum.
+      panorama: {
+        bg: c.panorama,
+        text: c.panoramaText,
+        muted: c.panoramaMuted,
+        accent: c.panoramaAccent,
+      },
+      chart: { grid: c.chartGrid },
+      elevation: { low: c.shadowLow, high: c.shadowHigh },
+      series: c.series,
     },
-    // Tabs: o feedback de foco é o indicator roxo + leve fundo — nunca o
-    // retângulo branco de outline do navegador (fix visual do Lote K).
-    MuiTab: {
-      styleOverrides: {
-        root: {
-          outline: 'none',
-          '&.Mui-focusVisible': {
-            outline: 'none',
-            backgroundColor: 'rgba(124,106,247,0.10)',
-            borderRadius: tokens.radius.md,
+
+    // base 4px: theme.spacing(1) === 4px → space tokens mapeiam 1:1
+    spacing: 4,
+    shape: { borderRadius: radius.lg },
+    radius,
+    motion,
+
+    typography: {
+      fontFamily: font.ui,
+      fontFamilyMono: font.mono, // usar em TODO valor monetário comparável
+      fontFamilyDisplay: font.display, // Fraunces só em momento editorial
+      h1: { fontWeight: 700, letterSpacing: '-0.035em' },
+      h2: { fontWeight: 700, letterSpacing: '-0.03em' },
+      h3: { fontWeight: 600, letterSpacing: '-0.025em' },
+      h4: { fontWeight: 600, letterSpacing: '-0.02em' },
+      h5: { fontWeight: 600, letterSpacing: '-0.015em' },
+      h6: { fontWeight: 600, letterSpacing: '-0.015em' },
+      body1: { lineHeight: 1.55 },
+      button: { fontWeight: 700, textTransform: 'none', letterSpacing: 0 },
+      overline: { fontWeight: 600, letterSpacing: '0.095em', fontSize: '0.66rem' },
+    },
+
+    components: {
+      MuiCssBaseline: {
+        styleOverrides: {
+          body: {
+            fontFeatureSettings: '"tnum" 1',
+            backgroundColor: c.bg,
+            color: c.text,
+            transition: `background-color 320ms ${motion.ease}, color 240ms ${motion.ease}`,
           },
-          '&:focus': { outline: 'none' },
+          // Acessibilidade: quem pede menos movimento não recebe animação.
+          '@media (prefers-reduced-motion: reduce)': {
+            '*, *::before, *::after': {
+              animationDuration: '0.01ms !important',
+              animationIterationCount: '1 !important',
+              transitionDuration: '0.01ms !important',
+              scrollBehavior: 'auto !important',
+            },
+          },
         },
       },
-    },
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          backgroundColor: c.surface,
-          backgroundImage: 'none',
-          border: `1px solid ${c.line}`,
-          borderRadius: tokens.radius.lg,
+      MuiTab: {
+        styleOverrides: {
+          root: {
+            outline: 'none',
+            '&.Mui-focusVisible': {
+              outline: 'none',
+              backgroundColor: c.primarySoft,
+              borderRadius: radius.md,
+            },
+            '&:focus': { outline: 'none' },
+          },
         },
       },
-    },
-    // merged from previous theme — keep Card visually aligned with Paper
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          backgroundColor: c.surface,
-          backgroundImage: 'none',
-          border: `1px solid ${c.line}`,
-          borderRadius: tokens.radius.lg,
-          boxShadow: 'none',
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            backgroundColor: c.surface,
+            backgroundImage: 'none',
+            border: `1px solid ${c.line}`,
+            borderRadius: radius.lg,
+          },
         },
       },
-    },
-    MuiButton: {
-      defaultProps: { disableElevation: true },
-      styleOverrides: {
-        root: { borderRadius: tokens.radius.md, fontWeight: 650, paddingInline: 16 },
-        containedPrimary: {
-          backgroundImage: `linear-gradient(135deg, ${c.primary}, ${c.primaryLo})`,
-          boxShadow: '0 2px 14px rgba(124,106,247,0.35)',
-          '&:hover': { boxShadow: '0 4px 20px rgba(124,106,247,0.5)' },
+      MuiCard: {
+        styleOverrides: {
+          root: {
+            backgroundColor: c.surface,
+            backgroundImage: 'none',
+            border: `1px solid ${c.line}`,
+            borderRadius: radius.lg,
+            boxShadow: 'none',
+          },
         },
       },
-    },
-    // merged from previous theme — input border states
-    MuiTextField: {
-      styleOverrides: {
-        root: {
-          '& .MuiOutlinedInput-root': {
-            borderRadius: tokens.radius.md,
+      MuiButton: {
+        defaultProps: { disableElevation: true },
+        styleOverrides: {
+          // Flat by default: sem gradiente nem sombra colorida (DESIGN.md).
+          root: { borderRadius: radius.md, fontWeight: 700, paddingInline: 18, minHeight: 40 },
+          containedPrimary: {
+            backgroundColor: c.primary,
+            color: c.onPrimary,
+            boxShadow: 'none',
+            '&:hover': { backgroundColor: c.primaryHi, boxShadow: 'none' },
+          },
+        },
+      },
+      MuiTextField: {
+        styleOverrides: {
+          root: {
+            '& .MuiOutlinedInput-root': {
+              borderRadius: radius.md,
+              '& .MuiOutlinedInput-notchedOutline': { borderColor: c.inputBorder },
+              '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: c.inputBorderHover },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: c.primary },
+            },
+          },
+        },
+      },
+      MuiOutlinedInput: {
+        styleOverrides: {
+          root: {
+            borderRadius: radius.md,
             '& .MuiOutlinedInput-notchedOutline': { borderColor: c.inputBorder },
             '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: c.inputBorderHover },
             '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: c.primary },
           },
         },
       },
-    },
-    MuiOutlinedInput: {
-      styleOverrides: {
-        root: {
-          borderRadius: tokens.radius.md,
-          '& .MuiOutlinedInput-notchedOutline': { borderColor: c.inputBorder },
-          '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: c.inputBorderHover },
-          '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: c.primary },
+      MuiLinearProgress: {
+        styleOverrides: {
+          root: { height: 6, borderRadius: 4, backgroundColor: c.line },
+          bar: { borderRadius: 4 },
+        },
+      },
+      MuiDivider: { styleOverrides: { root: { borderColor: c.line } } },
+      MuiChip: { styleOverrides: { root: { borderRadius: radius.sm } } },
+      MuiTooltip: {
+        styleOverrides: {
+          tooltip: {
+            backgroundColor: c.raised,
+            color: c.text,
+            border: `1px solid ${c.lineStrong}`,
+            fontSize: 12,
+          },
         },
       },
     },
-    MuiLinearProgress: {
-      styleOverrides: {
-        root: { height: 6, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.06)' },
-        bar: { borderRadius: 4 },
-      },
-    },
-    MuiDivider: { styleOverrides: { root: { borderColor: c.line } } },
-    // merged from previous theme
-    MuiChip: { styleOverrides: { root: { borderRadius: tokens.radius.sm } } },
-    MuiTooltip: {
-      styleOverrides: {
-        tooltip: { backgroundColor: c.raised, border: `1px solid ${c.lineStrong}`, fontSize: 12 },
-      },
-    },
-  },
-});
+  });
+}
+
+export const theme = createAppTheme('dark');
+export const lightTheme = createAppTheme('light');
 
 /**
- * Flatten tokens into the `--c-*` / `--r-*` / `--f-*` CSS custom properties
- * used by the hand-written D4 CSS. Spread onto a root element's style, or
- * call applyCssVars(document.documentElement) once at boot.
- * @param {HTMLElement} [el] when provided, sets the vars on that element
- * @returns {Record<string,string>} the variable map (for sx/style spread)
+ * Achata os tokens nas custom properties `--c-*` / `--r-*` / `--f-*`
+ * consumidas pelo CSS escrito à mão.
+ * @param {'light'|'dark'} [mode]
+ * @returns {Record<string,string>} mapa de variáveis (para spread em sx/style)
  */
-export function cssVars() {
+export function cssVars(mode = 'dark') {
+  const c = palettes[mode] ?? palettes.dark;
   return {
-    '--c-bg': c.bg, '--c-panel': c.panel, '--c-surface': c.surface, '--c-raised': c.raised,
+    '--c-bg': c.bg, '--c-bg-soft': c.bgSoft, '--c-panel': c.panel,
+    '--c-surface': c.surface, '--c-surface-soft': c.surfaceSoft, '--c-raised': c.raised,
     '--c-line': c.line, '--c-line-strong': c.lineStrong,
     '--c-tx': c.text, '--c-tx2': c.textDim, '--c-tx3': c.textFaint,
-    '--c-pri': c.primary, '--c-pri-hi': c.primaryHi, '--c-pri-lo': c.primaryLo, '--c-pri-soft': c.primarySoft,
-    '--c-pos': c.pos, '--c-neg': c.neg, '--c-warn': c.warn, '--c-pink': c.pink,
-    '--r-sm': `${tokens.radius.sm}px`, '--r-md': `${tokens.radius.md}px`,
-    '--r-lg': `${tokens.radius.lg}px`, '--r-xl': `${tokens.radius.xl}px`,
-    '--f-ui': tokens.font.ui, '--f-mono': tokens.font.mono,
+    '--c-pri': c.primary, '--c-pri-hi': c.primaryHi, '--c-pri-lo': c.primaryLo,
+    '--c-pri-soft': c.primarySoft,
+    '--c-pos': status.positive, '--c-neg': status.negative,
+    '--c-warn': status.warning, '--c-info': status.information,
+    // alias legado — o acento de dado deste tema é o cobre, não o rosa D4
+    '--c-pink': c.copper,
+    '--c-panorama': c.panorama, '--c-panorama-tx': c.panoramaText,
+    '--c-chart-grid': c.chartGrid,
+    '--c-shadow-low': c.shadowLow, '--c-shadow-high': c.shadowHigh,
+    '--r-sm': `${radius.sm}px`, '--r-md': `${radius.md}px`,
+    '--r-lg': `${radius.lg}px`, '--r-xl': `${radius.xl}px`, '--r-pill': `${radius.pill}px`,
+    '--f-ui': font.ui, '--f-mono': font.mono, '--f-display': font.display,
+    '--ease': motion.ease,
   };
 }
 
-export function applyCssVars(el = typeof document !== 'undefined' ? document.documentElement : null) {
-  if (!el) return;
-  const vars = cssVars();
-  for (const k in vars) el.style.setProperty(k, vars[k]);
+/**
+ * Aplica as custom properties no elemento raiz. A assinatura mantém `el`
+ * como primeiro parâmetro para não quebrar chamadas antigas.
+ * @param {HTMLElement} [el]
+ * @param {'light'|'dark'} [mode]
+ */
+export function applyCssVars(el, mode = 'dark') {
+  const target = el ?? (typeof document !== 'undefined' ? document.documentElement : null);
+  if (!target) return;
+  const vars = cssVars(mode);
+  for (const k in vars) target.style.setProperty(k, vars[k]);
 }
 
 export default theme;

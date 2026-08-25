@@ -1,4 +1,6 @@
-/* Reset e layout global */
+/* Reset e layout global.
+   Cores NUNCA vêm daqui em valor fixo: o ColorModeProvider publica os tokens
+   do modo ativo em --c-* (ver src/theme.js#cssVars). */
 html, body, #root {
   margin: 0;
   padding: 0;
@@ -11,36 +13,63 @@ html, body, #root {
 }
 
 :root {
-  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: var(--f-ui, 'DM Sans', system-ui, sans-serif);
   line-height: 1.5;
   font-weight: 400;
-  color-scheme: dark;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Links padrão */
-a { font-weight: 500; color: #646cff; text-decoration: inherit; }
-a:hover { color: #535bf2; }
+/* color-scheme acompanha o modo ativo em vez de fixar dark — scrollbars e
+   controles nativos precisam concordar com o tema. O provider também seta
+   isso inline; a regra abaixo cobre o intervalo até o React montar. */
+:root[data-theme='light'] { color-scheme: light; }
+:root[data-theme='dark']  { color-scheme: dark; }
 
-/* Remove layout anterior do body que centralizava conteúdo */
-body { margin: 0; min-width: 320px; min-height: 100vh; }
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--c-bg, #09100e);
+  color: var(--c-tx, #eff2ed);
+}
+
+/* Links padrão — herdam o primário do tema ativo. */
+a { font-weight: 500; color: var(--c-pri, #b8d979); text-decoration: inherit; }
+a:hover { color: var(--c-pri-hi, #c9e793); }
 
 h1 { font-size: 3.2em; line-height: 1.1; }
 
+/* Botões nativos (fora do MUI). O MUI tem seus próprios overrides. */
 button {
-  border-radius: 8px;
+  border-radius: var(--r-md, 12px);
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--c-surface, #101815);
+  color: var(--c-tx, #eff2ed);
   cursor: pointer;
   transition: border-color 0.25s;
 }
-button:hover { border-color: #646cff; }
-button:focus, button:focus-visible { outline: 4px auto -webkit-focus-ring-color; }
+button:hover { border-color: var(--c-line-strong, rgba(255, 255, 255, 0.15)); }
 
+/* Foco visível e consistente em todo o app (WCAG 2.2 — 2.4.11/2.4.13). */
+button:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--c-pri, #b8d979) 45%, transparent);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
