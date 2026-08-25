@@ -1,8 +1,9 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
-import { Box, Chip, Typography } from '@mui/material'
+import { Box, Chip, Typography, useTheme } from '@mui/material'
 import NotificacoesBadge from './notificacoes/NotificacoesBadge'
 import UserMenu from './layout/UserMenu'
+import ThemeToggle from './layout/ThemeToggle'
 import PlanoBadge from './plano/PlanoBadge'
 import usePlano from '../hooks/usePlano'
 
@@ -22,6 +23,9 @@ const NAV_LINKS = [
 
 const Sidebar = () => {
   const { isPremium } = usePlano()
+  // NavLink usa `style` (função), fora do sistema `sx` do MUI — por isso os
+  // tokens precisam ser lidos do tema aqui, e não escritos à mão.
+  const theme = useTheme()
 
   return (
     <Box
@@ -35,14 +39,14 @@ const Sidebar = () => {
       }}
     >
       {/* TOPO: Layout em 2 linhas para caber nos 220px da sidebar
-           Linha 1: [FortunAI]  →  [🔔] [J]
+           Linha 1: [FortunAI]  →  [tema] [🔔] [J]
            Linha 2: [Assistente Financeiro] [Free/Premium]         */}
       <Box
         sx={{
           px: 2.5,
           pt: 2,
           pb: 1.5,
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          borderBottom: `1px solid ${theme.palette.lines.subtle}`,
           flexShrink: 0,
         }}
       >
@@ -56,26 +60,53 @@ const Sidebar = () => {
             fontWeight={700}
             data-testid="logo-fortunai"
             sx={{
-              color: '#7C6AF7',
-              letterSpacing: '-0.5px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              color: 'text.primary',
+              letterSpacing: '-0.04em',
               lineHeight: 1.2,
               textDecoration: 'none',
               cursor: 'pointer',
               '&:hover': { opacity: 0.85 },
             }}
           >
+            {/* Marca geométrica do protótipo — decorativa, sem conteúdo semântico */}
+            <Box
+              aria-hidden="true"
+              sx={{
+                position: 'relative',
+                width: 26,
+                height: 26,
+                flexShrink: 0,
+                borderRadius: '9px',
+                border: `1px solid ${theme.palette.primary.main}`,
+                backgroundColor: theme.palette.accent.primarySoft,
+                '&::before, &::after': {
+                  content: '""',
+                  position: 'absolute',
+                  left: '6px',
+                  height: '2px',
+                  borderRadius: '999px',
+                  backgroundColor: theme.palette.primary.main,
+                },
+                '&::before': { top: '8px', width: '12px', transform: 'rotate(24deg)' },
+                '&::after': { top: '15px', width: '14px', transform: 'rotate(-24deg)' },
+              }}
+            />
             FortunAI
           </Typography>
 
-          {/* Notificações + Avatar — visíveis apenas em desktop */}
+          {/* Tema + Notificações + Avatar — visíveis apenas em desktop */}
           <Box
             sx={{
               display: { xs: 'none', md: 'flex' },
               alignItems: 'center',
-              gap: 0.5,
+              gap: 0.25,
               flexShrink: 0,
             }}
           >
+            <ThemeToggle />
             <NotificacoesBadge />
             <UserMenu />
           </Box>
@@ -93,24 +124,36 @@ const Sidebar = () => {
       {/* MEIO: Navegação */}
       <Box component="nav" sx={{ flexGrow: 1, px: 1.5, py: 2, overflow: 'hidden' }}>
         {NAV_LINKS.map(({ to, label, tutorial, premiumOnly }) => (
-          <NavLink
+          <Box
             key={to}
+            component={NavLink}
             to={to}
             {...(tutorial ? { 'data-tutorial': tutorial } : {})}
-            style={({ isActive }) => ({
+            sx={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              padding: '10px 14px',
-              borderRadius: '8px',
-              marginBottom: '4px',
+              minHeight: 40,
+              px: 1.75,
+              py: 1.25,
+              mb: 0.5,
+              borderRadius: '11px',
               textDecoration: 'none',
-              color: isActive ? '#ffffff' : '#8B8BA8',
-              backgroundColor: isActive ? 'rgba(124, 106, 247, 0.15)' : 'transparent',
-              fontWeight: isActive ? 600 : 400,
+              color: 'text.secondary',
               fontSize: '0.875rem',
-              transition: 'background-color 0.15s, color 0.15s',
-            })}
+              fontWeight: 500,
+              transition: 'background-color .16s ease, color .16s ease',
+              '&:hover': {
+                backgroundColor: 'accent.primarySoft',
+                color: 'text.primary',
+              },
+              // Item ativo não depende só de cor: o peso da fonte também muda.
+              '&.active': {
+                backgroundColor: 'accent.primarySoft',
+                color: 'primary.main',
+                fontWeight: 700,
+              },
+            }}
           >
             <span>{label}</span>
             {premiumOnly && !isPremium && (
@@ -121,14 +164,14 @@ const Sidebar = () => {
                   height: 16,
                   fontSize: 9,
                   fontWeight: 700,
-                  bgcolor: 'rgba(255,215,0,0.15)',
-                  color: '#FFD700',
-                  border: '1px solid rgba(255,215,0,0.3)',
+                  bgcolor: 'transparent',
+                  color: 'accent.copper',
+                  border: `1px solid ${theme.palette.accent.copper}`,
                   '& .MuiChip-label': { px: 0.75 },
                 }}
               />
             )}
-          </NavLink>
+          </Box>
         ))}
       </Box>
 
@@ -138,7 +181,7 @@ const Sidebar = () => {
           sx={{
             px: 1.5,
             py: 2,
-            borderTop: '1px solid rgba(255,255,255,0.06)',
+            borderTop: `1px solid ${theme.palette.lines.subtle}`,
             flexShrink: 0,
           }}
         >

@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { vi, describe, it, expect } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import Layout from '../../components/layout/Layout'
+import { ColorModeProvider } from '../../contexts/ColorModeContext'
 
 // --- MOCK: AuthContext ---
 vi.mock('../../contexts/AuthContext', () => ({
@@ -19,11 +20,15 @@ vi.mock('react-router-dom', async (importOriginal) => {
   }
 })
 
+// O shell lê tokens customizados do tema (palette.surfaces/lines) e o modo
+// claro/escuro — em produção ele sempre vive sob o ColorModeProvider.
 function renderLayout() {
   return render(
-    <MemoryRouter>
-      <Layout />
-    </MemoryRouter>
+    <ColorModeProvider>
+      <MemoryRouter>
+        <Layout />
+      </MemoryRouter>
+    </ColorModeProvider>
   )
 }
 
@@ -68,5 +73,13 @@ describe('Responsividade — Layout e Sidebar', () => {
 
     await user.click(toggle)
     expect(toggle).toHaveAttribute('aria-expanded', 'false')
+  })
+
+  // --- Teste 6 --- Alternador de tema disponível no shell, com nome acessível
+  it('Layout expõe o alternador de tema com nome acessível', () => {
+    renderLayout()
+    const alternadores = screen.getAllByTestId('theme-toggle')
+    expect(alternadores.length).toBeGreaterThanOrEqual(1)
+    expect(alternadores[0]).toHaveAccessibleName(/tema (claro|escuro)/i)
   })
 })
