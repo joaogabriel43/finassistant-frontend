@@ -67,15 +67,15 @@ describe('InsightEducacionalCard', () => {
     expect(screen.getByRole('button', { name: /entendi/i })).toBeInTheDocument()
   })
 
-  // 4. Clicar "Entendi" chama POST /api/insights/{id}/visto
-  it('clicar "Entendi" chama POST /api/insights/{id}/visto', async () => {
+  // 4. Clicar "Entendi" chama POST /insights/{id}/visto
+  it('clicar "Entendi" chama POST /insights/{id}/visto', async () => {
     render(<InsightEducacionalCard insight={MOCK_INSIGHT} onDismiss={onDismiss} />)
 
     fireEvent.click(screen.getByRole('button', { name: /entendi/i }))
 
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith(
-        `/api/insights/${MOCK_INSIGHT.id}/visto`
+        `/insights/${MOCK_INSIGHT.id}/visto`
       )
     })
   })

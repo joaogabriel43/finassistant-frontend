@@ -76,6 +76,12 @@ const palettes = {
     panoramaText: '#EFF2ED',
     panoramaMuted: '#B9C5BF',
     panoramaAccent: '#B8D979',
+    // Hairlines e material interno DENTRO da placa do panorama: a placa é
+    // escura nos dois temas, então esses tons são claros nos dois.
+    panoramaLine: 'rgba(255,255,255,0.14)',
+    panoramaOnAccent: '#0B1410',
+    panoramaInner: 'rgba(255,255,255,0.05)',
+    panoramaInnerLine: 'rgba(255,255,255,0.10)',
     chartGrid: 'rgba(25,55,47,0.10)',
 
     series: ['#285F50', '#5F8F9A', '#D49A69', '#5E8138', '#8C6BA0'],
@@ -115,6 +121,10 @@ const palettes = {
     panoramaText: '#EFF2ED',
     panoramaMuted: '#9AA69F',
     panoramaAccent: '#B8D979',
+    panoramaLine: 'rgba(255,255,255,0.11)',
+    panoramaOnAccent: '#0B1410',
+    panoramaInner: 'rgba(255,255,255,0.045)',
+    panoramaInnerLine: 'rgba(255,255,255,0.09)',
     chartGrid: 'rgba(255,255,255,0.07)',
 
     series: ['#B8D979', '#5F8F9A', '#D49A69', '#76A968', '#B39BC8'],
@@ -194,6 +204,10 @@ export function createAppTheme(mode = 'dark') {
         text: c.panoramaText,
         muted: c.panoramaMuted,
         accent: c.panoramaAccent,
+        onAccent: c.panoramaOnAccent,
+        line: c.panoramaLine,
+        inner: c.panoramaInner,
+        innerLine: c.panoramaInnerLine,
       },
       chart: { grid: c.chartGrid },
       elevation: { low: c.shadowLow, high: c.shadowHigh },

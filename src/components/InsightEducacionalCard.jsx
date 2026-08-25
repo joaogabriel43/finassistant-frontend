@@ -114,12 +114,16 @@ const InsightEducacionalCard = ({ insight, onDismiss }) => {
     )
   }
 
-  const cor = COR_POR_TIPO[insight.tipoInsight] ?? COR_FALLBACK
+  // O backend já respondeu `tipo` e `tipoInsight` em versões diferentes do
+  // contrato — normaliza aqui em vez de assumir uma das duas grafias.
+  const tipoDoInsight = insight.tipo ?? insight.tipoInsight ?? null
+  const cor = COR_POR_TIPO[tipoDoInsight] ?? COR_FALLBACK
 
   const handleEntendi = () => {
     // 1. POST best-effort — não bloqueia UX se falhar
     if (insight?.id) {
-      api.post(`/api/insights/${insight.id}/visto`).catch(() => {})
+      // baseURL do axios já contém /api — prefixar de novo geraria /api/api.
+      api.post(`/insights/${insight.id}/visto`).catch(() => {})
     }
     // 2. Inicia animação de saída
     setVisible(false)

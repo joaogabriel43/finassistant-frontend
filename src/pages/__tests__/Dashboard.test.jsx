@@ -1,16 +1,20 @@
 import React from 'react'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { ThemeProvider } from '@mui/material/styles'
+import { MemoryRouter } from 'react-router-dom'
 import theme from '../../theme'
 import Dashboard from '../Dashboard'
 
-// Dashboard usa tokens D4 customizados (palette.lines/surfaces/accent/series),
-// portanto precisa do ThemeProvider com o tema do app — como em produção.
+// Dashboard usa tokens customizados do tema (palette.lines/surfaces/accent/
+// panorama/series) e, desde o Panorama Pondero, links de navegação — por isso
+// precisa de ThemeProvider + Router, como em produção.
 const renderDash = () =>
   render(
     <ThemeProvider theme={theme}>
-      <Dashboard />
+      <MemoryRouter>
+        <Dashboard />
+      </MemoryRouter>
     </ThemeProvider>
   )
 
@@ -76,8 +80,13 @@ function setupApiMocks(api, overrides = {}) {
       return Promise.resolve({ data: overrides.summary ?? mockSummary })
     if (url.startsWith('/orcamento/transacoes/'))
       return Promise.resolve({ data: overrides.transacoes ?? mockTransacoes })
-    if (url === '/dashboard/portfolio-composition')
-      return Promise.resolve({ data: overrides.portfolio ?? mockPortfolioComposition })
+    if (url === '/dashboard/portfolio-composition') {
+      // `falhaPortfolio` simula a fonte de portfólio indisponível sem derrubar
+      // as outras três — cenário de erro PARCIAL.
+      return overrides.falhaPortfolio
+        ? Promise.reject(new Error('portfolio fora do ar'))
+        : Promise.resolve({ data: overrides.portfolio ?? mockPortfolioComposition })
+    }
     if (url.startsWith('/orcamento/evolucao-saldo/'))
       return Promise.resolve({ data: overrides.evolucao ?? mockEvolucaoSaldo })
     return Promise.resolve({ data: {} })
@@ -208,5 +217,106 @@ describe('Dashboard', () => {
     })
 
     expect(screen.getByTestId('empty-state')).toBeInTheDocument()
+  })
+  // --- Teste 8 --- Rótulo de escopo, sem controle que finja filtrar
+  it('exibe o rótulo "Visão atual" como texto, não como controle de filtro', async () => {
+    setupApiMocks(api)
+    renderDash()
+
+    await waitFor(() => {
+      expect(screen.getByText('Visão atual')).toBeInTheDocument()
+    })
+
+    // Não existe filtro global real no backend: o rótulo não pode ser
+    // clicável nem parecer um seletor de período.
+    expect(screen.queryByRole('button', { name: /visão atual/i })).toBeNull()
+    expect(screen.queryByRole('combobox', { name: /visão atual/i })).toBeNull()
+  })
+
+  // --- Teste 9 --- Sem fonte factível de variação, nenhuma porcentagem inventada
+  it('não exibe variação percentual no panorama', async () => {
+    setupApiMocks(api)
+    renderDash()
+
+    const panorama = await screen.findByTestId('panorama')
+    expect(within(panorama).queryByText(/%/)).toBeNull()
+  })
+
+  // --- Teste 10 --- Próxima ação navegacional: com transações e ativos
+  it('próxima ação aponta para o resumo mensal quando há transações e ativos', async () => {
+    setupApiMocks(api)
+    renderDash()
+
+    const acao = await screen.findByTestId('proxima-acao')
+    expect(acao).toHaveAttribute('href', '/resumo')
+  })
+
+  // --- Teste 11 --- Próxima ação navegacional: sem transações
+  it('próxima ação aponta para o orçamento quando não há transações', async () => {
+    setupApiMocks(api, { transacoes: [] })
+    renderDash()
+
+    const acao = await screen.findByTestId('proxima-acao')
+    expect(acao).toHaveAttribute('href', '/orcamento')
+  })
+
+  // --- Teste 12 --- Próxima ação navegacional: sem investimentos
+  it('próxima ação aponta para investimentos quando não há ativos', async () => {
+    setupApiMocks(api, { portfolio: [] })
+    renderDash()
+
+    const acao = await screen.findByTestId('proxima-acao')
+    expect(acao).toHaveAttribute('href', '/investimentos')
+  })
+
+  // --- Teste 13 --- Erro parcial não derruba os módulos que carregaram
+  it('mantém os demais módulos quando apenas a fonte de portfólio falha', async () => {
+    setupApiMocks(api, { falhaPortfolio: true })
+    renderDash()
+
+    // Saldo e evolução continuam de pé...
+    await waitFor(() => {
+      expect(screen.getByText('Saldo Atual')).toBeInTheDocument()
+    })
+    expect(screen.getByText(/R\$\s*5\.759,35/)).toBeInTheDocument()
+    expect(screen.getByTestId('evolucao-saldo-chart')).toBeInTheDocument()
+
+    // ...e o módulo que falhou oferece nova tentativa.
+    expect(screen.getByRole('button', { name: /tentar novamente/i })).toBeInTheDocument()
+
+    // Total investido indisponível não pode virar R$ 0,00 nem soma parcial.
+    expect(screen.queryByText(/R\$\s*1\.009,70/)).toBeNull()
+  })
+
+  // --- Teste 14 --- Insight sem prefixo /api duplicado (baseURL já contém /api)
+  it('busca o insight educacional em /insights/atual', async () => {
+    setupApiMocks(api)
+    renderDash()
+
+    await waitFor(() => {
+      expect(api.get).toHaveBeenCalledWith('/insights/atual')
+    })
+    expect(api.get).not.toHaveBeenCalledWith('/api/insights/atual')
+  })
+
+  // --- Teste 15 --- Evolução rotulada pelo que o contrato realmente entrega
+  it('rotula a evolução como saldo dos últimos 30 dias', async () => {
+    setupApiMocks(api)
+    renderDash()
+
+    await waitFor(() => {
+      expect(screen.getByText(/últimos 30 dias/i)).toBeInTheDocument()
+    })
+  })
+
+  // --- Teste 16 --- Composição é por ativo/ticker, nunca por classe de ativo
+  it('rotula a composição como distribuição por ativo', async () => {
+    setupApiMocks(api)
+    renderDash()
+
+    await waitFor(() => {
+      expect(screen.getByText(/por ativo/i)).toBeInTheDocument()
+    })
+    expect(screen.queryByText(/classe de ativo/i)).toBeNull()
   })
 })
