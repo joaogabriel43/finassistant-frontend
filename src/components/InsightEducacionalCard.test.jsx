@@ -153,4 +153,14 @@ describe('InsightEducacionalCard', () => {
     const strongEl = screen.getByText(/3 a 6 meses/i)
     expect(strongEl.tagName).toBe('STRONG')
   })
+  // 8. Hierarquia de cabecalho: o titulo do insight e o cabecalho DA SECAO,
+  //    e as demais secoes do dashboard usam h2. Um h3 aqui pularia nivel
+  //    (h1 do cabecalho -> h3), quebrando a navegacao por cabecalhos de
+  //    leitor de tela (WCAG 2.2 AA, 1.3.1).
+  it('expoe o titulo do insight como cabecalho de nivel 2', () => {
+    render(<InsightEducacionalCard insight={MOCK_INSIGHT} onDismiss={onDismiss} />)
+    expect(
+      screen.getByRole('heading', { level: 2, name: MOCK_INSIGHT.titulo })
+    ).toBeInTheDocument()
+  })
 })

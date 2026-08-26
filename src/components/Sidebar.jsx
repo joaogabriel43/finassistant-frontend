@@ -165,8 +165,8 @@ const Sidebar = () => {
                   fontSize: 9,
                   fontWeight: 700,
                   bgcolor: 'transparent',
-                  color: 'accent.copper',
-                  border: `1px solid ${theme.palette.accent.copper}`,
+                  color: 'accent.copperText',
+                  border: `1px solid ${theme.palette.accent.copperText}`,
                   '& .MuiChip-label': { px: 0.75 },
                 }}
               />

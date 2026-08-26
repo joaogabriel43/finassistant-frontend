@@ -61,6 +61,14 @@ const palettes = {
     accentNatural: '#5E8138',
     accentSoft: 'rgba(94,129,56,0.12)',
     copper: '#D49A69',
+    // O cobre claro serve como preenchimento/decoracao, mas como TEXTO sobre
+    // papel quente ele fica em 2,38:1 — reprova o SC 1.4.3 (4,5:1). Esta e a
+    // mesma familia de cor, rebaixada para uso tipografico: 4,97:1 sobre
+    // #FFFDF8. No escuro nao ha esse problema, entao o valor e o mesmo cobre.
+    copperText: '#9A6432',
+    // Anel de foco: no claro o verde primario a 45% de opacidade caia para
+    // ~2,04:1 contra o creme. Solido e escuro, passa com folga (SC 1.4.11).
+    focusRing: '#1E5143',
 
     line: 'rgba(25,55,47,0.13)',
     lineStrong: 'rgba(25,55,47,0.22)',
@@ -108,6 +116,8 @@ const palettes = {
     accentNatural: '#B8D979',
     accentSoft: 'rgba(184,217,121,0.11)',
     copper: '#D49A69',
+    copperText: '#D49A69',
+    focusRing: '#B8D979',
 
     line: 'rgba(255,255,255,0.085)',
     lineStrong: 'rgba(255,255,255,0.15)',
@@ -194,9 +204,11 @@ export function createAppTheme(mode = 'dark') {
         natural: c.accentNatural,
         naturalSoft: c.accentSoft,
         copper: c.copper,
+        copperText: c.copperText,
         // `pink` sobrevive como alias: componentes legados leem esse nome.
         pink: c.copper,
         textFaint: c.textFaint,
+        focusRing: c.focusRing,
       },
       // Panorama G3-A — material próprio, não é uma "surface" comum.
       panorama: {
@@ -368,6 +380,7 @@ export function cssVars(mode = 'dark') {
     '--c-warn': status.warning, '--c-info': status.information,
     // alias legado — o acento de dado deste tema é o cobre, não o rosa D4
     '--c-pink': c.copper,
+    '--c-focus': c.focusRing,
     '--c-panorama': c.panorama, '--c-panorama-tx': c.panoramaText,
     '--c-chart-grid': c.chartGrid,
     '--c-shadow-low': c.shadowLow, '--c-shadow-high': c.shadowHigh,

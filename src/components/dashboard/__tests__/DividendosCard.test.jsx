@@ -179,4 +179,59 @@ describe('DividendosCard', () => {
     expect(screen.getByText('Total recebido')).toBeInTheDocument()
     expect(screen.getByText('A receber')).toBeInTheDocument()
   })
+  // --- Teste 8: ausencia de agregado nao pode virar R$ 0,00 ---
+  it('mostra travessao quando o backend omite os totais do resumo', () => {
+    const hoje = new Date()
+    const dataMesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-10`
+
+    useDividendos.mockReturnValue({
+      loading: false,
+      error: null,
+      proventos: [
+        {
+          id: '1',
+          ticker: 'PETR4',
+          tipo: 'DIVIDENDO',
+          valorPorCota: 1.5,
+          dataEx: dataMesAtual,
+          dataPagamento: dataMesAtual,
+          pago: true,
+        },
+      ],
+      // Resumo sem os campos: fonte nao informou, nao e zero financeiro.
+      resumo: {},
+    })
+
+    render(<DividendosCard />)
+
+    expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(2)
+    expect(screen.queryByText('R$ 0,00')).not.toBeInTheDocument()
+  })
+
+  // --- Teste 9: zero real continua sendo exibido como zero ---
+  it('exibe R$ 0,00 quando o backend informa zero de verdade', () => {
+    const hoje = new Date()
+    const dataMesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-10`
+
+    useDividendos.mockReturnValue({
+      loading: false,
+      error: null,
+      proventos: [
+        {
+          id: '1',
+          ticker: 'PETR4',
+          tipo: 'DIVIDENDO',
+          valorPorCota: 1.5,
+          dataEx: dataMesAtual,
+          dataPagamento: dataMesAtual,
+          pago: true,
+        },
+      ],
+      resumo: { totalPago: 0, totalProvisionado: 0 },
+    })
+
+    render(<DividendosCard />)
+
+    expect(screen.getAllByText('R$ 0,00').length).toBe(2)
+  })
 })

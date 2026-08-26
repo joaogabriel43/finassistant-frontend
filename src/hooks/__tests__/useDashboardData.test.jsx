@@ -145,4 +145,22 @@ describe('useDashboardData', () => {
     expect(result.current.falhaTotal).toBe(true)
     expect(result.current.erros.transacoes).toBe(true)
   })
+
+  // --- Teste 6 --- Conta ausente é indisponibilidade, não saldo zero
+  it('reporta saldo como indisponível quando o summary responde 200 sem contas', async () => {
+    api.get.mockImplementation(respostaDe({
+      summary: { contas: [] },
+      transacoes: [],
+      portfolio: [{ name: 'PETR4', value: 605 }],
+      evolucao: [],
+    }))
+
+    const { result } = renderHook(() => useDashboardData())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    // 200 com contas vazias é ausência de conta financeira, não R$ 0,00 real
+    expect(result.current.saldoAtual).toBeNull()
+    expect(result.current.erros.summary).toBe(false)
+    expect(result.current.patrimonioTotal).toBeNull()
+  })
 })

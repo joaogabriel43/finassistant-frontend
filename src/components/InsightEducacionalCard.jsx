@@ -167,9 +167,12 @@ const InsightEducacionalCard = ({ insight, onDismiss }) => {
           {rotulo}
         </Typography>
 
-        {/* Título — momento editorial curto, na fonte display */}
+        {/* Título — momento editorial curto, na fonte display.
+            `h2` e nao `h3`: este titulo E o cabecalho da secao, no mesmo
+            nivel dos SectionHead das demais secoes do dashboard. Um h3 aqui
+            pularia do h1 do cabecalho direto para o h3 (WCAG 2.2 AA, 1.3.1). */}
         <Typography
-          component="h3"
+          component="h2"
           sx={(t) => ({
             fontFamily: t.typography.fontFamilyDisplay,
             fontSize: 19,

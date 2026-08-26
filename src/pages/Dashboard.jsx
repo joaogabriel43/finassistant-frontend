@@ -147,9 +147,17 @@ const Dashboard = () => {
   const listaComposicao = portfolioComposition ?? []
   const listaEvolucao = evolucaoSaldo ?? []
 
-  const hasAnyData =
-    (saldoAtual ?? 0) > 0 ||
-    (totalInvestido ?? 0) > 0 ||
+  // Alguma fonte quebrou? Entao a tela NAO pode ser substituida pelo vazio de
+  // onboarding — isso afirmaria ausencia de dados onde ha apenas uma falha de
+  // leitura, e ainda tiraria do usuario a chance de tentar de novo.
+  const algumaFalha = Object.values(erros).some(Boolean)
+
+  // `null` = fonte indisponivel; `0` = zero financeiro real. Saldo NEGATIVO
+  // tambem e dado — a versao anterior (`(saldoAtual ?? 0) > 0`) tratava conta
+  // no vermelho como "usuario sem nada".
+  const temDado =
+    (saldoAtual !== null && saldoAtual !== 0) ||
+    (totalInvestido !== null && totalInvestido !== 0) ||
     listaTransacoes.length > 0 ||
     listaComposicao.length > 0
 
@@ -165,7 +173,7 @@ const Dashboard = () => {
     )
   }
 
-  if (!hasAnyData) {
+  if (!algumaFalha && !temDado) {
     return (
       <Box sx={{ p: { xs: '12px', md: '24px' } }}>
         <EmptyState mensagem="Comece registrando uma transação no chat" icone={ReceiptLongIcon} />
@@ -251,6 +259,7 @@ const Dashboard = () => {
         totalInvestido={totalInvestido}
         proximaAcao={proximaAcao}
         parcial={patrimonioTotal === null}
+        onTentarNovamente={erros.summary || erros.portfolio ? recarregar : undefined}
       />
 
       {/* 3. Evolução do saldo nos últimos 30 dias -------------------------- */}
@@ -385,7 +394,10 @@ const Dashboard = () => {
 
       {/* 7. Insight educacional ------------------------------------------- */}
       {insight !== undefined && insight !== null && (
-        <Box component="section" sx={secaoSx}>
+        // Unica secao sem SectionHead visivel (o titulo do insight faz esse
+        // papel) — o nome do landmark vem por aria-label, para que a
+        // navegacao por regioes nao encontre uma secao anonima.
+        <Box component="section" aria-label="Insight educacional" sx={secaoSx}>
           <InsightEducacionalCard insight={insight} onDismiss={handleDismissInsight} />
         </Box>
       )}

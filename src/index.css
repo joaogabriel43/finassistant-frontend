@@ -61,7 +61,7 @@ button:hover { border-color: var(--c-line-strong, rgba(255, 255, 255, 0.15)); }
 button:focus-visible,
 a:focus-visible,
 [tabindex]:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--c-pri, #b8d979) 45%, transparent);
+  outline: 3px solid var(--c-focus, #b8d979);
   outline-offset: 3px;
 }
 

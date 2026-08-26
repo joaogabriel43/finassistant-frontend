@@ -64,6 +64,7 @@ export default function PanoramaFinanceiro({
   totalInvestido,
   proximaAcao,
   parcial,
+  onTentarNovamente,
 }) {
   return (
     <Box
@@ -179,6 +180,30 @@ export default function PanoramaFinanceiro({
             <MiniStat label="Saldo Atual" value={saldoAtual} />
             <MiniStat label="Total Investido" value={totalInvestido} />
           </Box>
+
+          {/* O panorama era o unico modulo sem afordancia de nova tentativa:
+              quando uma das suas fontes cai, o usuario precisa poder recarregar
+              daqui, como ja acontece nas demais secoes. */}
+          {onTentarNovamente && (
+            <Button
+              onClick={onTentarNovamente}
+              size="small"
+              sx={(t) => ({
+                mt: '14px',
+                px: '14px',
+                py: '6px',
+                textTransform: 'none',
+                fontWeight: 700,
+                fontSize: 13,
+                borderRadius: `${t.radius.pill}px`,
+                border: `1px solid ${t.palette.panorama.innerLine}`,
+                color: t.palette.panorama.accent,
+                '&:hover': { backgroundColor: t.palette.panorama.inner },
+              })}
+            >
+              Tentar novamente
+            </Button>
+          )}
         </Box>
       </Box>
 

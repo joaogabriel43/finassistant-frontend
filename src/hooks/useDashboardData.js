@@ -78,9 +78,14 @@ export function useDashboardData() {
       ? evolucaoRes.value.data
       : null
 
-    const saldoAtual = erros.summary
+    // O backend responde 200 com `contas: []` para quem ainda nao tem
+    // ContaFinanceira. Isso e AUSENCIA de conta, nao saldo zero real: sem a
+    // guarda, `?.[0]?.saldoAtual` vira undefined e o normalizador devolve 0 —
+    // o painel afirmaria "Saldo em conta: R$ 0,00" como fato.
+    const contaPrincipal = summary?.contas?.[0]
+    const saldoAtual = erros.summary || !contaPrincipal
       ? null
-      : normalizarValor(summary?.contas?.[0]?.saldoAtual)
+      : normalizarValor(contaPrincipal.saldoAtual)
 
     const totalInvestido = portfolioComposition === null
       ? null

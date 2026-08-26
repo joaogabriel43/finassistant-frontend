@@ -78,8 +78,13 @@ function setupApiMocks(api, overrides = {}) {
   api.get.mockImplementation((url) => {
     if (url === '/dashboard/summary')
       return Promise.resolve({ data: overrides.summary ?? mockSummary })
-    if (url.startsWith('/orcamento/transacoes/'))
-      return Promise.resolve({ data: overrides.transacoes ?? mockTransacoes })
+    if (url.startsWith('/orcamento/transacoes/')) {
+      // `falhaTransacoes` simula a fonte de transações fora do ar sem derrubar
+      // as outras três — o outro lado do cenário de erro PARCIAL.
+      return overrides.falhaTransacoes
+        ? Promise.reject(new Error('transacoes fora do ar'))
+        : Promise.resolve({ data: overrides.transacoes ?? mockTransacoes })
+    }
     if (url === '/dashboard/portfolio-composition') {
       // `falhaPortfolio` simula a fonte de portfólio indisponível sem derrubar
       // as outras três — cenário de erro PARCIAL.
@@ -281,8 +286,9 @@ describe('Dashboard', () => {
     expect(screen.getByText(/R\$\s*5\.759,35/)).toBeInTheDocument()
     expect(screen.getByTestId('evolucao-saldo-chart')).toBeInTheDocument()
 
-    // ...e o módulo que falhou oferece nova tentativa.
-    expect(screen.getByRole('button', { name: /tentar novamente/i })).toBeInTheDocument()
+    // ...e o módulo que falhou oferece nova tentativa (o panorama também
+    // perdeu uma parcela, então há mais de um botão de retry na tela).
+    expect(screen.getAllByRole('button', { name: /tentar novamente/i }).length).toBeGreaterThanOrEqual(1)
 
     // Total investido indisponível não pode virar R$ 0,00 nem soma parcial.
     expect(screen.queryByText(/R\$\s*1\.009,70/)).toBeNull()
@@ -318,5 +324,83 @@ describe('Dashboard', () => {
       expect(screen.getByText(/por ativo/i)).toBeInTheDocument()
     })
     expect(screen.queryByText(/classe de ativo/i)).toBeNull()
+  })
+
+  // --- Teste 17 --- Erro parcial nunca pode virar tela de "comece do zero"
+  it('não substitui a tela pelo empty-state quando uma única fonte falha', async () => {
+    // Saldo real NEGATIVO + transações fora do ar: o usuário tem dados,
+    // mas a fonte que os lista quebrou. Mostrar "comece registrando" aqui
+    // seria afirmar uma ausência que não existe.
+    setupApiMocks(api, {
+      summary: { contas: [{ id: 'uuid-1', nome: 'Conta Principal', saldoAtual: -450 }] },
+      falhaTransacoes: true,
+      portfolio: [],
+      evolucao: [],
+    })
+    renderDash()
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: /tentar novamente/i }).length).toBeGreaterThanOrEqual(1)
+    })
+
+    // A tela inteira NÃO virou o vazio de onboarding: o panorama continua lá.
+    expect(screen.getByTestId('panorama')).toBeInTheDocument()
+    expect(screen.getAllByText(/R\$\s*-?450,00/).length).toBeGreaterThanOrEqual(1)
+  })
+
+  // --- Teste 18 --- Saldo negativo é dado, não ausência de dado
+  it('não exibe o empty-state global quando o saldo é negativo', async () => {
+    setupApiMocks(api, {
+      summary: { contas: [{ id: 'uuid-1', nome: 'Conta Principal', saldoAtual: -450 }] },
+      transacoes: [],
+      portfolio: [],
+      evolucao: [],
+    })
+    renderDash()
+
+    await waitFor(() => {
+      expect(screen.getByText('Saldo Atual')).toBeInTheDocument()
+    })
+
+    // O vazio global substitui a tela inteira e não renderiza o panorama;
+    // se ele está aqui, o saldo negativo foi reconhecido como dado.
+    expect(screen.getByTestId('panorama')).toBeInTheDocument()
+    expect(screen.getAllByText(/R\$\s*-?450,00/).length).toBeGreaterThanOrEqual(1)
+  })
+
+  // --- Teste 19 --- Falha do summary também oferece nova tentativa
+  it('oferece nova tentativa quando apenas a fonte de summary falha', async () => {
+    api.get.mockImplementation((url) => {
+      if (url === '/dashboard/summary') return Promise.reject(new Error('summary fora do ar'))
+      if (url.startsWith('/orcamento/transacoes/')) return Promise.resolve({ data: mockTransacoes })
+      if (url === '/dashboard/portfolio-composition') return Promise.resolve({ data: mockPortfolioComposition })
+      if (url.startsWith('/orcamento/evolucao-saldo/')) return Promise.resolve({ data: mockEvolucaoSaldo })
+      return Promise.resolve({ data: {} })
+    })
+    renderDash()
+
+    await waitFor(() => {
+      expect(screen.getByText('Mercado')).toBeInTheDocument()
+    })
+
+    // O panorama perdeu a fonte: precisa dizer isso e permitir recarregar.
+    expect(screen.getAllByRole('button', { name: /tentar novamente/i }).length).toBeGreaterThanOrEqual(1)
+    // E nunca inventar R$ 0,00 no lugar do saldo indisponível.
+    expect(screen.queryByText(/Saldo em conta[\s\S]*R\$\s*0,00/)).toBeNull()
+  })
+  // --- Teste 20 --- A seção do insight precisa ter nome acessível
+  it('dá nome acessível à seção do insight educacional', async () => {
+    setupApiMocks(api)
+    renderDash()
+
+    await waitFor(() => {
+      expect(screen.getByText('Mercado')).toBeInTheDocument()
+    })
+
+    // Todas as demais seções são landmarks nomeados via SectionHead; esta
+    // era a única <section> anônima da tela.
+    expect(
+      screen.getByRole('region', { name: /insight educacional/i })
+    ).toBeInTheDocument()
   })
 })

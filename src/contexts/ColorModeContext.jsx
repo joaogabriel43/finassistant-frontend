@@ -26,6 +26,10 @@ export function ColorModeProvider({ children }) {
     raiz.dataset.theme = mode;
     raiz.style.colorScheme = mode;
     applyCssVars(raiz, mode);
+    // O script de boot no index.html pinta o <html> inline para evitar flash
+    // antes do React montar. Se esse valor ficar, o overscroll do tema claro
+    // continua mostrando o fundo escuro — limpa e deixa o CSS mandar.
+    raiz.style.backgroundColor = '';
 
     // Mantém a barra do navegador (Android/PWA) coerente com o tema.
     const meta = document.querySelector('meta[name="theme-color"]');
@@ -38,13 +42,15 @@ export function ColorModeProvider({ children }) {
     salvarModoPersistido(proximo);
   }, []);
 
+  // Efeito colateral FORA do updater do useState: o React pode reexecutar o
+  // updater (StrictMode, render concorrente) e a escrita no storage
+  // aconteceria mais de uma vez. Delega ao `setColorMode`, que ja separa as
+  // duas coisas corretamente. Persistir num efeito de `mode` seria pior:
+  // gravaria a preferencia do DISPOSITIVO na primeira montagem, congelando
+  // uma escolha que o usuario nunca fez.
   const toggleColorMode = useCallback(() => {
-    setMode((atual) => {
-      const proximo = atual === 'dark' ? 'light' : 'dark';
-      salvarModoPersistido(proximo);
-      return proximo;
-    });
-  }, []);
+    setColorMode(mode === 'dark' ? 'light' : 'dark');
+  }, [mode, setColorMode]);
 
   const theme = useMemo(() => createAppTheme(mode), [mode]);
   const valor = useMemo(

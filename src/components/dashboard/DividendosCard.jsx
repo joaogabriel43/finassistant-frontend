@@ -13,8 +13,13 @@ import {
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import { useDividendos } from '../../hooks/useDividendos'
 
+// `?? 0` aqui afirmaria "R$ 0,00 recebido" quando na verdade a fonte nao
+// informou o agregado. Ausencia de dado e travessao; zero financeiro real
+// continua sendo zero.
 const formatBRL = (value) =>
-  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value ?? 0)
+  value === null || value === undefined || Number.isNaN(Number(value))
+    ? '—'
+    : new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value))
 
 // Todo valor monetario comparavel usa a mono do design system.
 const mono = (t) => t.typography.fontFamilyMono
