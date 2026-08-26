@@ -105,7 +105,7 @@ export default function ConfigurarAlertasModal({ open, onClose }) {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth
-      PaperProps={{ sx: { bgcolor: '#1a1a24', color: 'text.primary' } }}>
+      PaperProps={{ sx: { bgcolor: 'background.paper', color: 'text.primary' } }}>
       <DialogTitle>Configurar Alertas</DialogTitle>
 
       <DialogContent>

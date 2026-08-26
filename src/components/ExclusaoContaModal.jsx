@@ -4,6 +4,7 @@ import {
   DialogContent, DialogTitle, TextField, Typography,
 } from '@mui/material'
 import WarningAmberIcon from '@mui/icons-material/WarningAmber'
+import { useTheme } from '@mui/material/styles'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
@@ -18,6 +19,7 @@ const CONFIRMACAO_REQUIRED = 'EXCLUIR'
  * @param {function} onClose - fechar sem excluir
  */
 const ExclusaoContaModal = ({ open, onClose }) => {
+  const theme = useTheme()
   const { logout } = useAuth()
   const navigate = useNavigate()
   const [texto, setTexto] = useState('')
@@ -61,11 +63,11 @@ const ExclusaoContaModal = ({ open, onClose }) => {
       onClose={handleFechar}
       maxWidth="sm"
       fullWidth
-      PaperProps={{ sx: { borderRadius: 3, bgcolor: '#1a1a2e', border: '1px solid #EF4444' } }}
+      PaperProps={{ sx: (t) => ({ borderRadius: 3, bgcolor: 'background.paper', border: `1px solid ${t.palette.error.main}` }) }}
     >
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: '#EF4444' }}>
+      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: 'error.main' }}>
         <WarningAmberIcon />
-        <Typography variant="h6" component="span" fontWeight={700} sx={{ color: '#EF4444' }} data-testid="exclusao-titulo">
+        <Typography variant="h6" component="span" fontWeight={700} sx={{ color: 'error.main' }} data-testid="exclusao-titulo">
           Excluir conta permanentemente
         </Typography>
       </DialogTitle>
@@ -78,7 +80,7 @@ const ExclusaoContaModal = ({ open, onClose }) => {
         </Alert>
 
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Digite <strong style={{ color: '#EF4444' }}>EXCLUIR</strong> para confirmar:
+          Digite <strong style={{ color: theme.palette.error.main }}>EXCLUIR</strong> para confirmar:
         </Typography>
 
         <TextField
@@ -90,7 +92,11 @@ const ExclusaoContaModal = ({ open, onClose }) => {
           sx={{
             mb: 2,
             '& .MuiOutlinedInput-root': {
-              '& fieldset': { borderColor: texto === CONFIRMACAO_REQUIRED ? '#EF4444' : 'rgba(255,255,255,0.2)' },
+              '& fieldset': {
+                borderColor: texto === CONFIRMACAO_REQUIRED
+                  ? theme.palette.error.main
+                  : theme.palette.lines.strong,
+              },
             },
           }}
           inputProps={{ 'aria-label': 'confirmação de exclusão' }}
@@ -108,12 +114,9 @@ const ExclusaoContaModal = ({ open, onClose }) => {
         <Button
           onClick={handleExcluir}
           variant="contained"
+          color="error"
           disabled={!podeConfirmar || loading}
-          sx={{
-            bgcolor: '#EF4444',
-            '&:hover': { bgcolor: '#DC2626' },
-            fontWeight: 700,
-          }}
+          sx={{ fontWeight: 700 }}
           startIcon={loading ? <CircularProgress size={16} color="inherit" /> : null}
         >
           Excluir minha conta
