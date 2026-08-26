@@ -43,8 +43,8 @@ export default function RingGauge({
   value,
   size = 130,
   stroke = 11,
-  color = '#7C6AF7',
-  track = 'rgba(255,255,255,0.07)',
+  color = 'var(--c-pri)',
+  track = 'var(--c-line)',
   animate = true,
   children,
 }) {
