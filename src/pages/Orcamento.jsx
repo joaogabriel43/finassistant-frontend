@@ -166,16 +166,29 @@ const Orcamento = () => {
 
             {abaAtiva === 'visao-geral' && (
                 <Grid container spacing={3} sx={{ mb: 3 }}>
-                    <Grid size={{ xs: 12, md: 6 }}>
+                    {/* 7/5 e nao 6/6: o formulario tem grade interna de 2 colunas
+                        e precisa da largura; o grafico e um circulo de 200px
+                        fixos (outerRadius 100) mais a legenda, e num card de
+                        metade da pagina ficava boiando. O CardContent do grafico
+                        centraliza verticalmente para que a diferenca de altura
+                        entre os dois cards nao vire um vazio no rodape. */}
+                    <Grid size={{ xs: 12, md: 7 }}>
                         <Card sx={{ height: '100%' }}>
                             <CardContent>
                                 <AdicionarTransacaoForm onTransacaoAdicionada={handleTransacaoAdicionada} />
                             </CardContent>
                         </Card>
                     </Grid>
-                    <Grid size={{ xs: 12, md: 6 }}>
+                    <Grid size={{ xs: 12, md: 5 }}>
                         <Card sx={{ height: '100%' }}>
-                            <CardContent>
+                            <CardContent
+                                sx={{
+                                    height: '100%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    justifyContent: 'center',
+                                }}
+                            >
                                 <GastosPorCategoriaChart key={refreshKey} />
                             </CardContent>
                         </Card>
