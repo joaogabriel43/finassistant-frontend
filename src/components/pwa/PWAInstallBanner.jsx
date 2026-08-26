@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Snackbar, Button, Box, Typography } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid'
 import usePWAInstall from '../../hooks/usePWAInstall'
 
@@ -34,22 +35,22 @@ const PWAInstallBanner = () => {
       anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       sx={{ zIndex: 9000, mb: { xs: 2, md: 3 } }}
     >
-      <Box sx={{
+      <Box sx={(theme) => ({
         display: 'flex', alignItems: 'center', gap: 1.5,
         px: 2.5, py: 1.5,
-        background: '#1a1a2e',
-        border: '1px solid rgba(124, 58, 237, 0.3)',
+        bgcolor: 'surfaces.raised',
+        border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
         borderRadius: '12px',
         boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-      }}>
-        <PhoneAndroidIcon sx={{ color: '#7C3AED', fontSize: 22, flexShrink: 0 }} />
-        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.85)', flex: 1 }}>
+      })}>
+        <PhoneAndroidIcon sx={{ color: 'primary.main', fontSize: 22, flexShrink: 0 }} />
+        <Typography variant="body2" sx={{ color: 'text.primary', flex: 1 }}>
           Instale o FortunAI no seu celular
         </Typography>
         <Button
           size="small"
           onClick={handleDismiss}
-          sx={{ color: 'rgba(255,255,255,0.4)', textTransform: 'none', fontSize: 12, minWidth: 'auto' }}
+          sx={{ color: 'text.disabled', textTransform: 'none', fontSize: 12, minWidth: 'auto' }}
         >
           Agora não
         </Button>
@@ -58,8 +59,6 @@ const PWAInstallBanner = () => {
           variant="contained"
           onClick={handleInstall}
           sx={{
-            backgroundColor: '#7C3AED',
-            '&:hover': { backgroundColor: '#6D28D9' },
             textTransform: 'none',
             borderRadius: '8px',
             fontWeight: 600,
