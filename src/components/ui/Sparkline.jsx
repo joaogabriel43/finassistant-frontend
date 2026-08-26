@@ -20,7 +20,7 @@ import { useState, useEffect, useId } from 'react';
  */
 export default function Sparkline({
   data,
-  color = '#7C6AF7',
+  color = 'var(--c-pri)',
   height = 70,
   fill = 0.28,
   strokeW = 2.25,
