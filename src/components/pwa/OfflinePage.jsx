@@ -27,14 +27,14 @@ const OfflinePage = () => {
       position: 'fixed', inset: 0, zIndex: 99999,
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
-      background: '#0a0a0f',
+      bgcolor: 'background.default',
       gap: 2.5,
     }}>
-      <WifiOffIcon sx={{ fontSize: 64, color: 'rgba(255,255,255,0.3)' }} />
-      <Typography variant="h5" fontWeight={600} sx={{ color: '#fff' }}>
+      <WifiOffIcon sx={{ fontSize: 64, color: 'text.disabled' }} />
+      <Typography variant="h5" fontWeight={600} sx={{ color: 'text.primary' }}>
         Sem conexão
       </Typography>
-      <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.5)', textAlign: 'center', px: 4 }}>
+      <Typography variant="body2" sx={{ color: 'text.secondary', textAlign: 'center', px: 4 }}>
         Verifique sua internet e tente novamente
       </Typography>
       <Button
@@ -42,8 +42,6 @@ const OfflinePage = () => {
         onClick={() => window.location.reload()}
         sx={{
           mt: 1,
-          backgroundColor: '#7C3AED',
-          '&:hover': { backgroundColor: '#6D28D9' },
           borderRadius: '10px',
           textTransform: 'none',
           fontWeight: 600,
