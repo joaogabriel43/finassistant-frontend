@@ -4,7 +4,7 @@ import {
     Accordion, AccordionDetails, AccordionSummary, Box, Button, Chip, Container,
     Divider, Grid, IconButton, Link, Paper, Typography,
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
@@ -28,8 +28,6 @@ import useInView from '../components/landing/useInView';
  * scroll-reveal leve, stats, FAQ e footer completo. 100% estática: nenhuma
  * chamada de API, nenhum input — superfície de ataque nula.
  */
-
-const ACENTO = '#7C6AF7';
 
 const FEATURES = [
     { icon: SmartToyOutlinedIcon, titulo: 'Assistente com IA', texto: 'Registre gastos e consulte investimentos conversando: "gastei R$ 50 no mercado" vira lançamento na hora.' },
@@ -74,10 +72,10 @@ const MediaPlaceholder = ({ label, icon: Icon, testid }) => {
             sx={{
                 width: '100%', aspectRatio: '16 / 9', borderRadius: '16px',
                 border: `1px dashed ${theme.palette.divider}`,
-                background: 'linear-gradient(135deg, rgba(124,106,247,0.14) 0%, rgba(124,106,247,0.03) 100%)',
+                background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.14)} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1,
             }}>
-            <Icon sx={{ fontSize: 56, color: ACENTO, opacity: 0.85 }} />
+            <Icon sx={{ fontSize: 56, color: 'primary.main', opacity: 0.85 }} />
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>{label}</Typography>
         </Box>
     );
@@ -115,12 +113,12 @@ const LandingPage = () => {
             {/* Header sticky translúcido */}
             <Box component="header" sx={{
                 position: 'sticky', top: 0, zIndex: 10,
-                backdropFilter: 'blur(12px)', bgcolor: 'rgba(10,10,15,0.75)',
+                backdropFilter: 'blur(12px)', bgcolor: alpha(theme.palette.background.default, 0.75),
                 borderBottom: `1px solid ${theme.palette.divider}`,
             }}>
                 <Container maxWidth="lg">
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1.5 }}>
-                        <Typography variant="h6" fontWeight={700} sx={{ color: ACENTO, letterSpacing: '-0.5px' }}>
+                        <Typography variant="h6" fontWeight={700} sx={{ color: 'primary.main', letterSpacing: '-0.5px' }}>
                             FortunAI
                         </Typography>
                         <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2.5 }}>
@@ -148,14 +146,14 @@ const LandingPage = () => {
                 <Box sx={{ position: 'relative' }}>
                     <Box aria-hidden sx={{
                         position: 'absolute', top: -120, right: -180, width: 480, height: 480,
-                        background: 'radial-gradient(circle, rgba(124,106,247,0.22) 0%, transparent 65%)',
+                        background: `radial-gradient(circle, ${alpha(theme.palette.primary.main, 0.22)} 0%, transparent 65%)`,
                         pointerEvents: 'none',
                     }} />
                     <Grid container spacing={6} alignItems="center" sx={{ py: { xs: 6, md: 10 } }}>
                         <Grid size={{ xs: 12, md: 6 }}>
                             <Reveal>
                                 <Chip label="Orçamento + investimentos + IA em um só lugar" size="small"
-                                    sx={{ mb: 2, bgcolor: 'rgba(124,106,247,0.15)', color: '#A99DF9', fontWeight: 600 }} />
+                                    sx={{ mb: 2, bgcolor: alpha(theme.palette.primary.main, 0.15), color: 'primary.main', fontWeight: 600 }} />
                                 <Typography component="h1" variant="h3" fontWeight={800} sx={{ letterSpacing: '-1px', mb: 2 }}>
                                     Suas finanças, guiadas por inteligência artificial
                                 </Typography>
@@ -192,7 +190,7 @@ const LandingPage = () => {
                         <Grid container spacing={2}>
                             {STATS.map((s) => (
                                 <Grid key={s.rotulo} size={{ xs: 6, md: 3 }}>
-                                    <Typography variant="h4" fontWeight={800} sx={{ color: ACENTO }}>{s.numero}</Typography>
+                                    <Typography variant="h4" fontWeight={800} sx={{ color: 'primary.main' }}>{s.numero}</Typography>
                                     <Typography variant="caption" sx={{ color: 'text.secondary' }}>{s.rotulo}</Typography>
                                 </Grid>
                             ))}
@@ -220,9 +218,9 @@ const LandingPage = () => {
                                         p: 3, height: '100%', borderRadius: '16px', boxShadow: 'none',
                                         border: `1px solid ${theme.palette.divider}`,
                                         transition: 'transform 0.25s ease, border-color 0.25s ease',
-                                        '&:hover': { transform: 'translateY(-4px)', borderColor: 'rgba(124,106,247,0.5)' },
+                                        '&:hover': { transform: 'translateY(-4px)', borderColor: alpha(theme.palette.primary.main, 0.5) },
                                     }}>
-                                        <f.icon sx={{ color: ACENTO, fontSize: 32, mb: 1.5 }} />
+                                        <f.icon sx={{ color: 'primary.main', fontSize: 32, mb: 1.5 }} />
                                         <Typography component="h3" variant="subtitle1" fontWeight={700} sx={{ mb: 0.5 }}>
                                             {f.titulo}
                                         </Typography>
@@ -251,7 +249,7 @@ const LandingPage = () => {
                                         <Box sx={{
                                             width: 44, height: 44, borderRadius: '50%', mx: 'auto', mb: 1.5,
                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            bgcolor: 'rgba(124,106,247,0.15)', color: ACENTO, fontWeight: 800,
+                                            bgcolor: alpha(theme.palette.primary.main, 0.15), color: 'primary.main', fontWeight: 800,
                                         }}>{p.n}</Box>
                                         <Typography component="h3" variant="subtitle1" fontWeight={700}>{p.titulo}</Typography>
                                         <Typography variant="body2" sx={{ color: 'text.secondary' }}>{p.texto}</Typography>
@@ -284,7 +282,7 @@ const LandingPage = () => {
                                 ].map((s, i) => (
                                     <Grid key={i} size={{ xs: 12, md: 4 }}>
                                         <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
-                                            <s.icon sx={{ color: ACENTO }} />
+                                            <s.icon sx={{ color: 'primary.main' }} />
                                             <Typography variant="body2" sx={{ color: 'text.secondary' }}>{s.texto}</Typography>
                                         </Box>
                                     </Grid>
@@ -333,11 +331,11 @@ const LandingPage = () => {
 
             {/* Footer completo */}
             <Divider />
-            <Box component="footer" data-testid="landing-footer" sx={{ bgcolor: 'rgba(255,255,255,0.02)' }}>
+            <Box component="footer" data-testid="landing-footer" sx={{ bgcolor: 'background.paper' }}>
                 <Container maxWidth="lg">
                     <Grid container spacing={4} sx={{ py: 5 }}>
                         <Grid size={{ xs: 12, md: 4 }}>
-                            <Typography variant="h6" fontWeight={700} sx={{ color: ACENTO, mb: 1 }}>FortunAI</Typography>
+                            <Typography variant="h6" fontWeight={700} sx={{ color: 'primary.main', mb: 1 }}>FortunAI</Typography>
                             <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
                                 Assistente financeiro pessoal com inteligência artificial —
                                 orçamento, investimentos e IR em um só lugar.
