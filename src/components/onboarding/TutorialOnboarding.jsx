@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Box, Paper, Typography, Button } from '@mui/material'
+import { useTheme, alpha } from '@mui/material/styles'
 import useTutorial from '../../hooks/useTutorial'
 
 const FullDarkOverlay = () => (
@@ -11,7 +12,7 @@ const FullDarkOverlay = () => (
   }} />
 )
 
-const SpotlightOverlay = ({ targetRect }) => {
+const SpotlightOverlay = ({ targetRect, theme }) => {
   if (!targetRect) return <FullDarkOverlay />
 
   const { top, left, width, height } = targetRect
@@ -64,8 +65,8 @@ const SpotlightOverlay = ({ targetRect }) => {
           width: width + pad * 2,
           height: height + pad * 2,
           borderRadius: 8,
-          border: '2px solid rgba(124, 58, 237, 0.6)',
-          boxShadow: '0 0 0 4px rgba(124, 58, 237, 0.15)',
+          border: `2px solid ${alpha(theme.palette.primary.main, 0.6)}`,
+          boxShadow: `0 0 0 4px ${alpha(theme.palette.primary.main, 0.15)}`,
           pointerEvents: 'none',
           transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)',
         }}
@@ -75,6 +76,7 @@ const SpotlightOverlay = ({ targetRect }) => {
 }
 
 const TutorialOnboarding = () => {
+  const theme = useTheme()
   const {
     visible,
     step,
@@ -140,7 +142,7 @@ const TutorialOnboarding = () => {
 
   return (
     <>
-      <SpotlightOverlay targetRect={targetRect} />
+      <SpotlightOverlay targetRect={targetRect} theme={theme} />
 
       <Paper
         data-testid="tutorial-tooltip"
@@ -148,23 +150,22 @@ const TutorialOnboarding = () => {
         sx={{
           ...tooltipStyle,
           zIndex: 10002,
-          background: '#1a1a2e',
-          border: '1px solid rgba(255,255,255,0.08)',
+          bgcolor: 'surfaces.raised',
           boxShadow: '0 24px 48px rgba(0,0,0,0.4)',
           borderRadius: '12px',
           p: '20px 24px',
         }}
       >
-        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.4)', display: 'block', mb: 1 }}>
+        <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mb: 1 }}>
           {step + 1} de {totalSteps}
         </Typography>
 
         {currentStep && (
           <>
-            <Typography variant="h6" fontWeight={600} sx={{ color: '#fff', mb: 1, lineHeight: 1.3 }}>
+            <Typography variant="h6" fontWeight={600} sx={{ color: 'text.primary', mb: 1, lineHeight: 1.3 }}>
               {currentStep.title}
             </Typography>
-            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mb: 2.5, lineHeight: 1.6 }}>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2.5, lineHeight: 1.6 }}>
               {currentStep.description}
             </Typography>
           </>
@@ -172,17 +173,17 @@ const TutorialOnboarding = () => {
 
         <Box sx={{ display: 'flex', gap: '6px', mb: 2.5 }}>
           {Array.from({ length: totalSteps }).map((_, i) => (
-            <Box key={i} sx={{
+            <Box key={i} sx={(theme) => ({
               height: 6,
               width: i === step ? 16 : 6,
               borderRadius: 3,
-              backgroundColor: i === step ? '#7C3AED' : 'rgba(255,255,255,0.25)',
+              backgroundColor: i === step ? theme.palette.primary.main : theme.palette.lines.subtle,
               transition: 'all 250ms ease',
-            }} />
+            })} />
           ))}
         </Box>
 
-        <Box sx={{ height: '1px', backgroundColor: 'rgba(255,255,255,0.06)', mb: 2 }} />
+        <Box sx={{ height: '1px', bgcolor: 'divider', mb: 2 }} />
 
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           {/* Left side: Pular on step 1, empty spacer on steps 2-5 */}
@@ -190,7 +191,7 @@ const TutorialOnboarding = () => {
             <Button
               size="small"
               onClick={pularTutorial}
-              sx={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, textTransform: 'none' }}
+              sx={{ color: 'text.disabled', fontSize: 12, textTransform: 'none' }}
             >
               Pular
             </Button>
@@ -204,7 +205,7 @@ const TutorialOnboarding = () => {
               <Button
                 size="small"
                 onClick={voltarStep}
-                sx={{ color: 'rgba(255,255,255,0.45)', fontSize: 12, textTransform: 'none' }}
+                sx={{ color: 'text.disabled', fontSize: 12, textTransform: 'none' }}
               >
                 Voltar
               </Button>
@@ -214,8 +215,6 @@ const TutorialOnboarding = () => {
               size="small"
               onClick={isLastStep ? concluirTutorial : proximoStep}
               sx={{
-                backgroundColor: '#7C3AED',
-                '&:hover': { backgroundColor: '#6D28D9' },
                 borderRadius: '8px',
                 textTransform: 'none',
                 fontWeight: 600,
