@@ -55,7 +55,7 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
-button:hover { border-color: var(--c-line-strong, rgba(255, 255, 255, 0.15)); }
+button:hover { border-color: var(--c-line-strong); }
 
 /* Foco visível e consistente em todo o app (WCAG 2.2 — 2.4.11/2.4.13). */
 button:focus-visible,
