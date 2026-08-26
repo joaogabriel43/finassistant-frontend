@@ -3,6 +3,7 @@ import { Box, Paper, Typography, TextField, Button, Alert, Link } from '@mui/mat
 import { useAuth } from '../contexts/AuthContext';
 import { logErroSeguro } from '../utils/apiErrorUtils';
 import PasswordField from './PasswordField';
+import ThemeToggle from './layout/ThemeToggle';
 
 const inputSx = (theme) => ({
   '& .MuiOutlinedInput-root': {
@@ -64,6 +65,9 @@ const Login = () => {
         justifyContent: 'center',
       }}
     >
+      <Box sx={{ position: 'fixed', top: 16, right: 16 }}>
+        <ThemeToggle />
+      </Box>
       <Paper
         sx={{
           p: 4,
