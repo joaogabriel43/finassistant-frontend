@@ -251,7 +251,7 @@ const Chat = () => {
                         justifyContent: 'center',
                         color: theme.palette.primary.contrastText,
                         background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-                        boxShadow: '0 4px 16px rgba(124,106,247,0.4)',
+                        boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.4)}`,
                     }}
                 >
                     <SparkIcon size={22} />
