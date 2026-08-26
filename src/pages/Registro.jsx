@@ -141,7 +141,7 @@ const Registro = () => {
                                 key={texto}
                                 variant="caption"
                                 component="div"
-                                sx={{ color: ok ? '#4ade80' : 'text.disabled' }}
+                                sx={{ color: ok ? 'success.main' : 'text.disabled' }}
                             >
                                 {ok ? '✓' : '○'} {texto}
                             </Typography>
