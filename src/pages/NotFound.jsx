@@ -16,7 +16,7 @@ const NotFound = () => {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        bgcolor: '#0a0a0f',
+        bgcolor: 'background.default',
         textAlign: 'center',
         px: 3,
         position: 'relative',
@@ -29,7 +29,7 @@ const NotFound = () => {
           position: 'absolute',
           fontSize: { xs: '6rem', md: '10rem' },
           fontWeight: 900,
-          color: '#7C3AED',
+          color: 'primary.main',
           opacity: 0.15,
           letterSpacing: '-0.05em',
           userSelect: 'none',
@@ -40,7 +40,7 @@ const NotFound = () => {
       </Typography>
 
       <SearchOffIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2, position: 'relative' }} />
-      <Typography variant="h5" fontWeight={600} sx={{ color: '#fff', mb: 1, position: 'relative' }}>
+      <Typography variant="h5" fontWeight={600} sx={{ color: 'text.primary', mb: 1, position: 'relative' }}>
         Página não encontrada
       </Typography>
       <Typography
@@ -56,13 +56,13 @@ const NotFound = () => {
         startIcon={<HomeIcon />}
         sx={{
           mt: 4,
-          bgcolor: '#7C3AED',
+          bgcolor: 'primary.main',
           borderRadius: '8px',
           textTransform: 'none',
           px: 4,
           fontWeight: 600,
           position: 'relative',
-          '&:hover': { bgcolor: '#6D28D9' },
+          '&:hover': { bgcolor: 'primary.dark' },
         }}
       >
         Voltar ao Dashboard
