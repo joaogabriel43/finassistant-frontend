@@ -59,28 +59,28 @@ const Registro = () => {
         }
     };
 
-    const inputSx = {
+    const inputSx = (theme) => ({
         '& .MuiOutlinedInput-root': {
-            backgroundColor: 'rgba(255,255,255,0.05)',
-            '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
-            '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' },
-            '&.Mui-focused fieldset': { borderColor: '#7c3aed' },
+            backgroundColor: 'background.paper',
+            '& fieldset': { borderColor: 'divider' },
+            '&:hover fieldset': { borderColor: 'text.disabled' },
+            '&.Mui-focused fieldset': { borderColor: 'primary.main' },
         },
-        '& .MuiInputBase-input': { color: '#ffffff' },
+        '& .MuiInputBase-input': { color: 'text.primary' },
         '& .MuiInputBase-input:-webkit-autofill': {
-            WebkitBoxShadow: '0 0 0 1000px #1a1a2e inset',
-            WebkitTextFillColor: '#ffffff',
-            caretColor: '#ffffff',
+            WebkitBoxShadow: `0 0 0 1000px ${theme.palette.background.paper} inset`,
+            WebkitTextFillColor: theme.palette.text.primary,
+            caretColor: theme.palette.text.primary,
         },
-        '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.6)' },
-        '& .MuiInputLabel-root.Mui-focused': { color: '#a78bfa' },
-    };
+        '& .MuiInputLabel-root': { color: 'text.secondary' },
+        '& .MuiInputLabel-root.Mui-focused': { color: 'primary.main' },
+    });
 
     return (
         <Box
             sx={{
                 minHeight: '100vh',
-                bgcolor: '#0a0a0f',
+                bgcolor: 'background.default',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -92,12 +92,13 @@ const Registro = () => {
                     width: '100%',
                     maxWidth: 420,
                     borderRadius: '16px',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    border: '1px solid',
+                    borderColor: 'divider',
                     backdropFilter: 'blur(12px)',
-                    background: 'rgba(255,255,255,0.04)',
+                    bgcolor: 'background.paper',
                 }}
             >
-                <Typography variant="h5" fontWeight={700} sx={{ color: '#7C6AF7', mb: 0.5, textAlign: 'center' }}>
+                <Typography variant="h5" fontWeight={700} sx={{ color: 'primary.main', mb: 0.5, textAlign: 'center' }}>
                     FortunAI
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', mb: 3 }}>
@@ -140,7 +141,7 @@ const Registro = () => {
                                 key={texto}
                                 variant="caption"
                                 component="div"
-                                sx={{ color: ok ? '#4ade80' : 'rgba(255,255,255,0.45)' }}
+                                sx={{ color: ok ? 'success.main' : 'text.disabled' }}
                             >
                                 {ok ? '✓' : '○'} {texto}
                             </Typography>
@@ -175,7 +176,7 @@ const Registro = () => {
                             <Checkbox
                                 checked={aceitouTermos}
                                 onChange={(e) => setAceitouTermos(e.target.checked)}
-                                sx={{ color: 'rgba(255,255,255,0.4)', '&.Mui-checked': { color: '#7C6AF7' } }}
+                                sx={{ color: 'text.disabled', '&.Mui-checked': { color: 'primary.main' } }}
                             />
                         }
                         label={
@@ -186,7 +187,7 @@ const Registro = () => {
                                     to="/termos"
                                     target="_blank"
                                     rel="noopener"
-                                    sx={{ color: '#7C6AF7' }}
+                                    sx={{ color: 'primary.main' }}
                                 >
                                     Termos de Uso
                                 </Link>
@@ -196,7 +197,7 @@ const Registro = () => {
                                     to="/privacidade"
                                     target="_blank"
                                     rel="noopener"
-                                    sx={{ color: '#7C6AF7' }}
+                                    sx={{ color: 'primary.main' }}
                                 >
                                     Política de Privacidade
                                 </Link>
@@ -221,14 +222,14 @@ const Registro = () => {
                         variant="contained"
                         fullWidth
                         disabled={!aceitouTermos || !politicaOk || !confirmacaoOk}
-                        sx={{ mt: 2, py: 1.5, bgcolor: '#7C6AF7', '&:hover': { bgcolor: '#6355d4' } }}
+                        sx={{ mt: 2, py: 1.5, bgcolor: 'primary.main', '&:hover': { bgcolor: 'primary.light' } }}
                     >
                         Criar conta
                     </Button>
 
                     <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', mt: 2 }}>
                         Já tem uma conta?{' '}
-                        <Link component={RouterLink} to="/login" underline="hover" sx={{ color: '#7C6AF7', fontWeight: 600 }}>
+                        <Link component={RouterLink} to="/login" underline="hover" sx={{ color: 'primary.main', fontWeight: 600 }}>
                             Faça login
                         </Link>
                     </Typography>
