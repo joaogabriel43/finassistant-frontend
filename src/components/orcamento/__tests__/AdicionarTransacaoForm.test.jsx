@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render as renderRTL, screen, fireEvent, waitFor } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import AdicionarTransacaoForm from '../AdicionarTransacaoForm'
 
@@ -27,6 +27,8 @@ vi.mock('react-select/creatable', () => ({
 }))
 
 import api from '../../../services/api'
+import { ThemeProvider } from '@mui/material/styles'
+import theme from '../../../theme'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -54,6 +56,11 @@ beforeEach(() => {
 })
 
 // ─── Testes (RED — todos devem FALHAR porque o campo de data não existe) ─────
+
+// O componente le tokens customizados do tema (palette.lines / palette.surfaces
+// / palette.series), entao precisa do ThemeProvider no teste — regra do
+// design system.
+const render = (ui) => renderRTL(<ThemeProvider theme={theme}>{ui}</ThemeProvider>)
 
 describe('AdicionarTransacaoForm — campo de data (RED)', () => {
   it('deve renderizar campo de data com valor padrão igual a hoje', () => {

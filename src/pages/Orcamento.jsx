@@ -102,11 +102,11 @@ const Orcamento = () => {
             <Box sx={{ p: { xs: 1.5, md: 3 } }}>
                 {Array.from({ length: 5 }).map((_, i) => (
                     <Skeleton key={i} animation="wave" variant="rectangular" height={48}
-                        sx={{ mb: 1, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 2 }} />
+                        sx={(t) => ({ mb: 1, bgcolor: t.palette.surfaces.surfaceSoft, borderRadius: 2 })} />
                 ))}
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
                     <Skeleton animation="wave" variant="circular" width={180} height={180}
-                        sx={{ bgcolor: 'rgba(255,255,255,0.05)' }} />
+                        sx={(t) => ({ bgcolor: t.palette.surfaces.surfaceSoft })} />
                 </Box>
             </Box>
         );
@@ -123,7 +123,7 @@ const Orcamento = () => {
                         variant="outlined"
                         startIcon={<QrCodeScannerIcon />}
                         onClick={() => setNfceOpen(true)}
-                        sx={{ borderColor: 'rgba(255,255,255,0.2)' }}
+                        sx={(t) => ({ borderColor: t.palette.lines.strong })}
                     >
                         📄 Escanear NF-e
                     </Button>
@@ -158,7 +158,7 @@ const Orcamento = () => {
             {/* Sub-abas por tema (Lote K, padrão ADR-037) */}
             <Tabs value={abaAtiva} onChange={(_e, v) => setAbaAtiva(v)}
                 variant="scrollable" scrollButtons="auto" allowScrollButtonsMobile
-                sx={{ mb: 3, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                sx={(t) => ({ mb: 3, borderBottom: `1px solid ${t.palette.lines.subtle}` })}>
                 {ABAS_ORCAMENTO.map((aba) => (
                     <Tab key={aba.id} value={aba.id} label={aba.label} data-testid={`tab-orcamento-${aba.id}`} />
                 ))}

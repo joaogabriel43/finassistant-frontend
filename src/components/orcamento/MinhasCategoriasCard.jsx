@@ -10,6 +10,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import LabelIcon from '@mui/icons-material/Label';
 import api from '../../services/api';
 import { extrairMensagemErroApi } from '../../utils/apiErrorUtils';
+import { tokens } from '../../theme';
 
 /**
  * Gestão de categorias personalizadas (ADR-038 — Lote D).
@@ -17,7 +18,10 @@ import { extrairMensagemErroApi } from '../../utils/apiErrorUtils';
  * continuam aceitando texto livre — aqui só se define o vocabulário e as
  * cores usadas nos gráficos e no autocomplete do formulário.
  */
-const FORM_VAZIO = { nome: '', cor: '#7C6AF7', categoriaPaiId: '' };
+// Cor sugerida para categoria NOVA. Sai da serie de dados do tema em vez
+// do roxo da paleta antiga. E um hex literal de proposito: o valor e
+// persistido no backend, entao nao pode variar com o tema do cliente.
+const FORM_VAZIO = { nome: '', cor: tokens.colors.series[1], categoriaPaiId: '' };
 
 const MinhasCategoriasCard = () => {
     const [categorias, setCategorias] = useState([]);
@@ -94,7 +98,7 @@ const MinhasCategoriasCard = () => {
                 data-testid={`cat-chip-${cat.nome}`}
                 sx={{
                     bgcolor: `${cat.cor}22`,
-                    color: '#fff',
+                    color: 'text.primary',
                     border: `1px solid ${cat.cor}66`,
                     fontWeight: 600,
                 }}

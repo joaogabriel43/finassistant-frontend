@@ -95,21 +95,21 @@ const ListaTransacoes = ({ refreshKey, onChanged }) => {
 
                     <TableContainer
                         component={Paper}
-                        sx={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px' }}
+                        sx={(t) => ({ border: `1px solid ${t.palette.lines.subtle}`, borderRadius: '12px' })}
                     >
                         <Table size="small">
                             <TableHead>
                                 <TableRow
-                                    sx={{
+                                    sx={(t) => ({
                                         '& th': {
-                                            borderBottom: '1px solid rgba(255,255,255,0.1)',
+                                            borderBottom: `1px solid ${t.palette.lines.subtle}`,
                                             fontWeight: 600,
                                             fontSize: 12,
                                             textTransform: 'uppercase',
                                             letterSpacing: 0.5,
                                             color: 'text.secondary',
                                         },
-                                    }}
+                                    })}
                                 >
                                     <TableCell>Data</TableCell>
                                     <TableCell>Descrição</TableCell>

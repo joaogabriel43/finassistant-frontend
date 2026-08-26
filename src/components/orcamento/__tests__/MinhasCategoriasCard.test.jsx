@@ -2,7 +2,7 @@ import React from 'react'
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { ThemeProvider } from '@mui/material/styles'
-import theme from '../../../theme'
+import theme, { tokens } from '../../../theme'
 import MinhasCategoriasCard from '../MinhasCategoriasCard'
 
 vi.mock('../../../services/api', () => ({
@@ -49,7 +49,10 @@ describe('MinhasCategoriasCard — gestão de categorias (ADR-038)', () => {
         await waitFor(() => {
             expect(api.post).toHaveBeenCalledWith('/orcamento/categorias-gerenciadas', {
                 nome: 'Mercado',
-                cor: '#7C6AF7',
+                // Espelha FORM_VAZIO.cor do componente: valor SUGERIDO para
+                // categoria nova, agora vindo da serie do tema. Referencia o
+                // token em vez do hex para nao voltar a divergir.
+                cor: tokens.colors.series[1],
                 categoriaPaiId: null,
             })
         })
