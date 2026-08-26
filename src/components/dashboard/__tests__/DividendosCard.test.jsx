@@ -1,7 +1,13 @@
 import React from 'react'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render as renderRTL, screen, waitFor } from '@testing-library/react'
+import { ThemeProvider } from '@mui/material/styles'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import DividendosCard from '../DividendosCard'
+import theme from '../../../theme'
+
+// O card le tokens customizados do tema (lines, fontFamilyMono) — precisa do
+// ThemeProvider no teste, como manda o design system do projeto.
+const render = (ui) => renderRTL(<ThemeProvider theme={theme}>{ui}</ThemeProvider>)
 
 // --- MOCK: useDividendos hook ---
 vi.mock('../../../hooks/useDividendos', () => ({
@@ -28,7 +34,9 @@ describe('DividendosCard', () => {
     render(<DividendosCard />)
 
     expect(document.querySelector('.MuiCircularProgress-root')).toBeInTheDocument()
-    expect(screen.queryByText('Dividendos e Proventos')).not.toBeInTheDocument()
+    // O titulo da secao vive no Dashboard (SectionHead "Proventos"); aqui so
+    // o total do mes identifica o cabecalho do card.
+    expect(screen.queryByText('Recebido este mês')).not.toBeInTheDocument()
   })
 
   // --- Teste 2: estado de erro ---
@@ -56,7 +64,9 @@ describe('DividendosCard', () => {
 
     render(<DividendosCard />)
 
-    expect(screen.getByText('Dividendos e Proventos')).toBeInTheDocument()
+    // Sem nenhum provento, o card NAO mostra "R$ 0,00" — ausencia de dado nao
+    // pode ser confundida com zero financeiro real.
+    expect(screen.queryByText('Recebido este mês')).not.toBeInTheDocument()
     expect(screen.getByText('Nenhum provento registrado ainda')).toBeInTheDocument()
     expect(screen.getByText('Registre dividendos e rendimentos via chat')).toBeInTheDocument()
   })

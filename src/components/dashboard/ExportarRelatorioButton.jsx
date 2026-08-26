@@ -37,13 +37,19 @@ const ExportarRelatorioButton = () => {
       onClick={handleExportar}
       disabled={loading}
       data-testid="exportar-relatorio-btn"
-      sx={{
-        borderRadius: '8px',
+      sx={(t) => ({
+        borderRadius: `${t.radius.sm}px`,
         textTransform: 'none',
-        borderColor: 'rgba(124,106,247,0.4)',
-        color: '#7C6AF7',
-        '&:hover': { borderColor: '#7C6AF7', backgroundColor: 'rgba(124,106,247,0.08)' },
-      }}
+        fontWeight: 600,
+        // Ação secundária do cabeçalho: tokens do tema, nunca cor fixa. O roxo
+        // legado destoava do ambiente creme/verde nos dois temas.
+        borderColor: t.palette.lines.strong,
+        color: t.palette.primary.main,
+        '&:hover': {
+          borderColor: t.palette.primary.main,
+          backgroundColor: t.palette.accent.primarySoft,
+        },
+      })}
     >
       {loading ? 'Gerando...' : 'Exportar PDF'}
     </Button>

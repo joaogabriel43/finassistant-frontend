@@ -1,5 +1,7 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render as renderRTL, screen, fireEvent, waitFor } from '@testing-library/react'
+import { ThemeProvider } from '@mui/material/styles'
+import theme from '../../../theme'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import ExportarRelatorioButton from '../ExportarRelatorioButton'
 
@@ -8,6 +10,10 @@ vi.mock('../../../services/api', () => ({
 }))
 
 import api from '../../../services/api'
+
+// O botao le tokens customizados do tema (radius, lines, accent) — precisa do
+// ThemeProvider no teste, como manda o design system do projeto.
+const render = (ui) => renderRTL(<ThemeProvider theme={theme}>{ui}</ThemeProvider>)
 
 describe('ExportarRelatorioButton', () => {
   beforeEach(() => {

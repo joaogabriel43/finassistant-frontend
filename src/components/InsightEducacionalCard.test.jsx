@@ -1,6 +1,8 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
+import { render as renderRTL, screen, fireEvent, waitFor, act } from '@testing-library/react'
+import { ThemeProvider } from '@mui/material/styles'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
+import theme from '../theme'
 
 // ← RED: InsightEducacionalCard.jsx não existe ainda — import falha na compilação
 import InsightEducacionalCard from './InsightEducacionalCard'
@@ -12,6 +14,10 @@ vi.mock('../services/api', () => ({
 }))
 
 import api from '../services/api'
+
+// O card le tokens customizados do tema (radius, lines, accent) — precisa do
+// ThemeProvider no teste, como manda o design system do projeto.
+const render = (ui) => renderRTL(<ThemeProvider theme={theme}>{ui}</ThemeProvider>)
 
 // ── Fixtures ─────────────────────────────────────────────────────────────────
 

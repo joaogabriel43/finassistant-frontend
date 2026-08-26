@@ -16,6 +16,9 @@ import { useDividendos } from '../../hooks/useDividendos'
 const formatBRL = (value) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value ?? 0)
 
+// Todo valor monetario comparavel usa a mono do design system.
+const mono = (t) => t.typography.fontFamilyMono
+
 const formatDate = (dateStr) =>
   dateStr
     ? new Date(dateStr + 'T00:00:00').toLocaleDateString('pt-BR')
@@ -70,27 +73,15 @@ export default function DividendosCard() {
 
   const provisionados = proventos.filter((p) => !p.pago)
 
-  const totalMes = recebidosMes.reduce((sum, p) => sum + Number(p.valorPorCota ?? 0), 0)
-
   const isEmpty = recebidosMes.length === 0 && provisionados.length === 0
 
   return (
     <Box>
-      {/* Cabeçalho com total do mês */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-        <Typography variant="h6" fontWeight={600}>
-          Dividendos e Proventos
-        </Typography>
-        <Box sx={{ textAlign: 'right' }}>
-          <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-            Recebido este mês
-          </Typography>
-          <Typography variant="h6" fontWeight={700} color="success.main">
-            {formatBRL(totalMes)}
-          </Typography>
-        </Box>
-      </Box>
-
+      {/* Sem agregado próprio no cabeçalho, de propósito: o único valor por
+          provento no contrato é `valorPorCota`, e somar valor POR COTA de
+          tickers diferentes não produz um total em reais — seria inventar um
+          número. Os únicos agregados exibidos são os do backend, no rodapé.
+          O título da seção também vive no Dashboard (SectionHead "Proventos"). */}
       {isEmpty ? (
         <Box sx={{ textAlign: 'center', py: 3, color: 'text.secondary' }}>
           <CalendarMonthIcon sx={{ fontSize: 40, opacity: 0.4 }} />
@@ -149,7 +140,7 @@ export default function DividendosCard() {
           sx={{
             mt: 2,
             pt: 1.5,
-            borderTop: '1px solid rgba(255,255,255,0.08)',
+            borderTop: (t) => `1px solid ${t.palette.lines.subtle}`,
             display: 'flex',
             justifyContent: 'space-between',
           }}
@@ -158,7 +149,7 @@ export default function DividendosCard() {
             <Typography variant="caption" color="text.secondary" display="block">
               Total recebido
             </Typography>
-            <Typography variant="body2" fontWeight={600} color="success.main">
+            <Typography variant="body2" fontWeight={600} color="success.main" sx={(t) => ({ fontFamily: mono(t) })}>
               {formatBRL(resumo.totalPago)}
             </Typography>
           </Box>
@@ -166,7 +157,7 @@ export default function DividendosCard() {
             <Typography variant="caption" color="text.secondary" display="block">
               A receber
             </Typography>
-            <Typography variant="body2" fontWeight={600} color="warning.main">
+            <Typography variant="body2" fontWeight={600} color="warning.main" sx={(t) => ({ fontFamily: mono(t) })}>
               {formatBRL(resumo.totalProvisionado)}
             </Typography>
           </Box>
@@ -197,9 +188,19 @@ function ProventoItem({ provento }) {
         }
         secondary={`Pgto: ${formatDate(provento.dataPagamento)}`}
       />
-      <Typography variant="body2" fontWeight={600} sx={{ ml: 1, whiteSpace: 'nowrap' }}>
-        {formatBRL(provento.valorPorCota)}
-      </Typography>
+      {/* Rotulado explicitamente: o contrato entrega valor POR COTA, nao o
+          total recebido. Sem a unidade o numero seria lido como reais totais. */}
+      <Box sx={{ ml: 1, textAlign: 'right', whiteSpace: 'nowrap' }}>
+        <Typography variant="body2" fontWeight={600} sx={(t) => ({ fontFamily: mono(t) })}>
+          {formatBRL(provento.valorPorCota)}
+        </Typography>
+        <Typography
+          variant="caption"
+          sx={{ display: 'block', color: 'text.secondary', fontSize: 10, lineHeight: 1.2 }}
+        >
+          por cota
+        </Typography>
+      </Box>
     </ListItem>
   )
 }

@@ -78,10 +78,8 @@ const ScoreSaudeCard = () => {
 
   return (
     <Box>
-      <Typography variant="overline" sx={{ color: 'text.secondary', display: 'block', mb: 1.5 }}>
-        Saude Financeira
-      </Typography>
-
+      {/* Sem rotulo interno: a secao do dashboard ja titula "Saude financeira"
+          logo acima do painel — repetir aqui seria ruido visual. */}
       <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2.5 }}>
         <RingGauge value={data.score} size={118} stroke={10} color={cor}>
           <Typography sx={{ fontFamily: mono, fontSize: 30, fontWeight: 750, lineHeight: 1 }}>
