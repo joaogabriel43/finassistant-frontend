@@ -24,7 +24,7 @@ const CalculadorasPage = () => {
     return (
         <Box sx={{ p: { xs: 2, md: 3 } }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
-                <CalculateIcon sx={{ color: '#7C6AF7', fontSize: 28 }} />
+                <CalculateIcon sx={{ color: 'primary.main', fontSize: 28 }} />
                 <Box>
                     <Typography variant="h5" fontWeight={700}>
                         Calculadoras Financeiras
@@ -38,7 +38,7 @@ const CalculadorasPage = () => {
             <Box
                 sx={{
                     borderBottom: 1,
-                    borderColor: 'rgba(255,255,255,0.08)',
+                    borderColor: (t) => t.palette.lines.subtle,
                     mb: 3,
                 }}
             >
@@ -47,9 +47,9 @@ const CalculadorasPage = () => {
                     onChange={(_, v) => setTab(v)}
                     aria-label="calculadoras financeiras"
                     sx={{
-                        '& .MuiTab-root': { color: '#8B8BA8', textTransform: 'none', fontWeight: 500 },
-                        '& .Mui-selected': { color: '#7C6AF7 !important' },
-                        '& .MuiTabs-indicator': { backgroundColor: '#7C6AF7' },
+                        '& .MuiTab-root': { color: 'text.secondary', textTransform: 'none', fontWeight: 500 },
+                        '& .Mui-selected': { color: 'primary.main' },
+                        '& .MuiTabs-indicator': { bgcolor: 'primary.main' },
                     }}
                 >
                     <Tab label="Independência Financeira" id="calc-tab-0" aria-controls="calc-tabpanel-0" />
