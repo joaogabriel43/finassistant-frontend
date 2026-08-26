@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Box, Button, Card, CardContent, Chip, CircularProgress, Grid, Typography, IconButton, Skeleton } from '@mui/material'
+import { alpha, Box, Button, Card, CardContent, Chip, CircularProgress, Grid, Typography, IconButton, Skeleton } from '@mui/material'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
@@ -68,9 +68,18 @@ const StatusPage = () => {
         </Box>
 
         {/* Overall status banner */}
-        <Card sx={{ mb: 3, borderRadius: '12px', bgcolor: allOperational ? 'rgba(46,125,50,0.1)' : 'rgba(237,108,2,0.1)', border: '1px solid', borderColor: allOperational ? 'rgba(46,125,50,0.3)' : 'rgba(237,108,2,0.3)' }}>
+        <Card sx={(theme) => {
+          const statusColor = allOperational ? theme.palette.success.main : theme.palette.warning.main
+          return {
+            mb: 3,
+            borderRadius: '12px',
+            bgcolor: alpha(statusColor, 0.1),
+            border: '1px solid',
+            borderColor: alpha(statusColor, 0.3),
+          }
+        }}>
           <CardContent sx={{ textAlign: 'center', py: 3 }}>
-            <Typography variant="h6" fontWeight={600} data-testid="overall-status" sx={{ color: allOperational ? '#66bb6a' : '#ffa726' }}>
+            <Typography variant="h6" fontWeight={600} data-testid="overall-status" sx={{ color: allOperational ? 'success.main' : 'warning.main' }}>
               {loading ? 'Verificando...' : allOperational ? 'Todos os sistemas operacionais' : 'Alguns servicos com problemas'}
             </Typography>
           </CardContent>
