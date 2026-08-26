@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { vi, describe, it, expect } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
@@ -38,6 +38,18 @@ describe('Responsividade — Layout e Sidebar', () => {
     renderLayout()
     const sidebars = screen.getAllByTestId('sidebar')
     expect(sidebars.length).toBeGreaterThanOrEqual(1)
+  })
+
+  // --- Teste 1b --- Regressao: a 220px, logo + 3 controles nao cabiam na
+  // mesma linha e o `overflow: hidden` do drawer cortava o avatar (ultimo da
+  // fila). O avatar precisa ficar FORA da linha da logo.
+  it('Avatar do usuário não divide a linha da logo na sidebar', () => {
+    renderLayout()
+    const sidebar = screen.getAllByTestId('sidebar')[0]
+    const logo = within(sidebar).getByTestId('logo-fortunai')
+    const avatar = within(sidebar).getAllByTestId('user-menu')[0]
+    expect(sidebar).toContainElement(avatar)
+    expect(logo.parentElement).not.toContainElement(avatar)
   })
 
   // --- Teste 2 --- Botão hamburger está no DOM

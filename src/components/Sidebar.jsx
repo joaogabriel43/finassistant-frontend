@@ -38,9 +38,14 @@ const Sidebar = () => {
         overflow: 'hidden',
       }}
     >
-      {/* TOPO: Layout em 2 linhas para caber nos 220px da sidebar
-           Linha 1: [FortunAI]  →  [tema] [🔔] [J]
-           Linha 2: [Assistente Financeiro] [Free/Premium]         */}
+      {/* TOPO: 3 linhas empilhadas para caber nos 220px da sidebar.
+           A logo (≈111px medidos) + os 3 controles (≈120px) somavam ~231px
+           numa faixa util de 180px — o excedente era engolido pelo
+           `overflow: hidden` do drawer e o AVATAR (ultimo da fila) sumia
+           cortado. Cada bloco agora tem a largura inteira para si.
+           Linha 1: [FortunAI]
+           Linha 2: [Assistente Financeiro] [Free/Premium]
+           Linha 3: [tema] [🔔] [J]  — alinhados à direita          */}
       <Box
         sx={{
           px: 2.5,
@@ -50,7 +55,7 @@ const Sidebar = () => {
           flexShrink: 0,
         }}
       >
-        {/* Linha 1: Logo ←→ Controles */}
+        {/* Linha 1: Logo */}
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           {/* Logo clicável — convenção universal de web: marca leva à home */}
           <Typography
@@ -96,28 +101,39 @@ const Sidebar = () => {
             />
             FortunAI
           </Typography>
-
-          {/* Tema + Notificações + Avatar — visíveis apenas em desktop */}
-          <Box
-            sx={{
-              display: { xs: 'none', md: 'flex' },
-              alignItems: 'center',
-              gap: 0.25,
-              flexShrink: 0,
-            }}
-          >
-            <ThemeToggle />
-            <NotificacoesBadge />
-            <UserMenu />
-          </Box>
         </Box>
 
         {/* Linha 2: Subtítulo + Badge de plano */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.25 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.75,
+            rowGap: 0.5,
+            flexWrap: 'wrap',
+            mt: 0.25,
+          }}
+        >
           <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 11 }}>
             Assistente Financeiro
           </Typography>
           <PlanoBadge />
+        </Box>
+
+        {/* Linha 3: Tema + Notificações + Avatar — apenas em desktop.
+            No mobile esses mesmos controles vivem no AppBar do Layout. */}
+        <Box
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            gap: 0.25,
+            mt: 0.5,
+          }}
+        >
+          <ThemeToggle />
+          <NotificacoesBadge />
+          <UserMenu />
         </Box>
       </Box>
 
