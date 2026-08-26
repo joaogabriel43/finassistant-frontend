@@ -48,14 +48,17 @@ import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import ViewAgendaIcon from '@mui/icons-material/ViewAgenda';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import { useTheme, alpha } from '@mui/material/styles';
 import ConfigurarAlertasModal from '../components/notificacoes/ConfigurarAlertasModal';
 
-const cardStyle = {
+// Funcao do tema: a hairline muda entre claro e escuro. O `sx` do MUI
+// aceita callback, entao `sx={cardStyle}` continua valido.
+const cardStyle = (t) => ({
     p: 3,
-    border: '1px solid rgba(255,255,255,0.08)',
+    border: `1px solid ${t.palette.lines.subtle}`,
     borderRadius: '16px',
     boxShadow: 'none',
-};
+});
 
 /**
  * Sub-abas da página (padrão de mercado: Kinvo/Status Invest agrupam a
@@ -166,6 +169,7 @@ const ORDEM_PADRAO = CARDS.map((c) => c.id);
 const TITULO_NO_PAPER = new Set(['alocacao-ativos', 'portfolio', 'adicionar-ativo', 'estrategia-alocacao']);
 
 const Investimentos = () => {
+    const theme = useTheme();
     const { user } = useAuth();
     const navigate = useNavigate();
     const { loading: exportLoading, error: exportError, downloadArquivo, clearError } = useExportacao();
@@ -314,11 +318,11 @@ const Investimentos = () => {
             <Box sx={{ p: { xs: 1.5, md: 3 } }}>
                 {Array.from({ length: 3 }).map((_, i) => (
                     <Skeleton key={i} animation="wave" variant="rectangular" height={52}
-                        sx={{ mb: 1, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 2 }} />
+                        sx={(t) => ({ mb: 1, bgcolor: t.palette.surfaces.surfaceSoft, borderRadius: 2 })} />
                 ))}
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
                     <Skeleton animation="wave" variant="circular" width={200} height={200}
-                        sx={{ bgcolor: 'rgba(255,255,255,0.05)' }} />
+                        sx={(t) => ({ bgcolor: t.palette.surfaces.surfaceSoft })} />
                 </Box>
             </Box>
         );
@@ -349,9 +353,9 @@ const Investimentos = () => {
                             size="small"
                             sx={{
                                 ml: 1,
-                                bgcolor: 'rgba(124,106,247,0.15)',
-                                color: '#7C6AF7',
-                                border: '1px solid rgba(124,106,247,0.3)',
+                                bgcolor: alpha(theme.palette.primary.main, 0.15),
+                                color: 'primary.main',
+                                border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
                                 fontWeight: 600,
                             }}
                         />
@@ -434,7 +438,7 @@ const Investimentos = () => {
                 variant="scrollable"
                 scrollButtons="auto"
                 allowScrollButtonsMobile
-                sx={{ mb: 3, borderBottom: '1px solid rgba(255,255,255,0.08)' }}
+                sx={(t) => ({ mb: 3, borderBottom: `1px solid ${t.palette.lines.subtle}` })}
             >
                 {ABAS.map((aba) => (
                     <Tab key={aba.id} value={aba.id} label={aba.label} data-testid={`tab-${aba.id}`} />
@@ -531,7 +535,7 @@ const Investimentos = () => {
                         width: 400,
                         p: 4,
                         borderRadius: '16px',
-                        border: '1px solid rgba(255,255,255,0.12)',
+                        border: `1px solid ${theme.palette.lines.strong}`,
                     }}
                 >
                     <Typography id="sell-modal-title" variant="h6" component="h2" sx={{ mb: 2 }}>

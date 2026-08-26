@@ -1,12 +1,19 @@
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { render as renderRTL, screen } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import RebalanceamentoPanel from '../RebalanceamentoPanel'
+import { ThemeProvider } from '@mui/material/styles'
+import theme from '../../../theme'
 
 // --- MOCK: useRebalanceamento hook ---
 vi.mock('../../../hooks/useRebalanceamento', () => ({
   useRebalanceamento: vi.fn(),
 }))
+
+// O componente le tokens customizados do tema (palette.lines / palette.surfaces
+// / palette.series), entao precisa do ThemeProvider no teste — regra do
+// design system.
+const render = (ui) => renderRTL(<ThemeProvider theme={theme}>{ui}</ThemeProvider>)
 
 describe('RebalanceamentoPanel', () => {
   let useRebalanceamento

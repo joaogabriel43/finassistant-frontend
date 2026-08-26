@@ -1,10 +1,9 @@
 import React from 'react'
 import { Box, Typography } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import {
   Cell, Pie, PieChart, ResponsiveContainer, Tooltip,
 } from 'recharts'
-
-const COLORS = ['#7C6AF7', '#00D4AA', '#FF4D6A', '#FFB547', '#4FC3F7']
 
 const formatBRL = (value) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
@@ -30,6 +29,8 @@ class ChartErrorBoundary extends React.Component {
 }
 
 export default function PortfolioDonutChart({ data, height = 220, totalInvestido }) {
+  const theme = useTheme()
+  const COLORS = theme.palette.series
   if (!data || data.length === 0) return null
 
   const total = totalInvestido ?? data.reduce((acc, item) => acc + (item.value ?? 0), 0)
@@ -57,8 +58,8 @@ export default function PortfolioDonutChart({ data, height = 220, totalInvestido
               </Pie>
               <Tooltip
                 contentStyle={{
-                  background: '#1A1A24',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: theme.palette.surfaces.raised,
+                  border: `1px solid ${theme.palette.lines.subtle}`,
                   borderRadius: 8,
                 }}
                 formatter={(value) => [formatBRL(value), '']}
@@ -75,7 +76,7 @@ export default function PortfolioDonutChart({ data, height = 220, totalInvestido
           textAlign: 'center',
           pointerEvents: 'none',
         }}>
-          <Typography variant="caption" sx={{ color: '#8B8BA8', fontSize: 11, display: 'block', lineHeight: 1.2 }}>
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 11, display: 'block', lineHeight: 1.2 }}>
             Total
           </Typography>
           <Typography variant="body2" fontWeight={700} sx={{ fontSize: 13, lineHeight: 1.2 }}>

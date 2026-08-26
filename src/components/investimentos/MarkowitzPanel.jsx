@@ -17,14 +17,18 @@ import {
     Alert,
 } from '@mui/material';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import { useTheme } from '@mui/material/styles';
 import { useMarkowitz } from '../../hooks/useMarkowitz';
 
-const COLORS_ATUAL = '#7C6AF7';
-const COLORS_OTIMA = '#00D4AA';
 
 const formatPercent = (value) => `${(value * 100).toFixed(1)}%`;
 
 const MarkowitzPanel = () => {
+    const theme = useTheme();
+    // A barra da alocacao ATUAL fica neutra e a OTIMA recebe a cor de
+    // destaque — a recomendacao e que precisa saltar aos olhos.
+    const COLORS_ATUAL = theme.palette.series[1];
+    const COLORS_OTIMA = theme.palette.primary.main;
     const { loading, error, resultado, otimizar } = useMarkowitz();
 
     // Transforma os dados para o BarChart comparativo
@@ -61,8 +65,6 @@ const MarkowitzPanel = () => {
                     disabled={loading}
                     onClick={otimizar}
                     sx={{
-                        bgcolor: '#7C6AF7',
-                        '&:hover': { bgcolor: '#6B5CE7' },
                         textTransform: 'none',
                         fontWeight: 600,
                     }}
@@ -93,13 +95,13 @@ const MarkowitzPanel = () => {
                             <BarChart data={chartData} barGap={4}>
                                 <XAxis
                                     dataKey="ticker"
-                                    tick={{ fill: '#aaa', fontSize: 12 }}
-                                    axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                                    tick={{ fill: theme.palette.text.secondary, fontSize: 12 }}
+                                    axisLine={{ stroke: theme.palette.lines.subtle }}
                                     tickLine={false}
                                 />
                                 <YAxis
                                     tickFormatter={formatPercent}
-                                    tick={{ fill: '#aaa', fontSize: 11 }}
+                                    tick={{ fill: theme.palette.text.secondary, fontSize: 11 }}
                                     axisLine={false}
                                     tickLine={false}
                                     width={50}
@@ -110,18 +112,18 @@ const MarkowitzPanel = () => {
                                         name === 'atual' ? 'Alocação Atual' : 'Alocação Ótima',
                                     ]}
                                     contentStyle={{
-                                        background: '#1a1a2e',
-                                        border: '1px solid rgba(255,255,255,0.12)',
+                                        background: theme.palette.surfaces.raised,
+                                        border: `1px solid ${theme.palette.lines.strong}`,
                                         borderRadius: 8,
                                     }}
-                                    labelStyle={{ color: '#fff' }}
-                                    itemStyle={{ color: '#fff' }}
+                                    labelStyle={{ color: theme.palette.text.primary }}
+                                    itemStyle={{ color: theme.palette.text.primary }}
                                 />
                                 <Legend
                                     formatter={(value) =>
                                         value === 'atual' ? 'Alocação Atual' : 'Alocação Ótima (Markowitz)'
                                     }
-                                    wrapperStyle={{ color: '#aaa', fontSize: 12 }}
+                                    wrapperStyle={{ color: theme.palette.text.secondary, fontSize: 12 }}
                                 />
                                 <Bar dataKey="atual" radius={[4, 4, 0, 0]} maxBarSize={40}>
                                     {chartData.map((_, idx) => (

@@ -1,7 +1,9 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render as renderRTL, screen, fireEvent, waitFor } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import MarkowitzPanel from '../MarkowitzPanel'
+import { ThemeProvider } from '@mui/material/styles'
+import theme from '../../../theme'
 
 // --- MOCK: useMarkowitz hook ---
 vi.mock('../../../hooks/useMarkowitz', () => ({
@@ -18,6 +20,11 @@ vi.mock('recharts', async (importOriginal) => {
     ),
   }
 })
+
+// O componente le tokens customizados do tema (palette.lines / palette.surfaces
+// / palette.series), entao precisa do ThemeProvider no teste — regra do
+// design system.
+const render = (ui) => renderRTL(<ThemeProvider theme={theme}>{ui}</ThemeProvider>)
 
 describe('MarkowitzPanel', () => {
   let useMarkowitz
