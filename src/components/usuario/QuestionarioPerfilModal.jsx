@@ -19,9 +19,9 @@ const modalStyles = {
     transform: 'translate(-50%, 50px)',
     padding: '30px',
     borderRadius: '12px',
-    background: '#1f2733',
-    color: '#f7fafc',
-    border: '1px solid #2d3748'
+    background: 'var(--c-surface)',
+    color: 'var(--c-tx)',
+    border: '1px solid var(--c-line)'
   },
   overlay: { background: 'rgba(0,0,0,0.6)' }
 };
@@ -54,10 +54,10 @@ export default function QuestionarioPerfilModal({ isOpen, onFinish }) {
   return (
     <Modal isOpen={isOpen} style={modalStyles} contentLabel="Questionário de Perfil">
       <h2 style={{ marginTop: 0 }}>Descubra seu Perfil de Investidor</h2>
-      <p style={{ fontSize: '0.9rem', color: '#a0aec0' }}>Responda rapidamente para personalizarmos recomendações.</p>
+      <p style={{ fontSize: '0.9rem', color: 'var(--c-tx2)' }}>Responda rapidamente para personalizarmos recomendações.</p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
         {questions.map((q, qi) => (
-          <div key={qi} style={{ background: '#2d3748', padding: '16px', borderRadius: '8px' }}>
+          <div key={qi} style={{ background: 'var(--c-raised)', padding: '16px', borderRadius: '8px' }}>
             <p style={{ margin: '0 0 10px 0', fontWeight: 'bold' }}>{qi + 1}. {q.text}</p>
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               {q.options.map((opt, oi) => (
@@ -65,7 +65,7 @@ export default function QuestionarioPerfilModal({ isOpen, onFinish }) {
                   key={oi}
                   onClick={() => handleAnswer(qi, oi + 1)}
                   style={{
-                    background: answers[qi] === oi + 1 ? '#3182ce' : '#4a5568',
+                    background: answers[qi] === oi + 1 ? 'var(--c-pri)' : 'var(--c-surface)',
                     color: 'white',
                     border: 'none',
                     borderRadius: '6px',
@@ -84,7 +84,7 @@ export default function QuestionarioPerfilModal({ isOpen, onFinish }) {
           onClick={handleSubmit}
           disabled={!allAnswered || submitting}
           style={{
-            background: allAnswered ? '#38a169' : '#2f855a',
+            background: 'var(--c-pos)',
             opacity: submitting ? 0.7 : 1,
             color: 'white',
             border: 'none',

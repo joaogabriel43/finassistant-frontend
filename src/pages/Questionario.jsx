@@ -11,6 +11,7 @@ import {
     Button,
     CircularProgress,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useAuth } from '../contexts/AuthContext';
@@ -75,8 +76,8 @@ const Questionario = () => {
 
     if (!user) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', bgcolor: '#0a0a0f' }}>
-                <CircularProgress sx={{ color: '#7C6AF7' }} />
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', bgcolor: 'background.default' }}>
+                <CircularProgress sx={{ color: 'primary.main' }} />
             </Box>
         );
     }
@@ -87,7 +88,7 @@ const Questionario = () => {
     return (
         <Box sx={{
             display: 'flex', justifyContent: 'center', alignItems: 'center',
-            minHeight: '100vh', bgcolor: '#0a0a0f', p: 2,
+            minHeight: '100vh', bgcolor: 'background.default', p: 2,
         }}>
             <Box sx={{ width: '100%', maxWidth: 640 }}>
                 {/* Header */}
@@ -104,17 +105,17 @@ const Questionario = () => {
                 <LinearProgress
                     variant="determinate"
                     value={progress}
-                    sx={{
+                    sx={(theme) => ({
                         mb: 3, height: 4, borderRadius: 2,
-                        bgcolor: 'rgba(255,255,255,0.08)',
-                        '& .MuiLinearProgress-bar': { bgcolor: '#7C6AF7', borderRadius: 2 },
-                    }}
+                        bgcolor: theme.palette.lines.subtle,
+                        '& .MuiLinearProgress-bar': { bgcolor: 'primary.main', borderRadius: 2 },
+                    })}
                 />
 
                 {/* Question card */}
                 <Card sx={{ mb: 3, p: 1 }}>
                     <CardContent>
-                        <Typography variant="body2" sx={{ color: '#7C6AF7', fontWeight: 600, mb: 1, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.72rem' }}>
+                        <Typography variant="body2" sx={{ color: 'primary.main', fontWeight: 600, mb: 1, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.72rem' }}>
                             Perfil de Investidor
                         </Typography>
                         <Typography variant="h6" fontWeight={600}>
@@ -132,25 +133,25 @@ const Questionario = () => {
                             <Card
                                 key={optIndex}
                                 onClick={() => !submitting && handleAnswer(currentStep, score)}
-                                sx={{
+                                sx={(theme) => ({
                                     cursor: submitting ? 'not-allowed' : 'pointer',
                                     border: selected
-                                        ? '1px solid rgba(124,106,247,0.6)'
-                                        : '1px solid rgba(255,255,255,0.08)',
+                                        ? `1px solid ${alpha(theme.palette.primary.main, 0.6)}`
+                                        : `1px solid ${theme.palette.divider}`,
                                     bgcolor: selected
-                                        ? 'rgba(124,106,247,0.12)'
-                                        : 'rgba(255,255,255,0.02)',
+                                        ? alpha(theme.palette.primary.main, 0.12)
+                                        : 'transparent',
                                     transition: 'all 0.2s',
                                     opacity: submitting ? 0.6 : 1,
                                     '&:hover': !submitting ? {
-                                        border: '1px solid rgba(124,106,247,0.4)',
-                                        bgcolor: 'rgba(124,106,247,0.06)',
+                                        border: `1px solid ${alpha(theme.palette.primary.main, 0.4)}`,
+                                        bgcolor: alpha(theme.palette.primary.main, 0.06),
                                     } : {},
-                                }}
+                                })}
                             >
                                 <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: '14px !important' }}>
                                     <Typography variant="body1">{opt}</Typography>
-                                    {selected && <CheckCircleIcon sx={{ color: '#7C6AF7', fontSize: 20, flexShrink: 0, ml: 1 }} />}
+                                    {selected && <CheckCircleIcon sx={{ color: 'primary.main', fontSize: 20, flexShrink: 0, ml: 1 }} />}
                                 </CardContent>
                             </Card>
                         );

@@ -1,6 +1,8 @@
 import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
+import { ThemeProvider } from '@mui/material/styles'
+import theme from '../../../theme'
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -78,7 +80,7 @@ describe('TutorialOnboarding — RED phase (stub renders null)', () => {
       voltarStep: vi.fn(),
     })
 
-    render(<TutorialOnboarding />)
+    render(<ThemeProvider theme={theme}><TutorialOnboarding /></ThemeProvider>)
 
     // backdrop/overlay não deve existir
     expect(document.querySelector('[data-testid="tutorial-backdrop"]')).toBeNull()
@@ -103,7 +105,7 @@ describe('TutorialOnboarding — RED phase (stub renders null)', () => {
       voltarStep: vi.fn(),
     })
 
-    render(<TutorialOnboarding />)
+    render(<ThemeProvider theme={theme}><TutorialOnboarding /></ThemeProvider>)
 
     // Verifica que o overlay/tooltip está visível quando visible=true
     // Aceita: backdrop legado, dialog, textos, ou o novo tooltip
@@ -132,7 +134,7 @@ describe('TutorialOnboarding — RED phase (stub renders null)', () => {
       voltarStep: vi.fn(),
     })
 
-    render(<TutorialOnboarding />)
+    render(<ThemeProvider theme={theme}><TutorialOnboarding /></ThemeProvider>)
 
     // RED: botão não existe → getByRole lança → teste falha
     const botaoProximo = screen.queryByRole('button', { name: /próximo|proximo/i })
@@ -158,7 +160,7 @@ describe('TutorialOnboarding — RED phase (stub renders null)', () => {
       voltarStep: vi.fn(),
     })
 
-    render(<TutorialOnboarding />)
+    render(<ThemeProvider theme={theme}><TutorialOnboarding /></ThemeProvider>)
 
     // RED: botão não existe → queryByRole retorna null → expect falha
     const botaoComecar = screen.queryByRole('button', { name: /começar|comecar/i })
@@ -183,7 +185,7 @@ describe('TutorialOnboarding — RED phase (stub renders null)', () => {
       voltarStep: vi.fn(),
     })
 
-    render(<TutorialOnboarding />)
+    render(<ThemeProvider theme={theme}><TutorialOnboarding /></ThemeProvider>)
 
     // RED: botão não existe → queryByRole retorna null → expect falha
     const botaoPular = screen.queryByRole('button', { name: /pular/i })
@@ -208,7 +210,7 @@ describe('TutorialOnboarding — RED phase (stub renders null)', () => {
       voltarStep: vi.fn(),
     })
 
-    render(<TutorialOnboarding />)
+    render(<ThemeProvider theme={theme}><TutorialOnboarding /></ThemeProvider>)
 
     // Nenhum backdrop deve existir após conclusão
     expect(document.querySelector('[data-testid="tutorial-backdrop"]')).toBeNull()
@@ -230,7 +232,7 @@ describe('TutorialOnboarding — RED phase (stub renders null)', () => {
       voltarStep: vi.fn(),
     })
 
-    render(<TutorialOnboarding />)
+    render(<ThemeProvider theme={theme}><TutorialOnboarding /></ThemeProvider>)
     expect(screen.queryByRole('button', { name: /voltar/i })).not.toBeInTheDocument()
   })
 
@@ -250,7 +252,7 @@ describe('TutorialOnboarding — RED phase (stub renders null)', () => {
       voltarStep,
     })
 
-    render(<TutorialOnboarding />)
+    render(<ThemeProvider theme={theme}><TutorialOnboarding /></ThemeProvider>)
     const botaoVoltar = screen.getByRole('button', { name: /voltar/i })
     expect(botaoVoltar).toBeInTheDocument()
     fireEvent.click(botaoVoltar)

@@ -9,8 +9,6 @@ export default function KpiCard({ titulo, valor, icone: Icone, cor, subtitulo })
     <Card
       data-testid="kpi-card"
       sx={{
-        background: '#111118',
-        border: '1px solid rgba(255,255,255,0.08)',
         borderRadius: '12px',
         p: 2.5,
         boxShadow: 'none',

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Box, TextField, Button, Paper, Typography, IconButton, Skeleton, Chip, useTheme } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import SendIcon from '@mui/icons-material/Send';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
@@ -248,9 +249,9 @@ const Chat = () => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: '#fff',
+                        color: theme.palette.primary.contrastText,
                         background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-                        boxShadow: '0 4px 16px rgba(124,106,247,0.4)',
+                        boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.4)}`,
                     }}
                 >
                     <SparkIcon size={22} />
@@ -303,7 +304,7 @@ const Chat = () => {
                                     height={56}
                                     width={`${55 + (i * 10)}%`}
                                     sx={{
-                                        bgcolor: 'rgba(255,255,255,0.05)',
+                                        bgcolor: 'action.hover',
                                         borderRadius: i % 2 === 0 ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
                                     }}
                                 />
@@ -335,7 +336,7 @@ const Chat = () => {
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        color: '#fff',
+                                        color: theme.palette.primary.contrastText,
                                         background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
                                     }}
                                 >
@@ -350,7 +351,7 @@ const Chat = () => {
                                     maxWidth: '78%',
                                     border: 'none',
                                     borderRadius: isUser ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                                    color: isUser ? '#fff' : 'text.primary',
+                                    color: isUser ? theme.palette.primary.contrastText : 'text.primary',
                                     background: isUser
                                         ? `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`
                                         : theme.palette.surfaces.raised,
@@ -478,10 +479,10 @@ const Chat = () => {
                         aria-label="Enviar"
                         disabled={loadingResposta}
                         sx={{
-                            color: '#fff',
+                            color: theme.palette.primary.contrastText,
                             background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-                            '&:hover': { boxShadow: '0 0 16px rgba(124,106,247,0.5)' },
-                            '&.Mui-disabled': { color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.08)' },
+                            '&:hover': { boxShadow: `0 0 16px ${alpha(theme.palette.primary.main, 0.5)}` },
+                            '&.Mui-disabled': { color: 'text.disabled', background: theme.palette.action.disabledBackground },
                         }}
                     >
                         <SendIcon fontSize="small" />

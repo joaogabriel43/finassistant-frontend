@@ -32,13 +32,13 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: var(--c-bg, #09100e);
-  color: var(--c-tx, #eff2ed);
+  background-color: var(--c-bg);
+  color: var(--c-tx);
 }
 
 /* Links padrão — herdam o primário do tema ativo. */
-a { font-weight: 500; color: var(--c-pri, #b8d979); text-decoration: inherit; }
-a:hover { color: var(--c-pri-hi, #c9e793); }
+a { font-weight: 500; color: var(--c-pri); text-decoration: inherit; }
+a:hover { color: var(--c-pri-hi); }
 
 h1 { font-size: 3.2em; line-height: 1.1; }
 
@@ -50,18 +50,18 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: var(--c-surface, #101815);
-  color: var(--c-tx, #eff2ed);
+  background-color: var(--c-surface);
+  color: var(--c-tx);
   cursor: pointer;
   transition: border-color 0.25s;
 }
-button:hover { border-color: var(--c-line-strong, rgba(255, 255, 255, 0.15)); }
+button:hover { border-color: var(--c-line-strong); }
 
 /* Foco visível e consistente em todo o app (WCAG 2.2 — 2.4.11/2.4.13). */
 button:focus-visible,
 a:focus-visible,
 [tabindex]:focus-visible {
-  outline: 3px solid var(--c-focus, #b8d979);
+  outline: 3px solid var(--c-focus);
   outline-offset: 3px;
 }
 
