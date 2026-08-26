@@ -4,6 +4,7 @@ import {
   InputLabel, Chip, Button, Collapse, IconButton, Skeleton, Alert,
   FormControlLabel, Switch, Paper, Divider,
 } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
@@ -31,35 +32,40 @@ const anoAtual = new Date().getFullYear();
 const ANOS = [anoAtual - 2, anoAtual - 1, anoAtual];
 
 // Mapa tipo → apresentação (ícone + cor). O tipo vem do backend (ADR-045).
-const TIPO_META = {
-  CONQUISTA:    { icon: EmojiEventsIcon,       cor: '#4caf50', rotulo: 'Conquista' },
-  ALERTA:       { icon: WarningAmberIcon,      cor: '#ef5350', rotulo: 'Alerta' },
-  OPORTUNIDADE: { icon: LightbulbOutlinedIcon, cor: '#FFC107', rotulo: 'Oportunidade' },
-  INVESTIMENTO: { icon: ShowChartIcon,         cor: '#7C6AF7', rotulo: 'Investimento' },
-  TENDENCIA:    { icon: TimelineIcon,          cor: '#29b6f6', rotulo: 'Tendência' },
-  IMPACTO:      { icon: TrendingUpIcon,        cor: '#ff9800', rotulo: 'Impacto' },
-};
+// A cor é SEMÂNTICA (conquista = positivo, alerta = negativo, ...), então sai
+// dos tokens de status do tema — nunca de hex fixo, que não responderia à
+// troca claro/escuro.
+const tipoMeta = (t) => ({
+  CONQUISTA:    { icon: EmojiEventsIcon,       cor: t.palette.success.main,       rotulo: 'Conquista' },
+  ALERTA:       { icon: WarningAmberIcon,      cor: t.palette.error.main,         rotulo: 'Alerta' },
+  OPORTUNIDADE: { icon: LightbulbOutlinedIcon, cor: t.palette.warning.main,       rotulo: 'Oportunidade' },
+  INVESTIMENTO: { icon: ShowChartIcon,         cor: t.palette.primary.main,       rotulo: 'Investimento' },
+  TENDENCIA:    { icon: TimelineIcon,          cor: t.palette.info.main,          rotulo: 'Tendência' },
+  IMPACTO:      { icon: TrendingUpIcon,        cor: t.palette.accent.copperText,  rotulo: 'Impacto' },
+});
 
-const cardStyle = {
-  border: '1px solid rgba(255,255,255,0.08)',
+const cardStyle = (t) => ({
+  border: `1px solid ${t.palette.lines.subtle}`,
   borderRadius: '16px',
   boxShadow: 'none',
-};
+});
 
 // ── Card de um insight, com botão "por quê?" ─────────────────────────────────
 
 const InsightCard = ({ insight, destaque }) => {
   const [aberto, setAberto] = useState(false);
-  const meta = TIPO_META[insight.tipo] || TIPO_META.TENDENCIA;
+  const theme = useTheme();
+  const metas = tipoMeta(theme);
+  const meta = metas[insight.tipo] || metas.TENDENCIA;
   const Icone = meta.icon;
 
   return (
     <Card
-      sx={{
-        ...cardStyle,
-        borderColor: destaque ? `${meta.cor}66` : 'rgba(255,255,255,0.08)',
-        bgcolor: destaque ? `${meta.cor}0d` : 'transparent',
-      }}
+      sx={(t) => ({
+        ...cardStyle(t),
+        borderColor: destaque ? alpha(meta.cor, 0.4) : t.palette.lines.subtle,
+        bgcolor: destaque ? alpha(meta.cor, 0.05) : 'transparent',
+      })}
     >
       <CardContent sx={{ p: 2.5 }}>
         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
@@ -67,7 +73,7 @@ const InsightCard = ({ insight, destaque }) => {
             sx={{
               width: 36, height: 36, borderRadius: 2, flexShrink: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              bgcolor: `${meta.cor}1a`,
+              bgcolor: alpha(meta.cor, 0.1),
             }}
           >
             <Icone sx={{ color: meta.cor, fontSize: 20 }} />
@@ -119,7 +125,7 @@ const InsightCard = ({ insight, destaque }) => {
                   <Box
                     sx={{
                       mt: 1, p: 1.5, borderRadius: 2,
-                      bgcolor: 'rgba(255,255,255,0.04)',
+                      bgcolor: (t) => t.palette.surfaces.surfaceSoft,
                       borderLeft: `3px solid ${meta.cor}`,
                     }}
                   >
@@ -144,8 +150,8 @@ const Disclaimer = ({ texto }) => (
     elevation={0}
     sx={{
       mt: 3, p: 2, borderRadius: 2,
-      border: '1px solid rgba(255,255,255,0.1)',
-      bgcolor: 'rgba(255,255,255,0.03)',
+      border: (t) => `1px solid ${t.palette.lines.subtle}`,
+      bgcolor: (t) => t.palette.surfaces.surfaceSoft,
       display: 'flex', alignItems: 'flex-start', gap: 1.5,
     }}
   >
@@ -159,7 +165,7 @@ const Disclaimer = ({ texto }) => (
 // ── Estado vazio ──────────────────────────────────────────────────────────────
 
 const SemInsights = () => (
-  <Card sx={{ ...cardStyle }}>
+  <Card sx={(t) => ({ ...cardStyle(t) })}>
     <CardContent sx={{ py: 5, textAlign: 'center' }}>
       <AutoAwesomeIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
       <Typography color="text.secondary">
@@ -202,7 +208,7 @@ const ResumoInteligente = () => {
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <AutoAwesomeIcon sx={{ color: '#7C6AF7', fontSize: 28 }} />
+          <AutoAwesomeIcon sx={{ color: 'primary.main', fontSize: 28 }} />
           <Box>
             <Typography variant="h5" fontWeight={700}>
               Resumo Inteligente do Período
@@ -259,7 +265,7 @@ const ResumoInteligente = () => {
               animation="wave"
               variant="rectangular"
               height={90}
-              sx={{ mb: 2, borderRadius: 2, bgcolor: 'rgba(255,255,255,0.05)' }}
+              sx={(t) => ({ mb: 2, borderRadius: 2, bgcolor: t.palette.surfaces.surfaceSoft })}
             />
           ))}
         </Box>
@@ -269,12 +275,13 @@ const ResumoInteligente = () => {
         <>
           {/* Narrativa da IA (modo completo com cota) */}
           {resumo.geradoComIa && resumo.narrativa && (
-            <Card sx={{ ...cardStyle, mb: 3, bgcolor: 'rgba(124,106,247,0.06)',
-                borderColor: 'rgba(124,106,247,0.3)' }}>
+            <Card sx={(t) => ({ ...cardStyle(t), mb: 3,
+                bgcolor: t.palette.accent.primarySoft,
+                borderColor: alpha(t.palette.primary.main, 0.3) })}>
               <CardContent sx={{ p: 2.5 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  <AutoAwesomeIcon sx={{ color: '#7C6AF7', fontSize: 18 }} />
-                  <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#7C6AF7' }}>
+                  <AutoAwesomeIcon sx={{ color: 'primary.main', fontSize: 18 }} />
+                  <Typography variant="subtitle2" fontWeight={700} sx={{ color: 'primary.main' }}>
                     Resumo do mês
                   </Typography>
                 </Box>
@@ -309,7 +316,7 @@ const ResumoInteligente = () => {
               {/* Outros insights */}
               {outros.length > 0 && (
                 <Box>
-                  <Divider sx={{ mb: 2, borderColor: 'rgba(255,255,255,0.08)' }} />
+                  <Divider sx={(t) => ({ mb: 2, borderColor: t.palette.lines.subtle })} />
                   <Typography
                     variant="overline"
                     sx={{ color: 'text.secondary', fontWeight: 700, letterSpacing: 1 }}

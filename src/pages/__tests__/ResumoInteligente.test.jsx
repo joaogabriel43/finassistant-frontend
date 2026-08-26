@@ -1,7 +1,9 @@
 import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
+import { ThemeProvider } from '@mui/material/styles'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
+import theme from '../../theme'
 import ResumoInteligente from '../ResumoInteligente'
 import useResumoInteligente from '../../hooks/useResumoInteligente'
 
@@ -34,11 +36,15 @@ const mockHook = (over = {}) =>
     resumo: baseResumo, loading: false, error: null, gerar: gerarMock, ...over,
   })
 
+// A pagina le tokens customizados do tema (palette.lines / palette.surfaces),
+// entao precisa do ThemeProvider no teste — regra do design system.
 const renderPage = () =>
   render(
-    <MemoryRouter initialEntries={['/resumo']}>
-      <ResumoInteligente />
-    </MemoryRouter>
+    <ThemeProvider theme={theme}>
+      <MemoryRouter initialEntries={['/resumo']}>
+        <ResumoInteligente />
+      </MemoryRouter>
+    </ThemeProvider>
   )
 
 // O MUI Switch renderiza um <input type="checkbox"> — pega direto pelo type
