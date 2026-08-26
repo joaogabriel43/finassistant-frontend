@@ -33,7 +33,9 @@ const COR_POR_TIPO = {
   FUNDO_EMERGENCIA:       '#F59E0B',
   SCORE_SAUDE_BAIXO:      '#EF4444',
   REGRA_50_30_20:         '#3B82F6',
-  DIVERSIFICACAO_PORTFOLIO: '#7C3AED',
+  // Era o roxo da paleta antiga (#7C3AED). Aponta para o token de marca do
+  // tema — o mapa aqui so enumera os TipoInsight, nao e asserido como cor.
+  DIVERSIFICACAO_PORTFOLIO: theme.palette.primary.main,
   CONSISTENCIA_APORTES:   '#10B981',
   MAIOR_CATEGORIA_GASTO:  '#6B7280',
 }
