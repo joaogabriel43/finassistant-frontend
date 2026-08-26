@@ -28,7 +28,7 @@ export default function Donut({
   size = 160,
   thickness = 20,
   gap = 4,
-  bg = 'rgba(255,255,255,0.05)',
+  bg = 'var(--c-line)',
   animate = true,
   children,
 }) {
