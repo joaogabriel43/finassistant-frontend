@@ -45,7 +45,7 @@ const PWAInstallBanner = () => {
       })}>
         <PhoneAndroidIcon sx={{ color: 'primary.main', fontSize: 22, flexShrink: 0 }} />
         <Typography variant="body2" sx={{ color: 'text.primary', flex: 1 }}>
-          Instale o FortunAI no seu celular
+          Instale o Pondero no seu celular
         </Typography>
         <Button
           size="small"

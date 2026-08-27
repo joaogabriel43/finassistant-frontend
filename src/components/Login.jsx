@@ -81,7 +81,7 @@ const Login = () => {
         }}
       >
         <Typography variant="h5" fontWeight={700} sx={{ color: 'primary.main', mb: 0.5, textAlign: 'center' }}>
-          FortunAI
+          Pondero
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', mb: 3 }}>
           Entre na sua conta para continuar

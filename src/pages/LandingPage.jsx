@@ -52,7 +52,7 @@ const PASSOS = [
 ];
 
 const FAQ = [
-    { p: 'O FortunAI é gratuito?', r: 'Sim — o plano gratuito cobre o essencial do orçamento e dos investimentos. Recursos avançados (como a apuração de IR e análises exclusivas) fazem parte do plano Premium.' },
+    { p: 'O Pondero é gratuito?', r: 'Sim — o plano gratuito cobre o essencial do orçamento e dos investimentos. Recursos avançados (como a apuração de IR e análises exclusivas) fazem parte do plano Premium.' },
     { p: 'Preciso informar dados do meu banco ou cartão?', r: 'Não. Você lança pelo chat, importa extratos CSV/OFX ou escaneia notas fiscais. Os cartões do orçamento são 100% virtuais — nunca pedimos número real, CVV ou validade.' },
     { p: 'Meus dados estão seguros?', r: 'Senhas com bcrypt, sessão com tokens rotativos de curta duração, consentimento LGPD explícito e exclusão total da conta quando você quiser.' },
     { p: 'A IA toma decisões pelo meu dinheiro?', r: 'Nunca. A IA interpreta o que você escreve; todos os números e análises são calculados de forma determinística pelo sistema — e nada aqui é recomendação de investimento.' },
@@ -99,8 +99,8 @@ const LandingPage = () => {
     const theme = useTheme();
 
     useEffect(() => {
-        document.title = 'FortunAI — Assistente financeiro com IA';
-        return () => { document.title = 'FortunAI'; };
+        document.title = 'Pondero — Assistente financeiro com IA';
+        return () => { document.title = 'Pondero'; };
     }, []);
 
     const irPara = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -119,7 +119,7 @@ const LandingPage = () => {
                 <Container maxWidth="lg">
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1.5 }}>
                         <Typography variant="h6" fontWeight={700} sx={{ color: 'primary.main', letterSpacing: '-0.5px' }}>
-                            FortunAI
+                            Pondero
                         </Typography>
                         <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2.5 }}>
                             {ANCORAS.map((a) => (
@@ -335,25 +335,25 @@ const LandingPage = () => {
                 <Container maxWidth="lg">
                     <Grid container spacing={4} sx={{ py: 5 }}>
                         <Grid size={{ xs: 12, md: 4 }}>
-                            <Typography variant="h6" fontWeight={700} sx={{ color: 'primary.main', mb: 1 }}>FortunAI</Typography>
+                            <Typography variant="h6" fontWeight={700} sx={{ color: 'primary.main', mb: 1 }}>Pondero</Typography>
                             <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
                                 Assistente financeiro pessoal com inteligência artificial —
                                 orçamento, investimentos e IR em um só lugar.
                             </Typography>
                             <Box sx={{ display: 'flex', gap: 0.5 }}>
-                                <IconButton size="small" aria-label="GitHub do FortunAI"
+                                <IconButton size="small" aria-label="GitHub do Pondero"
                                     component="a" href="https://github.com/joaogabriel43" target="_blank" rel="noopener noreferrer">
                                     <GitHubIcon fontSize="small" />
                                 </IconButton>
-                                <IconButton size="small" aria-label="LinkedIn do FortunAI"
+                                <IconButton size="small" aria-label="LinkedIn do Pondero"
                                     component="a" href="#" rel="noopener noreferrer">
                                     <LinkedInIcon fontSize="small" />
                                 </IconButton>
-                                <IconButton size="small" aria-label="Instagram do FortunAI"
+                                <IconButton size="small" aria-label="Instagram do Pondero"
                                     component="a" href="#" rel="noopener noreferrer">
                                     <InstagramIcon fontSize="small" />
                                 </IconButton>
-                                <IconButton size="small" aria-label="X (Twitter) do FortunAI"
+                                <IconButton size="small" aria-label="X (Twitter) do Pondero"
                                     component="a" href="#" rel="noopener noreferrer">
                                     <XIcon fontSize="small" />
                                 </IconButton>
@@ -386,10 +386,10 @@ const LandingPage = () => {
                     <Divider />
                     <Box sx={{ py: 2.5, display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'space-between' }}>
                         <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                            © 2026 FortunAI — Assistente Financeiro. Todos os direitos reservados.
+                            © 2026 Pondero — Assistente Financeiro. Todos os direitos reservados.
                         </Typography>
                         <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                            Feito no Brasil 🇧🇷 • As análises do FortunAI não são recomendação de investimento.
+                            Feito no Brasil 🇧🇷 • As análises do Pondero não são recomendação de investimento.
                         </Typography>
                     </Box>
                 </Container>
