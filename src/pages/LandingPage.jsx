@@ -17,9 +17,6 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import CreditCardOffOutlinedIcon from '@mui/icons-material/CreditCardOffOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import GitHubIcon from '@mui/icons-material/GitHub';
-import LinkedInIcon from '@mui/icons-material/LinkedIn';
-import InstagramIcon from '@mui/icons-material/Instagram';
-import XIcon from '@mui/icons-material/X';
 import useInView from '../components/landing/useInView';
 
 /**
@@ -346,18 +343,6 @@ const LandingPage = () => {
                                 <IconButton size="small" aria-label="GitHub do FortunAI"
                                     component="a" href="https://github.com/joaogabriel43/fortunai-frontend" target="_blank" rel="noopener noreferrer">
                                     <GitHubIcon fontSize="small" />
-                                </IconButton>
-                                <IconButton size="small" aria-label="LinkedIn do FortunAI"
-                                    component="a" href="#" rel="noopener noreferrer">
-                                    <LinkedInIcon fontSize="small" />
-                                </IconButton>
-                                <IconButton size="small" aria-label="Instagram do FortunAI"
-                                    component="a" href="#" rel="noopener noreferrer">
-                                    <InstagramIcon fontSize="small" />
-                                </IconButton>
-                                <IconButton size="small" aria-label="X (Twitter) do FortunAI"
-                                    component="a" href="#" rel="noopener noreferrer">
-                                    <XIcon fontSize="small" />
                                 </IconButton>
                             </Box>
                         </Grid>
