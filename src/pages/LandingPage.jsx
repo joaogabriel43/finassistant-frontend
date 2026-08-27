@@ -344,7 +344,7 @@ const LandingPage = () => {
                             </Typography>
                             <Box sx={{ display: 'flex', gap: 0.5 }}>
                                 <IconButton size="small" aria-label="GitHub do FortunAI"
-                                    component="a" href="https://github.com/joaogabriel43" target="_blank" rel="noopener noreferrer">
+                                    component="a" href="https://github.com/joaogabriel43/fortunai-frontend" target="_blank" rel="noopener noreferrer">
                                     <GitHubIcon fontSize="small" />
                                 </IconButton>
                                 <IconButton size="small" aria-label="LinkedIn do FortunAI"
