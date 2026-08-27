@@ -28,9 +28,9 @@ import PublicHeader from '../components/public/PublicHeader';
  */
 
 const FEATURES = [
-    { icon: SmartToyOutlinedIcon, titulo: 'Assistente com IA', texto: 'Registre gastos e consulte investimentos conversando: "gastei R$ 50 no mercado" vira lançamento na hora.' },
+    { icon: SmartToyOutlinedIcon, titulo: 'Organização assistida', texto: 'Registre gastos em linguagem natural e mantenha seu orçamento atualizado sem interromper sua rotina.' },
     { icon: AccountBalanceWalletOutlinedIcon, titulo: 'Orçamento inteligente', texto: 'Limites por categoria com projeção de estouro, calendário de gastos, cartões virtuais e assinaturas detectadas automaticamente.' },
-    { icon: ShowChartIcon, titulo: 'Investimentos e risco', texto: 'Carteira consolidada, estratégia por setores, correlação, fronteira eficiente e preço-teto por Bazin e Graham.' },
+    { icon: ShowChartIcon, titulo: 'Carteira e análises', texto: 'Acompanhe carteira, setores, correlação, simulações de alocação e metodologias de preço-teto em uma visão organizada.' },
     { icon: ReceiptLongOutlinedIcon, titulo: 'IR da bolsa sem susto', texto: 'Apuração mensal com isenção de R$ 20 mil, compensação de prejuízos, DARF pronto e relatório anual para a declaração.' },
     { icon: QrCodeScannerIcon, titulo: 'Scanner de notas fiscais', texto: 'Aponte para o QR Code da NF-e e os itens entram categorizados no seu orçamento.' },
     { icon: GroupOutlinedIcon, titulo: 'Orçamento a dois', texto: 'Compartilhe as finanças com quem divide a vida com você — visão unificada, contas separadas.' },
@@ -44,16 +44,16 @@ const STATS = [
 ];
 
 const PASSOS = [
-    { n: '1', titulo: 'Crie sua conta grátis', texto: 'Sem cartão de crédito, sem burocracia.' },
-    { n: '2', titulo: 'Conecte sua rotina', texto: 'Lance pelo chat, importe extratos ou escaneie notas.' },
-    { n: '3', titulo: 'Decida com clareza', texto: 'Dashboards, alertas e análises trabalham por você.' },
+    { n: '1', titulo: 'Organize sua base', texto: 'Crie sua conta e defina como quer acompanhar sua vida financeira.' },
+    { n: '2', titulo: 'Centralize sua rotina', texto: 'Registre gastos, importe extratos e acompanhe investimentos em um só lugar.' },
+    { n: '3', titulo: 'Decida com clareza', texto: 'Dashboards, análises e simulações ajudam você a entender cenários e próximos passos.' },
 ];
 
 const FAQ = [
     { p: 'O Pondero é gratuito?', r: 'Sim — o plano gratuito cobre o essencial do orçamento e dos investimentos. Recursos avançados (como a apuração de IR e análises exclusivas) fazem parte do plano Premium.' },
     { p: 'Preciso informar dados do meu banco ou cartão?', r: 'Não. Você lança pelo chat, importa extratos CSV/OFX ou escaneia notas fiscais. Os cartões do orçamento são 100% virtuais — nunca pedimos número real, CVV ou validade.' },
     { p: 'Meus dados estão seguros?', r: 'Senhas com bcrypt, sessão com tokens rotativos de curta duração, consentimento LGPD explícito e exclusão total da conta quando você quiser.' },
-    { p: 'A IA toma decisões pelo meu dinheiro?', r: 'Nunca. A IA interpreta o que você escreve; todos os números e análises são calculados de forma determinística pelo sistema — e nada aqui é recomendação de investimento.' },
+    { p: 'Como a IA participa da experiência?', r: 'A IA ajuda a interpretar registros em linguagem natural e a organizar informações. Análises, simulações e cálculos financeiros seguem regras determinísticas do sistema, mantendo você no controle das decisões.' },
 ];
 
 const ANCORAS = [
@@ -97,7 +97,7 @@ const LandingPage = () => {
     const theme = useTheme();
 
     useEffect(() => {
-        document.title = 'Pondero — Assistente financeiro com IA';
+        document.title = 'Pondero — Clareza para organizar suas finanças';
         return () => { document.title = 'Pondero'; };
     }, []);
 
@@ -121,14 +121,14 @@ const LandingPage = () => {
                     <Grid container spacing={6} alignItems="center" sx={{ py: { xs: 6, md: 10 } }}>
                         <Grid size={{ xs: 12, md: 6 }}>
                             <Reveal>
-                                <Chip label="Orçamento + investimentos + IA em um só lugar" size="small"
+                                <Chip label="Orçamento e investimentos em uma visão integrada" size="small"
                                     sx={{ mb: 2, bgcolor: alpha(theme.palette.primary.main, 0.15), color: 'primary.main', fontWeight: 600 }} />
                                 <Typography component="h1" variant="h3" fontWeight={800} sx={{ letterSpacing: '-1px', mb: 2 }}>
-                                    Suas finanças, guiadas por inteligência artificial
+                                    Clareza para organizar suas finanças e planejar o futuro
                                 </Typography>
                                 <Typography variant="h6" sx={{ color: 'text.secondary', fontWeight: 400, mb: 3 }}>
-                                    Controle gastos, acompanhe investimentos e apure seu IR da bolsa —
-                                    conversando com um assistente que entende você.
+                                    Acompanhe orçamento, investimentos e IR em uma visão integrada —
+                                    com análises, insights e simulações para entender melhor suas escolhas.
                                 </Typography>
                                 <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
                                     <Button component={RouterLink} to="/registrar" variant="contained" size="large"
@@ -173,10 +173,10 @@ const LandingPage = () => {
                     <Reveal>
                         <Typography id="landing-features-titulo" component="h2" variant="h4" fontWeight={700}
                             sx={{ textAlign: 'center', mb: 1 }}>
-                            Tudo o que os apps de finanças fazem. E o que eles não fazem.
+                            Orçamento e investimentos conectados à sua rotina
                         </Typography>
                         <Typography variant="body1" sx={{ textAlign: 'center', color: 'text.secondary', mb: 5 }}>
-                            Do lançamento por chat à fronteira eficiente de Markowitz.
+                            Da organização dos gastos às análises da carteira, tudo em uma visão integrada.
                         </Typography>
                     </Reveal>
                     <Grid container spacing={3}>
@@ -306,8 +306,8 @@ const LandingPage = () => {
                         <Grid size={{ xs: 12, md: 4 }}>
                             <Typography variant="h6" fontWeight={700} sx={{ color: 'primary.main', mb: 1 }}>Pondero</Typography>
                             <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
-                                Assistente financeiro pessoal com inteligência artificial —
-                                orçamento, investimentos e IR em um só lugar.
+                                Plataforma de organização financeira que integra orçamento,
+                                investimentos e IR em um só lugar.
                             </Typography>
                             <Box sx={{ display: 'flex', gap: 0.5 }}>
                                 <IconButton size="small" aria-label="GitHub do Pondero"
@@ -343,10 +343,10 @@ const LandingPage = () => {
                     <Divider />
                     <Box sx={{ py: 2.5, display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'space-between' }}>
                         <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                            © 2026 Pondero — Assistente Financeiro. Todos os direitos reservados.
+                            © 2026 Pondero — Organização Financeira. Todos os direitos reservados.
                         </Typography>
                         <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                            Feito no Brasil 🇧🇷 • As análises do Pondero não são recomendação de investimento.
+                            Feito no Brasil 🇧🇷 • Análises e simulações para apoiar decisões mais conscientes.
                         </Typography>
                     </Box>
                 </Container>

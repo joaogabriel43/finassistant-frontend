@@ -11,9 +11,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
-        name: 'FortunAI — Assistente Financeiro',
-        short_name: 'FortunAI',
-        description: 'Gerencie suas finanças com inteligência artificial',
+        name: 'Pondero — Organização Financeira',
+        short_name: 'Pondero',
+        description: 'Organize orçamento, investimentos e IR em uma visão integrada',
         theme_color: '#09100E',
         background_color: '#09100E',
         display: 'standalone',
