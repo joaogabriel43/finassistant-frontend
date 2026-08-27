@@ -1,16 +1,20 @@
-# Política de Privacidade — FortunAI
+# Política de Privacidade — Pondero
 
-**Versão 1.0 — Vigente a partir de junho de 2026**
+> **RASCUNHO — pendente de revisão jurídica antes de publicação final.**
 
-Em conformidade com a **Lei Geral de Proteção de Dados (LGPD — Lei 13.709/2018**.
+**Versão 1.0 — Rascunho para revisão jurídica**
+
+Em conformidade com a **Lei Geral de Proteção de Dados (LGPD — Lei 13.709/2018)**.
 
 ---
 
 ## 1. Responsável pelo Tratamento
 
-**FortunAI** é o controlador dos dados pessoais coletados através desta plataforma.
+**João Gabriel Borba do Nascimento** é o controlador dos dados pessoais coletados por meio desta plataforma e a pessoa física responsável por sua operação.
 
-Contato do DPO: privacidade@fortunai.app
+**Pondero** é a marca utilizada para identificar a plataforma e não corresponde, atualmente, a uma pessoa jurídica. A operação é realizada pelo controlador acima identificado, sem CNPJ neste momento.
+
+Canal de privacidade: privacidade@pondero.com.br
 
 ## 2. Dados Coletados
 
@@ -60,7 +64,7 @@ Você tem direito a:
 - **Portabilidade**: exportar seus dados em formato estruturado
 - **Revogação de consentimento**: a qualquer momento, sem prejuízo
 
-Para exercer seus direitos: privacidade@fortunai.app
+Para exercer seus direitos, utilize o canal de privacidade: privacidade@pondero.com.br
 
 ## 6. Segurança
 
@@ -78,22 +82,25 @@ Adotamos medidas técnicas para proteção dos dados:
 
 ## 8. Cookies e Rastreamento
 
-O FortunAI não utiliza cookies de rastreamento ou publicidade. Apenas armazenamento local (localStorage) para sessão de autenticação.
+A Pondero não utiliza cookies de rastreamento ou publicidade. Apenas armazenamento local (localStorage) para sessão de autenticação.
 
 ## 9. Menores de Idade
 
-O FortunAI não é destinado a menores de 18 anos. Não coletamos intencionalmente dados de menores.
+A Pondero não é destinada a menores de 18 anos. Não coletamos intencionalmente dados de menores.
 
 ## 10. Alterações nesta Política
 
 Alterações relevantes serão comunicadas por e-mail e/ou exigirão novo consentimento no acesso.
 
-## 11. Contato e DPO
+## 11. Contato
 
 Para questões de privacidade e exercício de direitos LGPD:
-- **E-mail**: privacidade@fortunai.app
+- **Canal de privacidade**: privacidade@pondero.com.br
 - **Assunto**: [LGPD] — sua solicitação
+
+Para comunicações gerais sobre a plataforma:
+- **E-mail**: contato@pondero.com.br
 
 ---
 
-*Última atualização: junho de 2026 — Versão 1.0*
+*Última atualização: agosto de 2026 — Versão 1.0 — Rascunho*

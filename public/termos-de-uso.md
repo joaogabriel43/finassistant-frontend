@@ -1,16 +1,20 @@
-# Termos de Uso — FortunAI
+# Termos de Uso — Pondero
 
-**Versão 1.0 — Vigente a partir de junho de 2026**
+> **RASCUNHO — pendente de revisão jurídica antes de publicação final.**
+
+**Versão 1.0 — Rascunho para revisão jurídica**
 
 ---
 
-## 1. Sobre o FortunAI
+## 1. Sobre a Pondero
 
-O FortunAI é um assistente financeiro pessoal que auxilia no gerenciamento de orçamento, investimentos e planejamento financeiro. O serviço é fornecido pela equipe FortunAI exclusivamente como ferramenta informativa e educacional.
+A Pondero é uma plataforma de organização financeira que auxilia no gerenciamento de orçamento, investimentos e planejamento financeiro. O serviço é disponibilizado exclusivamente como ferramenta informativa e educacional.
+
+**Pondero** é a marca utilizada para identificar a plataforma e não corresponde, atualmente, a uma pessoa jurídica. A operação é realizada por **João Gabriel Borba do Nascimento**, pessoa física responsável pela plataforma, sem CNPJ neste momento.
 
 ## 2. Aceitação dos Termos
 
-Ao criar uma conta ou utilizar o FortunAI, você concorda com estes Termos de Uso. Caso não concorde, não utilize o serviço.
+Ao criar uma conta ou utilizar a Pondero, você concorda com estes Termos de Uso. Caso não concorde, não utilize o serviço.
 
 ## 3. Uso do Serviço
 
@@ -20,7 +24,7 @@ Ao criar uma conta ou utilizar o FortunAI, você concorda com estes Termos de Us
 - Você deve fornecer informações verdadeiras no cadastro
 
 ### 3.2 Uso Permitido
-O FortunAI pode ser usado para:
+A Pondero pode ser usada para:
 - Registrar e categorizar receitas e despesas
 - Acompanhar investimentos e portfólio
 - Planejar metas financeiras
@@ -35,11 +39,11 @@ O FortunAI pode ser usado para:
 
 ## 4. Conteúdo Informativo
 
-As análises, insights e cálculos do FortunAI são **apenas informativos e educacionais**. Eles não constituem consultoria financeira, tributária ou de investimentos. Sempre consulte um profissional qualificado para decisões financeiras importantes.
+As análises, insights e cálculos da Pondero são **apenas informativos e educacionais**. Eles não constituem consultoria financeira, tributária ou de investimentos. Sempre consulte um profissional qualificado para decisões financeiras importantes.
 
 ## 5. Privacidade e Dados
 
-O tratamento dos seus dados pessoais está descrito na **Política de Privacidade**, disponível em [/privacidade](/privacidade). Ao usar o FortunAI, você consente com o tratamento descrito nesse documento.
+O tratamento dos seus dados pessoais está descrito na **Política de Privacidade**, disponível em [/privacidade](/privacidade). Ao usar a Pondero, você consente com o tratamento descrito nesse documento.
 
 ## 6. Encerramento de Conta
 
@@ -47,7 +51,7 @@ Você pode excluir sua conta a qualquer momento nas Configurações. A exclusão
 
 ## 7. Disponibilidade
 
-O FortunAI pode sofrer interrupções para manutenção ou por razões técnicas. Não garantimos disponibilidade ininterrupta.
+A Pondero pode sofrer interrupções para manutenção ou por razões técnicas. Não garantimos disponibilidade ininterrupta.
 
 ## 8. Modificações
 
@@ -55,12 +59,14 @@ Reservamos o direito de modificar estes Termos. Alterações significativas ser�
 
 ## 9. Limitação de Responsabilidade
 
-O FortunAI não se responsabiliza por decisões financeiras tomadas com base nas análises fornecidas pelo sistema.
+A Pondero não se responsabiliza por decisões financeiras tomadas com base nas análises fornecidas pelo sistema.
 
 ## 10. Contato
 
-Dúvidas sobre estes Termos: contato@fortunai.app
+Dúvidas e comunicações gerais sobre estes Termos: contato@pondero.com.br
+
+Questões sobre privacidade e exercício de direitos devem ser encaminhadas ao **canal de privacidade**: privacidade@pondero.com.br
 
 ---
 
-*Última atualização: junho de 2026 — Versão 1.0*
+*Última atualização: agosto de 2026 — Versão 1.0 — Rascunho*
