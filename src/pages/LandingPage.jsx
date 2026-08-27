@@ -38,7 +38,7 @@ const FEATURES = [
 
 const STATS = [
     { numero: '35+', rotulo: 'ferramentas de orçamento, investimento e IR' },
-    { numero: '960+', rotulo: 'testes automatizados garantindo cada cálculo' },
+    { numero: 'Acesso antecipado', rotulo: 'Pondero está em desenvolvimento' },
     { numero: '100%', rotulo: 'em conformidade com a LGPD, por design' },
     { numero: 'R$ 0', rotulo: 'para começar — sem cartão de crédito' },
 ];

@@ -32,6 +32,14 @@ describe('LandingPage — página pública de apresentação (ADR-039)', () => {
         expect(screen.queryByText(/recomendação de investimento/i)).not.toBeInTheDocument()
     })
 
+    it('apresenta o estágio real do produto sem usar contagem técnica como prova social', () => {
+        renderLanding()
+
+        expect(screen.queryByText(/960\+/i)).not.toBeInTheDocument()
+        expect(screen.queryByText(/testes automatizados/i)).not.toBeInTheDocument()
+        expect(screen.getByText('Pondero está em desenvolvimento')).toBeInTheDocument()
+    })
+
     it('usa o header público compartilhado mantendo a navegação da landing', () => {
         renderLanding()
 
