@@ -59,7 +59,7 @@ const StatusPage = () => {
               Status dos Servicos
             </Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
-              FortunAI - Monitoramento em tempo real
+              Pondero - Monitoramento em tempo real
             </Typography>
           </Box>
           <IconButton onClick={refetch} disabled={loading} data-testid="refresh-btn" sx={{ color: 'primary.main' }}>
@@ -97,7 +97,7 @@ const StatusPage = () => {
           </Typography>
         )}
 
-        {/* Metricas customizadas do FortunAI */}
+        {/* Metricas customizadas do Pondero */}
         <Typography variant="h6" fontWeight={600} sx={{ color: 'text.primary', mb: 2, mt: 2 }}>
           Metricas da Aplicacao
         </Typography>

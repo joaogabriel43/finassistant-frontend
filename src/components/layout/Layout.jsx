@@ -143,7 +143,7 @@ const Layout = () => {
             })}
           >
             <Typography variant="caption" color="text.disabled" sx={{ fontSize: 11 }}>
-              © 2026 FortunAI
+              © 2026 Pondero
             </Typography>
             <Typography variant="caption" color="text.disabled" sx={{ fontSize: 11 }}>·</Typography>
             <Typography

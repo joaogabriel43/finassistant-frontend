@@ -13,7 +13,7 @@ import { logErroSeguro } from '../utils/apiErrorUtils';
 import UploadComprovanteModal from './comprovantes/UploadComprovanteModal';
 import PremiumBanner from './plano/PremiumBanner';
 
-const MENSAGEM_BEM_VINDO = { text: 'Olá! Eu sou o Fortunai. Como posso te ajudar hoje?', sender: 'bot' };
+const MENSAGEM_BEM_VINDO = { text: 'Olá! Eu sou o Pondero. Como posso te ajudar hoje?', sender: 'bot' };
 
 // Sugestões iniciais — mapeiam para intents reais do ChatService.
 const SUGESTOES = [
@@ -258,7 +258,7 @@ const Chat = () => {
                 </Box>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Typography variant="h6" fontWeight={700} sx={{ lineHeight: 1.1 }}>
-                        Fortunai
+                        Pondero
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                         <Box

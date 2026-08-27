@@ -68,7 +68,7 @@ const ConsentimentoModal = ({ open, onAceitar }) => {
       <DialogContent>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2, lineHeight: 1.7 }}>
           Atualizamos nossos <strong>Termos de Uso</strong> e{' '}
-          <strong>Política de Privacidade</strong>. Para continuar usando o FortunAI, leia e
+          <strong>Política de Privacidade</strong>. Para continuar usando o Pondero, leia e
           aceite os documentos atualizados.
         </Typography>
 

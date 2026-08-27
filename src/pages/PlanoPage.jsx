@@ -161,7 +161,7 @@ const PlanoPage = () => {
               startIcon={<StarIcon />}
               onClick={() => {
                 if (!isPremium) {
-                  window.location.href = 'mailto:contato@fortunai.app?subject=Upgrade Premium FortunAI'
+                  window.location.href = 'mailto:contato@fortunai.app?subject=Upgrade Premium Pondero'
                 }
               }}
               sx={{

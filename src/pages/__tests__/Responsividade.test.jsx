@@ -46,7 +46,7 @@ describe('Responsividade — Layout e Sidebar', () => {
   it('Avatar do usuário não divide a linha da logo na sidebar', () => {
     renderLayout()
     const sidebar = screen.getAllByTestId('sidebar')[0]
-    const logo = within(sidebar).getByTestId('logo-fortunai')
+    const logo = within(sidebar).getByTestId('logo-pondero')
     const avatar = within(sidebar).getAllByTestId('user-menu')[0]
     expect(sidebar).toContainElement(avatar)
     expect(logo.parentElement).not.toContainElement(avatar)

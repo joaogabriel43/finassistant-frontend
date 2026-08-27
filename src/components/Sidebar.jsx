@@ -43,7 +43,7 @@ const Sidebar = () => {
            numa faixa util de 180px — o excedente era engolido pelo
            `overflow: hidden` do drawer e o AVATAR (ultimo da fila) sumia
            cortado. Cada bloco agora tem a largura inteira para si.
-           Linha 1: [FortunAI]
+           Linha 1: [Pondero]
            Linha 2: [Assistente Financeiro] [Free/Premium]
            Linha 3: [tema] [🔔] [J]  — alinhados à direita          */}
       <Box
@@ -63,7 +63,7 @@ const Sidebar = () => {
             to="/dashboard"
             variant="h6"
             fontWeight={700}
-            data-testid="logo-fortunai"
+            data-testid="logo-pondero"
             sx={{
               display: 'flex',
               alignItems: 'center',
@@ -99,7 +99,7 @@ const Sidebar = () => {
                 '&::after': { top: '15px', width: '14px', transform: 'rotate(-24deg)' },
               }}
             />
-            FortunAI
+            Pondero
           </Typography>
         </Box>
 
