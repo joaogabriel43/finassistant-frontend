@@ -78,7 +78,7 @@ Adotamos medidas técnicas para proteção dos dados:
 
 - Dados de conta: mantidos enquanto a conta existir
 - Após exclusão da conta: removidos imediatamente via DELETE CASCADE
-- Logs de acesso: até 90 dias
+- Logs de acesso: retidos conforme a política padrão da infraestrutura de hospedagem, sem prazo fixo definido no código da aplicação.
 
 ## 8. Cookies e Rastreamento
 
