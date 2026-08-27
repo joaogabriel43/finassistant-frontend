@@ -18,6 +18,7 @@ import CreditCardOffOutlinedIcon from '@mui/icons-material/CreditCardOffOutlined
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import useInView from '../components/landing/useInView';
+import PublicHeader from '../components/public/PublicHeader';
 
 /**
  * Landing page pública v2 (ADR-039/ADR-042): scroll próprio (o app confina o
@@ -107,36 +108,7 @@ const LandingPage = () => {
             height: '100vh', overflowY: 'auto', overflowX: 'hidden',
             bgcolor: 'background.default', color: 'text.primary', scrollBehavior: 'smooth',
         }}>
-            {/* Header sticky translúcido */}
-            <Box component="header" sx={{
-                position: 'sticky', top: 0, zIndex: 10,
-                backdropFilter: 'blur(12px)', bgcolor: alpha(theme.palette.background.default, 0.75),
-                borderBottom: `1px solid ${theme.palette.divider}`,
-            }}>
-                <Container maxWidth="lg">
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1.5 }}>
-                        <Typography variant="h6" fontWeight={700} sx={{ color: 'primary.main', letterSpacing: '-0.5px' }}>
-                            Pondero
-                        </Typography>
-                        <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2.5 }}>
-                            {ANCORAS.map((a) => (
-                                <Button key={a.id} size="small" variant="text" color="inherit"
-                                    onClick={() => irPara(a.id)} sx={{ color: 'text.secondary' }}>
-                                    {a.label}
-                                </Button>
-                            ))}
-                        </Box>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                            <Button component={RouterLink} to="/login" variant="text" data-testid="landing-btn-entrar">
-                                Entrar
-                            </Button>
-                            <Button component={RouterLink} to="/registrar" variant="contained" data-testid="landing-btn-criar-conta">
-                                Criar conta grátis
-                            </Button>
-                        </Box>
-                    </Box>
-                </Container>
-            </Box>
+            <PublicHeader anchors={ANCORAS} onNavigateSection={irPara} />
 
             <Container maxWidth="lg" component="main">
                 {/* Hero com glow */}

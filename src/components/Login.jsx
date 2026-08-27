@@ -3,7 +3,7 @@ import { Box, Paper, Typography, TextField, Button, Alert, Link } from '@mui/mat
 import { useAuth } from '../contexts/AuthContext';
 import { logErroSeguro } from '../utils/apiErrorUtils';
 import PasswordField from './PasswordField';
-import ThemeToggle from './layout/ThemeToggle';
+import AuthPageLayout from './public/AuthPageLayout';
 
 const inputSx = (theme) => ({
   '& .MuiOutlinedInput-root': {
@@ -56,18 +56,7 @@ const Login = () => {
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        bgcolor: 'background.default',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <Box sx={{ position: 'fixed', top: 16, right: 16 }}>
-        <ThemeToggle />
-      </Box>
+    <AuthPageLayout>
       <Paper
         sx={{
           p: 4,
@@ -142,7 +131,7 @@ const Login = () => {
           </Typography>
         </Box>
       </Paper>
-    </Box>
+    </AuthPageLayout>
   );
 };
 

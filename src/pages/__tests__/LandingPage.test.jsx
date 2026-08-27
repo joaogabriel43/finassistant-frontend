@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { ThemeProvider } from '@mui/material/styles'
@@ -20,6 +20,15 @@ const renderLanding = () =>
     )
 
 describe('LandingPage — página pública de apresentação (ADR-039)', () => {
+    it('usa o header público compartilhado mantendo a navegação da landing', () => {
+        renderLanding()
+
+        const header = screen.getByTestId('public-header')
+        expect(header).toBeInTheDocument()
+        expect(within(header).getByRole('link', { name: 'Pondero' })).toHaveAttribute('href', '/')
+        expect(within(header).getByRole('button', { name: 'Recursos' })).toBeInTheDocument()
+    })
+
     it('renderiza headline, CTAs de cadastro/login e footer legal', () => {
         renderLanding()
         expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/finanças/i)

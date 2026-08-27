@@ -9,6 +9,7 @@ import api from '../services/api';
 import { regrasSenha, senhaValida } from '../utils/senhaPolicy';
 import { extrairMensagemErroApi } from '../utils/apiErrorUtils';
 import PasswordField from '../components/PasswordField';
+import AuthPageLayout from '../components/public/AuthPageLayout';
 
 const VERSAO_TERMOS = '1.0';
 const VERSAO_PRIVACIDADE = '1.0';
@@ -77,15 +78,7 @@ const Registro = () => {
     });
 
     return (
-        <Box
-            sx={{
-                minHeight: '100vh',
-                bgcolor: 'background.default',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-            }}
-        >
+        <AuthPageLayout>
             <Paper
                 sx={{
                     p: 4,
@@ -235,7 +228,7 @@ const Registro = () => {
                     </Typography>
                 </Box>
             </Paper>
-        </Box>
+        </AuthPageLayout>
     );
 };
 
