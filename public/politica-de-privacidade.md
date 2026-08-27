@@ -84,6 +84,8 @@ Adotamos medidas técnicas para proteção dos dados:
 
 A Pondero não utiliza cookies de rastreamento ou publicidade. Apenas armazenamento local (localStorage) para sessão de autenticação.
 
+Caso ferramentas de análise (como Google Analytics) sejam adicionadas no futuro, esta política será atualizada antes da ativação, com aviso e, quando aplicável, banner de consentimento.
+
 ## 9. Menores de Idade
 
 A Pondero não é destinada a menores de 18 anos. Não coletamos intencionalmente dados de menores.
