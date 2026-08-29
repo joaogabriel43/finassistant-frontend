@@ -99,9 +99,9 @@ const renderPanel = () =>
     </ThemeProvider>,
   );
 
-// rgb equivalentes dos tokens (success #2DD4A7 / error #FF5C77)
-const RGB_SUCCESS = 'rgb(45, 212, 167)';
-const RGB_ERROR = 'rgb(255, 92, 119)';
+// rgb equivalentes dos tokens Pondero (success #76A968 / error #C76562)
+const RGB_SUCCESS = 'rgb(118, 169, 104)';
+const RGB_ERROR = 'rgb(199, 101, 98)';
 
 describe('BenchmarkJanelasPanel', () => {
   beforeEach(() => {

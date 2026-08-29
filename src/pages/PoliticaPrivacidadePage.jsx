@@ -32,7 +32,7 @@ const PoliticaPrivacidadePage = () => {
       sx={{
         minHeight: '100vh',
         overflowY: 'auto',
-        bgcolor: '#0a0a0f',
+        bgcolor: 'background.default',
       }}
     >
       <Box
@@ -46,13 +46,13 @@ const PoliticaPrivacidadePage = () => {
       >
         {conteudo.split('\n').map((linha, i) => {
           if (linha.startsWith('# '))
-            return <Typography key={i} variant="h4" fontWeight={700} sx={{ color: '#7C6AF7', mb: 2 }}>{linha.slice(2)}</Typography>
+            return <Typography key={i} variant="h4" fontWeight={700} sx={{ color: 'primary.main', mb: 2 }}>{linha.slice(2)}</Typography>
           if (linha.startsWith('## '))
             return <Typography key={i} variant="h6" fontWeight={600} sx={{ mt: 4, mb: 1 }}>{linha.slice(3)}</Typography>
           if (linha.startsWith('### '))
             return <Typography key={i} variant="subtitle1" fontWeight={600} sx={{ mt: 3, mb: 1 }}>{linha.slice(4)}</Typography>
           if (linha.startsWith('---'))
-            return <Box key={i} sx={{ borderTop: '1px solid rgba(255,255,255,0.08)', my: 3 }} />
+            return <Box key={i} sx={{ borderTop: '1px solid', borderColor: 'divider', my: 3 }} />
           if (linha.startsWith('- '))
             return (
               <Typography key={i} component="li" variant="body2" color="text.secondary" sx={{ ml: 3, lineHeight: 1.8 }}>

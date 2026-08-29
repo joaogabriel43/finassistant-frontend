@@ -21,21 +21,25 @@ import {
     XAxis,
     YAxis,
 } from 'recharts';
+import { useTheme, alpha } from '@mui/material/styles';
 import { useFireCalculator } from '../hooks/useFireCalculator';
 import { formatCurrency } from '../utils/formatCurrency';
 
-const cardStyle = {
+// Funcao do tema: a hairline precisa mudar entre claro e escuro. Como o `sx`
+// do MUI aceita callback com o tema, `sx={cardStyle}` continua valido.
+const cardStyle = (t) => ({
     p: 3,
-    border: '1px solid rgba(255,255,255,0.08)',
+    border: `1px solid ${t.palette.lines.subtle}`,
     borderRadius: '16px',
     boxShadow: 'none',
-};
+});
 
-const PERFIS = [
-    { key: 'conservador', label: 'Conservador', taxa: '6% aa',  color: '#64B5F6', anosKey: 'anosAteFireConservador', idadeKey: 'idadeFireConservador' },
-    { key: 'moderado',    label: 'Moderado',    taxa: '8% aa',  color: '#81C784', anosKey: 'anosAteFireModerado',    idadeKey: 'idadeFireModerado' },
-    { key: 'arrojado',    label: 'Arrojado',    taxa: '12% aa', color: '#9575CD', anosKey: 'anosAteFireArrojado',    idadeKey: 'idadeFireArrojado' },
-];
+// Perfis de risco = serie de dados comparaveis (palette.series).
+const perfis = (t) => ([
+    { key: 'conservador', label: 'Conservador', taxa: '6% aa',  color: t.palette.series[1], anosKey: 'anosAteFireConservador', idadeKey: 'idadeFireConservador' },
+    { key: 'moderado',    label: 'Moderado',    taxa: '8% aa',  color: t.palette.series[3], anosKey: 'anosAteFireModerado',    idadeKey: 'idadeFireModerado' },
+    { key: 'arrojado',    label: 'Arrojado',    taxa: '12% aa', color: t.palette.series[4], anosKey: 'anosAteFireArrojado',    idadeKey: 'idadeFireArrojado' },
+]);
 
 // Gera dados de projeção patrimonial para o gráfico
 function gerarDadosGrafico(patrimonioAtual, aporteMensal, resultado) {
@@ -70,6 +74,8 @@ function gerarDadosGrafico(patrimonioAtual, aporteMensal, resultado) {
 }
 
 const FireCalculator = () => {
+    const theme = useTheme();
+    const PERFIS = perfis(theme);
     const { loading, error, resultado, calcular } = useFireCalculator();
 
     const [form, setForm] = useState({
@@ -110,7 +116,7 @@ const FireCalculator = () => {
     return (
         <Box sx={{ p: { xs: 2, md: 3 } }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
-                <RocketLaunchIcon sx={{ color: '#7C6AF7', fontSize: 28 }} />
+                <RocketLaunchIcon sx={{ color: 'primary.main', fontSize: 28 }} />
                 <Box>
                     <Typography variant="h5" fontWeight={700}>
                         FIRE Calculator
@@ -212,12 +218,12 @@ const FireCalculator = () => {
             {resultado && (
                 <Box sx={{ mt: 3 }}>
                     {/* Hero: meta FIRE */}
-                    <Card sx={{ ...cardStyle, background: 'linear-gradient(135deg, rgba(124,106,247,0.15), rgba(124,106,247,0.05))', mb: 2 }}>
+                    <Card sx={(t) => ({ ...cardStyle(t), background: `linear-gradient(135deg, ${alpha(t.palette.primary.main, 0.15)}, ${alpha(t.palette.primary.main, 0.05)})`, mb: 2 })}>
                         <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
                             <Typography variant="body2" sx={{ color: 'text.secondary', mb: 0.5 }}>
                                 Meta FIRE — Patrimônio necessário para viver de renda
                             </Typography>
-                            <Typography variant="h4" fontWeight={800} sx={{ color: '#7C6AF7', letterSpacing: '-1px' }}>
+                            <Typography variant="h4" fontWeight={800} sx={{ color: 'primary.main', letterSpacing: '-1px' }}>
                                 {formatCurrency(resultado.metaPatrimonioFIRE)}
                             </Typography>
                             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
@@ -239,8 +245,8 @@ const FireCalculator = () => {
                                     sx={{
                                         height: 8,
                                         borderRadius: 4,
-                                        bgcolor: 'rgba(255,255,255,0.08)',
-                                        '& .MuiLinearProgress-bar': { bgcolor: '#7C6AF7', borderRadius: 4 },
+                                        bgcolor: theme.palette.lines.subtle,
+                                        '& .MuiLinearProgress-bar': { bgcolor: 'primary.main', borderRadius: 4 },
                                     }}
                                 />
                             </Box>
@@ -256,7 +262,7 @@ const FireCalculator = () => {
                                 <Grid key={key} size={{ xs: 12, md: 4 }}>
                                     <Card
                                         sx={{
-                                            ...cardStyle,
+                                            ...cardStyle(theme),
                                             borderColor: `${color}33`,
                                             background: `linear-gradient(135deg, ${color}12, ${color}06)`,
                                         }}
@@ -295,31 +301,31 @@ const FireCalculator = () => {
                             <Box sx={{ width: '100%', height: 280 }}>
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={dadosGrafico} margin={{ top: 4, right: 8, left: 8, bottom: 4 }}>
-                                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                                        <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.chart.grid} />
                                         <XAxis
                                             dataKey="ano"
-                                            tick={{ fill: '#8B8BA8', fontSize: 11 }}
-                                            label={{ value: 'Anos', position: 'insideBottom', offset: -2, fill: '#8B8BA8', fontSize: 11 }}
+                                            tick={{ fill: theme.palette.text.secondary, fontSize: 11 }}
+                                            label={{ value: 'Anos', position: 'insideBottom', offset: -2, fill: theme.palette.text.secondary, fontSize: 11 }}
                                         />
                                         <YAxis
                                             tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`}
-                                            tick={{ fill: '#8B8BA8', fontSize: 11 }}
+                                            tick={{ fill: theme.palette.text.secondary, fontSize: 11 }}
                                             width={70}
                                         />
                                         <Tooltip
                                             formatter={(value, name) => [formatCurrency(value), name]}
-                                            contentStyle={{ backgroundColor: '#1A1A2E', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8 }}
-                                            labelStyle={{ color: '#8B8BA8' }}
+                                            contentStyle={{ backgroundColor: theme.palette.surfaces.raised, border: `1px solid ${theme.palette.lines.subtle}`, borderRadius: 8 }}
+                                            labelStyle={{ color: theme.palette.text.secondary }}
                                         />
                                         <ReferenceLine
                                             y={resultado.metaPatrimonioFIRE}
-                                            stroke="#7C6AF7"
+                                            stroke={theme.palette.primary.main}
                                             strokeDasharray="6 3"
-                                            label={{ value: 'Meta FIRE', fill: '#7C6AF7', fontSize: 11, position: 'right' }}
+                                            label={{ value: 'Meta FIRE', fill: theme.palette.primary.main, fontSize: 11, position: 'right' }}
                                         />
-                                        <Bar dataKey="conservador" name="Conservador" fill="#64B5F6" radius={[2, 2, 0, 0]} />
-                                        <Bar dataKey="moderado"    name="Moderado"    fill="#81C784" radius={[2, 2, 0, 0]} />
-                                        <Bar dataKey="arrojado"    name="Arrojado"    fill="#9575CD" radius={[2, 2, 0, 0]} />
+                                        <Bar dataKey="conservador" name="Conservador" fill={theme.palette.series[1]} radius={[2, 2, 0, 0]} />
+                                        <Bar dataKey="moderado"    name="Moderado"    fill={theme.palette.series[3]} radius={[2, 2, 0, 0]} />
+                                        <Bar dataKey="arrojado"    name="Arrojado"    fill={theme.palette.series[4]} radius={[2, 2, 0, 0]} />
                                     </BarChart>
                                 </ResponsiveContainer>
                             </Box>

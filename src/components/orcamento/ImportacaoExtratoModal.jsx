@@ -7,6 +7,7 @@ import {
 } from '@mui/material'
 import UploadFileIcon from '@mui/icons-material/UploadFile'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import { alpha } from '@mui/material/styles'
 import { useExtratoImportacao } from '../../hooks/useExtratoImportacao'
 
 const formatBRL = (v) =>
@@ -134,7 +135,9 @@ const ImportacaoExtratoModal = ({ open, onClose, onImported }) => {
                 {preview.transacoes.map((t, i) => (
                   <TableRow
                     key={i}
-                    sx={t.isDuplicata ? { bgcolor: 'rgba(255, 167, 38, 0.12)' } : {}}
+                    sx={t.isDuplicata
+                      ? (th) => ({ bgcolor: alpha(th.palette.warning.main, 0.12) })
+                      : {}}
                   >
                     <TableCell>{t.data}</TableCell>
                     <TableCell>{t.descricao}</TableCell>
@@ -194,9 +197,12 @@ const ImportacaoExtratoModal = ({ open, onClose, onImported }) => {
               p: 4,
               textAlign: 'center',
               cursor: 'pointer',
-              bgcolor: dragOver ? 'rgba(124, 106, 247, 0.08)' : 'transparent',
+              bgcolor: (t) => (dragOver ? alpha(t.palette.primary.main, 0.08) : 'transparent'),
               transition: 'all 0.2s',
-              '&:hover': { borderColor: 'primary.main', bgcolor: 'rgba(124, 106, 247, 0.04)' },
+              '&:hover': {
+                borderColor: 'primary.main',
+                bgcolor: (t) => alpha(t.palette.primary.main, 0.04),
+              },
             }}
           >
             <input

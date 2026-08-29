@@ -21,7 +21,12 @@ const UserMenu = () => {
   return (
     <>
       <Tooltip title="Conta">
-        <IconButton onClick={(e) => setAnchor(e.currentTarget)} size="small" sx={{ ml: 0.5 }}>
+        <IconButton
+          data-testid="user-menu"
+          onClick={(e) => setAnchor(e.currentTarget)}
+          size="small"
+          sx={{ ml: 0.5 }}
+        >
           <Avatar
             src={user?.fotoUrl || undefined}
             sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: 13, fontWeight: 700 }}

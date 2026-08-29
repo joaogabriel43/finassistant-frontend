@@ -11,6 +11,7 @@ import {
     Cell,
 } from 'recharts';
 import { Box, Chip, CircularProgress, Typography } from '@mui/material';
+import { useTheme, alpha } from '@mui/material/styles';
 import { useBenchmarks } from '../../hooks/useBenchmarks';
 
 const formatPercent = (value) =>
@@ -19,28 +20,31 @@ const formatPercent = (value) =>
         : value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
 
 const AlphaChip = ({ label, value }) => {
+    const theme = useTheme();
     const positive = value >= 0;
+    const cor = positive ? theme.palette.success.main : theme.palette.error.main;
     return (
         <Chip
             label={`${label}: ${positive ? '+' : ''}${formatPercent(value)}`}
             size="small"
             sx={{
                 fontWeight: 600,
-                bgcolor: positive ? 'rgba(56,217,137,0.12)' : 'rgba(255,99,99,0.12)',
-                color: positive ? '#38D989' : '#FF6363',
-                border: `1px solid ${positive ? 'rgba(56,217,137,0.3)' : 'rgba(255,99,99,0.3)'}`,
+                bgcolor: alpha(cor, 0.12),
+                color: cor,
+                border: `1px solid ${alpha(cor, 0.3)}`,
             }}
         />
     );
 };
 
 const CustomTooltip = ({ active, payload }) => {
+    const theme = useTheme();
     if (active && payload && payload.length) {
         return (
             <Box
                 sx={{
                     bgcolor: 'background.paper',
-                    border: '1px solid rgba(255,255,255,0.12)',
+                    border: `1px solid ${theme.palette.lines.strong}`,
                     borderRadius: 1,
                     p: 1.5,
                 }}
@@ -58,6 +62,7 @@ const CustomTooltip = ({ active, payload }) => {
 };
 
 const BenchmarkChart = () => {
+    const theme = useTheme();
     const { loading, error, dados } = useBenchmarks();
 
     if (loading) {
@@ -85,9 +90,13 @@ const BenchmarkChart = () => {
         { name: 'IPCA', value: dados.ipca },
     ];
 
-    const carteiraColor = dados.rentabilidadeCarteira >= dados.cdi ? '#38D989' : '#FF6363';
+    const carteiraColor = dados.rentabilidadeCarteira >= dados.cdi
+        ? theme.palette.success.main
+        : theme.palette.error.main;
 
-    const barColors = [carteiraColor, '#7C6AF7', '#7C6AF7', '#7C6AF7'];
+    // Os 3 benchmarks dividem a mesma cor de proposito: sao referencia,
+    // nao series distintas. So a barra da carteira muda com o resultado.
+    const barColors = [carteiraColor, ...Array(3).fill(theme.palette.series[1])];
 
     return (
         <Box>
@@ -97,22 +106,22 @@ const BenchmarkChart = () => {
 
             <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.chart.grid} />
                     <XAxis
                         dataKey="name"
-                        tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }}
+                        tick={{ fill: theme.palette.text.secondary, fontSize: 12 }}
                         axisLine={false}
                         tickLine={false}
                     />
                     <YAxis
                         tickFormatter={(v) => `${v}%`}
-                        tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 11 }}
+                        tick={{ fill: theme.palette.text.secondary, fontSize: 11 }}
                         axisLine={false}
                         tickLine={false}
                         width={45}
                     />
-                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
-                    <ReferenceLine y={0} stroke="rgba(255,255,255,0.15)" />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: theme.palette.surfaces.surfaceSoft }} />
+                    <ReferenceLine y={0} stroke={theme.palette.lines.strong} />
                     <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                         {chartData.map((_, index) => (
                             <Cell key={index} fill={barColors[index]} fillOpacity={0.85} />

@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render as renderRTL, screen, fireEvent, waitFor } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import ImportacaoLoteInvestimentosModal from '../ImportacaoLoteInvestimentosModal'
 
@@ -10,6 +10,8 @@ vi.mock('../../../services/api', () => ({
 }))
 
 import api from '../../../services/api'
+import { ThemeProvider } from '@mui/material/styles'
+import theme from '../../../theme'
 
 const PREVIEW_ID = '11111111-1111-1111-1111-111111111111'
 
@@ -35,6 +37,11 @@ const itemPronto = (overrides = {}) => ({
   previewId: PREVIEW_ID,
   ...overrides,
 })
+
+// O componente le tokens customizados do tema (palette.lines / palette.surfaces
+// / palette.series), entao precisa do ThemeProvider no teste — regra do
+// design system.
+const render = (ui) => renderRTL(<ThemeProvider theme={theme}>{ui}</ThemeProvider>)
 
 describe('ImportacaoLoteInvestimentosModal', () => {
   beforeEach(() => {

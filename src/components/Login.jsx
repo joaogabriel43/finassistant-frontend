@@ -3,6 +3,24 @@ import { Box, Paper, Typography, TextField, Button, Alert, Link } from '@mui/mat
 import { useAuth } from '../contexts/AuthContext';
 import { logErroSeguro } from '../utils/apiErrorUtils';
 import PasswordField from './PasswordField';
+import AuthPageLayout from './public/AuthPageLayout';
+
+const inputSx = (theme) => ({
+  '& .MuiOutlinedInput-root': {
+    backgroundColor: 'background.paper',
+    '& fieldset': { borderColor: 'divider' },
+    '&:hover fieldset': { borderColor: 'text.disabled' },
+    '&.Mui-focused fieldset': { borderColor: 'primary.main' },
+  },
+  '& .MuiInputBase-input': { color: 'text.primary' },
+  '& .MuiInputBase-input:-webkit-autofill': {
+    WebkitBoxShadow: `0 0 0 1000px ${theme.palette.background.paper} inset`,
+    WebkitTextFillColor: theme.palette.text.primary,
+    caretColor: theme.palette.text.primary,
+  },
+  '& .MuiInputLabel-root': { color: 'text.secondary' },
+  '& .MuiInputLabel-root.Mui-focused': { color: 'primary.main' },
+});
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -38,28 +56,21 @@ const Login = () => {
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        bgcolor: '#0a0a0f',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
+    <AuthPageLayout>
       <Paper
         sx={{
           p: 4,
           width: '100%',
           maxWidth: 420,
           borderRadius: '16px',
-          border: '1px solid rgba(255,255,255,0.08)',
+          border: '1px solid',
+          borderColor: 'divider',
           backdropFilter: 'blur(12px)',
-          background: 'rgba(255,255,255,0.04)',
+          bgcolor: 'background.paper',
         }}
       >
-        <Typography variant="h5" fontWeight={700} sx={{ color: '#7C6AF7', mb: 0.5, textAlign: 'center' }}>
-          FortunAI
+        <Typography variant="h5" fontWeight={700} sx={{ color: 'primary.main', mb: 0.5, textAlign: 'center' }}>
+          Pondero
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', mb: 3 }}>
           Entre na sua conta para continuar
@@ -79,22 +90,7 @@ const Login = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             InputLabelProps={{ shrink: true }}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                backgroundColor: 'rgba(255,255,255,0.05)',
-                '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
-                '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' },
-                '&.Mui-focused fieldset': { borderColor: '#7c3aed' },
-              },
-              '& .MuiInputBase-input': { color: '#ffffff' },
-              '& .MuiInputBase-input:-webkit-autofill': {
-                WebkitBoxShadow: '0 0 0 1000px #1a1a2e inset',
-                WebkitTextFillColor: '#ffffff',
-                caretColor: '#ffffff',
-              },
-              '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.6)' },
-              '& .MuiInputLabel-root.Mui-focused': { color: '#a78bfa' },
-            }}
+            sx={inputSx}
           />
           <PasswordField
             variant="outlined"
@@ -108,22 +104,7 @@ const Login = () => {
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
             InputLabelProps={{ shrink: true }}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                backgroundColor: 'rgba(255,255,255,0.05)',
-                '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
-                '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' },
-                '&.Mui-focused fieldset': { borderColor: '#7c3aed' },
-              },
-              '& .MuiInputBase-input': { color: '#ffffff' },
-              '& .MuiInputBase-input:-webkit-autofill': {
-                WebkitBoxShadow: '0 0 0 1000px #1a1a2e inset',
-                WebkitTextFillColor: '#ffffff',
-                caretColor: '#ffffff',
-              },
-              '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.6)' },
-              '& .MuiInputLabel-root.Mui-focused': { color: '#a78bfa' },
-            }}
+            sx={inputSx}
           />
 
           {error && (
@@ -144,13 +125,13 @@ const Login = () => {
 
           <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', mt: 2 }}>
             Não tem uma conta?{' '}
-            <Link href="/registrar" underline="hover" sx={{ color: '#7C6AF7', fontWeight: 600 }}>
+            <Link href="/registrar" underline="hover" sx={{ color: 'primary.main', fontWeight: 600 }}>
               Cadastre-se
             </Link>
           </Typography>
         </Box>
       </Paper>
-    </Box>
+    </AuthPageLayout>
   );
 };
 

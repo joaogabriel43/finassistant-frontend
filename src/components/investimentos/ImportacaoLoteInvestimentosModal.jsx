@@ -5,6 +5,7 @@ import {
   Table, TableHead, TableRow, TableCell, TableBody, TableContainer,
   Checkbox, Paper, useTheme, TextField,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { formatBRL } from '../ui';
@@ -344,9 +345,12 @@ const ImportacaoLoteInvestimentosModal = ({ open, onClose, onImportado }) => {
               p: 4,
               textAlign: 'center',
               cursor: 'pointer',
-              bgcolor: dragOver ? 'rgba(124, 106, 247, 0.08)' : 'transparent',
+              bgcolor: dragOver ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
               transition: 'all 0.2s',
-              '&:hover': { borderColor: 'primary.main', bgcolor: 'rgba(124, 106, 247, 0.04)' },
+              '&:hover': {
+                borderColor: 'primary.main',
+                bgcolor: alpha(theme.palette.primary.main, 0.04),
+              },
             }}
           >
             <input

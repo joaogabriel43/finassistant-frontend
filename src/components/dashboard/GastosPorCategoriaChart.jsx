@@ -2,18 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '@mui/material/styles';
 import { corDaCategoria } from '../../utils/categoriaCores';
 import { logErroSeguro } from '../../utils/apiErrorUtils';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
-// Cores para as fatias do gráfico
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF19AF'];
+// Fallback das fatias quando a categoria nao tem cor gerenciada (ADR-038):
+// serie do tema, ordem estavel, uma versao por tema.
 
 const capitalize = (str) =>
     str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : ''
 
 const GastosPorCategoriaChart = ({ showTitle = true }) => {
+    const theme = useTheme();
+    const COLORS = theme.palette.series;
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -59,7 +62,7 @@ const GastosPorCategoriaChart = ({ showTitle = true }) => {
 
     if (!user || !user.id) {
         return (
-            <SkeletonTheme baseColor="#202020" highlightColor="#444">
+            <SkeletonTheme baseColor={theme.palette.surfaces.surfaceSoft} highlightColor={theme.palette.surfaces.raised}>
                 <div style={{ width: '100%', height: 320, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <h3 style={{ textAlign: 'center' }}><Skeleton width={300} /></h3>
                     <Skeleton circle height={240} width={240} style={{ marginTop: '20px' }} />
@@ -70,7 +73,7 @@ const GastosPorCategoriaChart = ({ showTitle = true }) => {
 
     if (loading) {
         return (
-            <SkeletonTheme baseColor="#202020" highlightColor="#444">
+            <SkeletonTheme baseColor={theme.palette.surfaces.surfaceSoft} highlightColor={theme.palette.surfaces.raised}>
                 <div style={{ width: '100%', height: 320, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <h3 style={{ textAlign: 'center' }}><Skeleton width={350} /></h3>
                     <Skeleton circle height={240} width={240} style={{ marginTop: '20px' }} />
@@ -79,7 +82,7 @@ const GastosPorCategoriaChart = ({ showTitle = true }) => {
         );
     }
 
-    if (error) return <p style={{ color: 'red' }}>{error}</p>;
+    if (error) return <p style={{ color: theme.palette.error.main }}>{error}</p>;
     if (data.length === 0) return <p>Não há dados de despesas históricas para exibir.</p>;
 
     return (
@@ -92,7 +95,7 @@ const GastosPorCategoriaChart = ({ showTitle = true }) => {
                         cx="50%"
                         cy="50%"
                         outerRadius={100}
-                        fill="#8884d8"
+                        fill={theme.palette.primary.main}
                         dataKey="value"
                         nameKey="name"
                     >

@@ -1,8 +1,10 @@
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { render as renderRTL, screen } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 
 import RecorrenciasCard from '../RecorrenciasCard'
+import { ThemeProvider } from '@mui/material/styles'
+import theme from '../../../theme'
 
 const recorrenciaNetflix = {
   nome: 'Netflix',
@@ -12,6 +14,11 @@ const recorrenciaNetflix = {
   proximaCobrancaEstimada: '2026-06-15',
   totalOcorrencias: 3,
 }
+
+// O componente le tokens customizados do tema (palette.lines / palette.surfaces
+// / palette.series), entao precisa do ThemeProvider no teste — regra do
+// design system.
+const render = (ui) => renderRTL(<ThemeProvider theme={theme}>{ui}</ThemeProvider>)
 
 describe('RecorrenciasCard', () => {
   beforeEach(() => {

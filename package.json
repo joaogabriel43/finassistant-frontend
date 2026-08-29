@@ -1,5 +1,5 @@
 {
-  "name": "fortunai-frontend",
+  "name": "pondero-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -17,8 +17,6 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "@fontsource/hanken-grotesk": "^5.2.8",
-    "@fontsource/jetbrains-mono": "^5.2.8",
     "@mui/icons-material": "^7.3.2",
     "@mui/material": "^7.3.2",
     "@stomp/stompjs": "^7.3.0",

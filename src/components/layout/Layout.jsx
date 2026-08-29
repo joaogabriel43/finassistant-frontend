@@ -8,21 +8,25 @@ import Sidebar from '../Sidebar'
 import { useAuth } from '../../contexts/AuthContext'
 import NotificacoesBadge from '../notificacoes/NotificacoesBadge'
 import UserMenu from './UserMenu'
+import ThemeToggle from './ThemeToggle'
 // TutorialOnboarding, PWAInstallBanner e OfflinePage movidos para AppContent (App.jsx)
 // para que o tutorial só apareça APÓS aceite dos Termos de Uso.
 
 const DRAWER_WIDTH = 220
 
-const drawerPaperSx = {
+// Callback de tema em vez de hex fixo: o shell inteiro acompanha o modo
+// claro/escuro sem nenhuma cor escura cravada aqui.
+const drawerPaperSx = (theme) => ({
   width: DRAWER_WIDTH,
   boxSizing: 'border-box',
   height: '100vh',
   overflow: 'hidden',
   display: 'flex',
   flexDirection: 'column',
-  background: '#111118',
-  borderRight: '1px solid rgba(255,255,255,0.06)',
-}
+  backgroundColor: theme.palette.surfaces.panel,
+  backgroundImage: 'none',
+  borderRight: `1px solid ${theme.palette.lines.subtle}`,
+})
 
 const Layout = () => {
   useAuth() // manter contexto disponível
@@ -44,12 +48,14 @@ const Layout = () => {
       <AppBar
         data-testid="app-bar"
         position="fixed"
-        sx={{
+        sx={(theme) => ({
           display: { xs: 'block', md: 'none' },
-          bgcolor: '#111118',
+          bgcolor: theme.palette.surfaces.panel,
+          backgroundImage: 'none',
+          color: theme.palette.text.primary,
           boxShadow: 'none',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
-        }}
+          borderBottom: `1px solid ${theme.palette.lines.subtle}`,
+        })}
       >
         <Toolbar sx={{ minHeight: 56 }}>
           <IconButton
@@ -65,6 +71,7 @@ const Layout = () => {
           <Box sx={{ flexGrow: 1 }} />
           {/* gap: 0.5 evita sobreposição entre sino e avatar no AppBar mobile */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <ThemeToggle />
             <NotificacoesBadge />
             <UserMenu />
           </Box>
@@ -111,6 +118,7 @@ const Layout = () => {
           minWidth: 0,
           display: 'flex',
           flexDirection: 'column',
+          backgroundColor: 'surfaces.bg',
         }}
       >
         <Box sx={{ flex: 1 }}>
@@ -123,19 +131,19 @@ const Layout = () => {
         {!isChatRoute && (
           <Box
             component="footer"
-            sx={{
+            sx={(theme) => ({
               py: 1.5,
               px: 3,
-              borderTop: '1px solid rgba(255,255,255,0.05)',
+              borderTop: `1px solid ${theme.palette.lines.subtle}`,
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
               gap: 0.5,
               flexShrink: 0,
-            }}
+            })}
           >
             <Typography variant="caption" color="text.disabled" sx={{ fontSize: 11 }}>
-              © 2026 FortunAI
+              © 2026 Pondero
             </Typography>
             <Typography variant="caption" color="text.disabled" sx={{ fontSize: 11 }}>·</Typography>
             <Typography

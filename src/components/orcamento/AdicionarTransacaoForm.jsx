@@ -12,42 +12,55 @@ import {
 } from '@mui/material';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
+import { useTheme, alpha } from '@mui/material/styles';
 import CreatableSelect from 'react-select/creatable';
 
 const hoje = () => new Date().toISOString().split('T')[0]; // "yyyy-MM-dd"
 
-const selectStyles = {
+// O react-select recebe um objeto de estilos, nao um `sx` — por isso aqui o
+// tema entra como parametro explicito (`selectStyles(theme)`) em vez do
+// callback que o MUI resolveria sozinho.
+const selectStyles = (t) => ({
     control: (base, state) => ({
         ...base,
         backgroundColor: 'transparent',
-        borderColor: state.isFocused ? '#7C6AF7' : 'rgba(255,255,255,0.12)',
+        borderColor: state.isFocused ? t.palette.primary.main : t.palette.lines.strong,
         borderRadius: 8,
         boxShadow: 'none',
         minHeight: 40,
-        ':hover': { borderColor: 'rgba(255,255,255,0.24)' },
+        ':hover': { borderColor: t.palette.text.secondary },
     }),
     menu: (base) => ({
         ...base,
-        backgroundColor: '#1A1A2E',
-        border: '1px solid rgba(255,255,255,0.1)',
+        backgroundColor: t.palette.surfaces.raised,
+        border: `1px solid ${t.palette.lines.subtle}`,
         borderRadius: 8,
         zIndex: 9999,
     }),
     option: (base, state) => ({
         ...base,
-        backgroundColor: state.isFocused ? 'rgba(124,106,247,0.12)' : 'transparent',
-        color: '#fff',
-        ':active': { backgroundColor: 'rgba(124,106,247,0.2)' },
+        backgroundColor: state.isFocused ? alpha(t.palette.primary.main, 0.12) : 'transparent',
+        color: t.palette.text.primary,
+        ':active': { backgroundColor: alpha(t.palette.primary.main, 0.2) },
     }),
-    singleValue: (base) => ({ ...base, color: '#fff' }),
-    input: (base) => ({ ...base, color: '#fff' }),
-    placeholder: (base) => ({ ...base, color: '#8B8BA8' }),
-    clearIndicator: (base) => ({ ...base, color: '#8B8BA8', ':hover': { color: '#fff' } }),
-    dropdownIndicator: (base) => ({ ...base, color: '#8B8BA8', ':hover': { color: '#fff' } }),
-    indicatorSeparator: (base) => ({ ...base, backgroundColor: 'rgba(255,255,255,0.12)' }),
-};
+    singleValue: (base) => ({ ...base, color: t.palette.text.primary }),
+    input: (base) => ({ ...base, color: t.palette.text.primary }),
+    placeholder: (base) => ({ ...base, color: t.palette.text.secondary }),
+    clearIndicator: (base) => ({
+        ...base,
+        color: t.palette.text.secondary,
+        ':hover': { color: t.palette.text.primary },
+    }),
+    dropdownIndicator: (base) => ({
+        ...base,
+        color: t.palette.text.secondary,
+        ':hover': { color: t.palette.text.primary },
+    }),
+    indicatorSeparator: (base) => ({ ...base, backgroundColor: t.palette.lines.strong }),
+});
 
 const AdicionarTransacaoForm = ({ onTransacaoAdicionada }) => {
+    const theme = useTheme();
     const { user } = useAuth();
     const [valor, setValor] = useState('');
     const [categoria, setCategoria] = useState(null);
@@ -155,7 +168,7 @@ const AdicionarTransacaoForm = ({ onTransacaoAdicionada }) => {
                         options={categoriasExistentes}
                         value={categoria}
                         placeholder="Selecione ou digite uma categoria..."
-                        styles={selectStyles}
+                        styles={selectStyles(theme)}
                     />
                 </Box>
 

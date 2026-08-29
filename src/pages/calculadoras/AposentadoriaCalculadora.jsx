@@ -27,21 +27,26 @@ import {
     XAxis,
     YAxis,
 } from 'recharts';
+import { useTheme, alpha } from '@mui/material/styles';
 import { useAposentadoria } from '../../hooks/useAposentadoria';
 import { formatCurrency } from '../../utils/formatCurrency';
 
-const cardStyle = {
+// Funcao do tema: a hairline precisa mudar entre claro e escuro. Como o `sx`
+// do MUI aceita callback com o tema, `sx={cardStyle}` continua valido.
+const cardStyle = (t) => ({
     p: 3,
-    border: '1px solid rgba(255,255,255,0.08)',
+    border: `1px solid ${t.palette.lines.subtle}`,
     borderRadius: '16px',
     boxShadow: 'none',
-};
+});
 
-const PERFIS = [
-    { key: 'Conservador', color: '#64B5F6' },
-    { key: 'Moderado',    color: '#81C784' },
-    { key: 'Arrojado',    color: '#9575CD' },
-];
+// Perfis de risco = serie de dados comparaveis, entao saem de palette.series
+// (ordem estavel, uma versao por tema).
+const perfis = (t) => ([
+    { key: 'Conservador', color: t.palette.series[1] },
+    { key: 'Moderado',    color: t.palette.series[3] },
+    { key: 'Arrojado',    color: t.palette.series[4] },
+]);
 
 const applyMask = (value) =>
     value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -50,6 +55,8 @@ const stripMask = (value) =>
     Number(String(value).replace(/\./g, '')) || 0;
 
 const AposentadoriaCalculadora = () => {
+    const theme = useTheme();
+    const PERFIS = perfis(theme);
     const { loading, error, resultado, calcular } = useAposentadoria();
 
     const [idadeAtual, setIdadeAtual] = useState(30);
@@ -85,7 +92,7 @@ const AposentadoriaCalculadora = () => {
                         <Chip
                             label={`IPCA referência: ${resultado ? resultado.ipca : 4.8}% aa`}
                             size="small"
-                            sx={{ bgcolor: 'rgba(255,193,7,0.15)', color: '#FFC107', fontSize: 11 }}
+                            sx={(t) => ({ bgcolor: alpha(t.palette.warning.main, 0.15), color: 'warning.main', fontSize: 11 })}
                         />
                     </Box>
 
@@ -106,7 +113,7 @@ const AposentadoriaCalculadora = () => {
                                     { value: 50, label: '50' },
                                     { value: 79, label: '79' },
                                 ]}
-                                sx={{ color: '#7C6AF7' }}
+                                sx={{ color: 'primary.main' }}
                             />
                         </Grid>
                         <Grid size={{ xs: 12, sm: 6 }}>
@@ -125,7 +132,7 @@ const AposentadoriaCalculadora = () => {
                                     { value: 75, label: '75' },
                                     { value: 90, label: '90' },
                                 ]}
-                                sx={{ color: '#7C6AF7' }}
+                                sx={{ color: 'primary.main' }}
                             />
                         </Grid>
                         <Grid size={{ xs: 12, sm: 6 }}>
@@ -162,7 +169,7 @@ const AposentadoriaCalculadora = () => {
                                     <Switch
                                         checked={usarDadosReais}
                                         onChange={(e) => setUsarDadosReais(e.target.checked)}
-                                        sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#7C6AF7' } }}
+                                        sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: 'primary.main' } }}
                                     />
                                 }
                                 label={
@@ -206,13 +213,13 @@ const AposentadoriaCalculadora = () => {
                         <Chip
                             label={`IPCA usado: ${resultado.ipca}% aa`}
                             size="small"
-                            sx={{ bgcolor: 'rgba(255,193,7,0.15)', color: '#FFC107' }}
+                            sx={(t) => ({ bgcolor: alpha(t.palette.warning.main, 0.15), color: 'warning.main' })}
                         />
                         {resultado.patrimonioAtual > 0 && (
                             <Chip
                                 label={`Patrimônio atual: ${formatCurrency(resultado.patrimonioAtual)}`}
                                 size="small"
-                                sx={{ bgcolor: 'rgba(124,106,247,0.15)', color: '#7C6AF7' }}
+                                sx={(t) => ({ bgcolor: t.palette.accent.primarySoft, color: 'primary.main' })}
                             />
                         )}
                     </Box>
@@ -225,7 +232,7 @@ const AposentadoriaCalculadora = () => {
                                 <Grid key={cenario.perfil} size={{ xs: 12, md: 4 }}>
                                     <Card
                                         sx={{
-                                            ...cardStyle,
+                                            ...cardStyle(theme),
                                             borderColor: `${perfil.color}33`,
                                             background: `linear-gradient(135deg, ${perfil.color}12, ${perfil.color}06)`,
                                         }}
@@ -240,8 +247,8 @@ const AposentadoriaCalculadora = () => {
                                                     {cenario.perfil}
                                                 </Typography>
                                                 {cenario.suficiente
-                                                    ? <CheckCircleIcon sx={{ color: '#81C784', fontSize: 16 }} />
-                                                    : <CancelIcon sx={{ color: '#EF5350', fontSize: 16 }} />
+                                                    ? <CheckCircleIcon sx={{ color: 'success.main', fontSize: 16 }} />
+                                                    : <CancelIcon sx={{ color: 'error.main', fontSize: 16 }} />
                                                 }
                                             </Box>
                                             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
@@ -257,7 +264,7 @@ const AposentadoriaCalculadora = () => {
                                                 <Typography component="span" variant="caption" sx={{ color: 'text.secondary' }}>
                                                     Projetado:{' '}
                                                 </Typography>
-                                                <strong style={{ color: cenario.suficiente ? '#81C784' : '#EF5350' }}>
+                                                <strong style={{ color: cenario.suficiente ? theme.palette.success.main : theme.palette.error.main }}>
                                                     {formatCurrency(cenario.patrimonioProjetado)}
                                                 </strong>
                                             </Typography>
@@ -281,32 +288,32 @@ const AposentadoriaCalculadora = () => {
                                 <Box sx={{ width: '100%', height: 280 }}>
                                     <ResponsiveContainer width="100%" height="100%">
                                         <LineChart data={dadosGrafico} margin={{ top: 4, right: 8, left: 8, bottom: 4 }}>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                                            <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.chart.grid} />
                                             <XAxis
                                                 dataKey="idade"
-                                                tick={{ fill: '#8B8BA8', fontSize: 11 }}
-                                                label={{ value: 'Idade', position: 'insideBottom', offset: -2, fill: '#8B8BA8', fontSize: 11 }}
+                                                tick={{ fill: theme.palette.text.secondary, fontSize: 11 }}
+                                                label={{ value: 'Idade', position: 'insideBottom', offset: -2, fill: theme.palette.text.secondary, fontSize: 11 }}
                                             />
                                             <YAxis
                                                 tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`}
-                                                tick={{ fill: '#8B8BA8', fontSize: 11 }}
+                                                tick={{ fill: theme.palette.text.secondary, fontSize: 11 }}
                                                 width={70}
                                             />
                                             <Tooltip
                                                 formatter={(value) => [formatCurrency(value), 'Patrimônio']}
                                                 labelFormatter={(label) => `Idade: ${label}`}
-                                                contentStyle={{ backgroundColor: '#1A1A2E', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8 }}
+                                                contentStyle={{ backgroundColor: theme.palette.surfaces.raised, border: `1px solid ${theme.palette.lines.subtle}`, borderRadius: 8 }}
                                             />
                                             <ReferenceLine
                                                 y={cenarioGrafico.patrimonioNecessario}
-                                                stroke="#FFC107"
+                                                stroke={theme.palette.warning.main}
                                                 strokeDasharray="6 3"
-                                                label={{ value: 'Meta', fill: '#FFC107', fontSize: 11, position: 'right' }}
+                                                label={{ value: 'Meta', fill: theme.palette.warning.main, fontSize: 11, position: 'right' }}
                                             />
                                             <Line
                                                 type="monotone"
                                                 dataKey="patrimonio"
-                                                stroke="#81C784"
+                                                stroke={theme.palette.success.main}
                                                 strokeWidth={2}
                                                 dot={false}
                                                 name="Patrimônio"

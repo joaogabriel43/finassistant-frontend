@@ -1,6 +1,6 @@
 import React from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render as renderRTL, screen, fireEvent, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
 
 // ---------------------------------------------------------------------------
@@ -51,6 +51,8 @@ vi.mock('@mui/icons-material/Delete', () => ({ default: () => <span>DeleteIcon</
 // Import component under test AFTER mocks are in place
 // ---------------------------------------------------------------------------
 import ListaTransacoes from '../ListaTransacoes'
+import { ThemeProvider } from '@mui/material/styles'
+import theme from '../../../theme'
 
 // ---------------------------------------------------------------------------
 // Test data
@@ -63,6 +65,11 @@ const mockTransacao = {
     tipo: 'DEBIT',
     data: '2026-05-01',
 }
+
+// O componente le tokens customizados do tema (palette.lines / palette.surfaces
+// / palette.series), entao precisa do ThemeProvider no teste — regra do
+// design system.
+const render = (ui) => renderRTL(<ThemeProvider theme={theme}>{ui}</ThemeProvider>)
 
 describe('ListaTransacoes — editar e excluir (TDD RED phase)', () => {
     beforeEach(() => {

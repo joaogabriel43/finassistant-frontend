@@ -126,7 +126,9 @@ const RecorrenciasCard = ({ recorrencias = [], totalMensalComprometido = 0, load
                   <ListItemAvatar>
                     <Avatar
                       sx={{
-                        bgcolor: rec.possivelmenteCancelada ? 'rgba(255,255,255,0.12)' : '#9c27b0',
+                        bgcolor: (t) => (rec.possivelmenteCancelada
+                          ? t.palette.lines.strong
+                          : t.palette.secondary.main),
                         width: 36,
                         height: 36,
                         fontSize: 16,

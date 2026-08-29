@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Box, Button, Card, CardContent, Chip, CircularProgress, Grid, Typography, IconButton, Skeleton } from '@mui/material'
+import { alpha, Box, Button, Card, CardContent, Chip, CircularProgress, Grid, Typography, IconButton, Skeleton } from '@mui/material'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
@@ -19,15 +19,15 @@ const statusConfig = {
 }
 
 const MetricCard = ({ icon, label, value, loading: metLoading }) => (
-  <Card sx={{ borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)', height: '100%' }}>
+  <Card sx={{ borderRadius: '12px', border: '1px solid', borderColor: 'divider', height: '100%' }}>
     <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-      <Box sx={{ color: '#7C6AF7', flexShrink: 0 }}>{icon}</Box>
+      <Box sx={{ color: 'primary.main', flexShrink: 0 }}>{icon}</Box>
       <Box>
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>{label}</Typography>
         {metLoading ? (
-          <Skeleton variant="text" width={60} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+          <Skeleton variant="text" width={60} sx={{ bgcolor: 'action.hover' }} />
         ) : (
-          <Typography variant="h6" fontWeight={700} sx={{ color: '#fff' }}>
+          <Typography variant="h6" fontWeight={700} sx={{ color: 'text.primary' }}>
             {value !== null && value !== undefined ? value.toLocaleString('pt-BR') : '--'}
           </Typography>
         )}
@@ -44,7 +44,7 @@ const StatusPage = () => {
   const allOperational = servicos.length > 0 && servicos.every(s => s.status === 'OPERACIONAL')
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#111118', p: { xs: 2, md: 4 } }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', p: { xs: 2, md: 4 } }}>
       <Box sx={{ maxWidth: 800, mx: 'auto' }}>
         <Button
           startIcon={<ArrowBackIcon />}
@@ -55,22 +55,31 @@ const StatusPage = () => {
         </Button>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4 }}>
           <Box>
-            <Typography variant="h4" fontWeight={700} sx={{ color: '#fff' }}>
+            <Typography variant="h4" fontWeight={700} sx={{ color: 'text.primary' }}>
               Status dos Servicos
             </Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
-              FortunAI - Monitoramento em tempo real
+              Pondero - Monitoramento em tempo real
             </Typography>
           </Box>
-          <IconButton onClick={refetch} disabled={loading} data-testid="refresh-btn" sx={{ color: '#7C6AF7' }}>
+          <IconButton onClick={refetch} disabled={loading} data-testid="refresh-btn" sx={{ color: 'primary.main' }}>
             <RefreshIcon />
           </IconButton>
         </Box>
 
         {/* Overall status banner */}
-        <Card sx={{ mb: 3, borderRadius: '12px', bgcolor: allOperational ? 'rgba(46,125,50,0.1)' : 'rgba(237,108,2,0.1)', border: '1px solid', borderColor: allOperational ? 'rgba(46,125,50,0.3)' : 'rgba(237,108,2,0.3)' }}>
+        <Card sx={(theme) => {
+          const statusColor = allOperational ? theme.palette.success.main : theme.palette.warning.main
+          return {
+            mb: 3,
+            borderRadius: '12px',
+            bgcolor: alpha(statusColor, 0.1),
+            border: '1px solid',
+            borderColor: alpha(statusColor, 0.3),
+          }
+        }}>
           <CardContent sx={{ textAlign: 'center', py: 3 }}>
-            <Typography variant="h6" fontWeight={600} data-testid="overall-status" sx={{ color: allOperational ? '#66bb6a' : '#ffa726' }}>
+            <Typography variant="h6" fontWeight={600} data-testid="overall-status" sx={{ color: allOperational ? 'success.main' : 'warning.main' }}>
               {loading ? 'Verificando...' : allOperational ? 'Todos os sistemas operacionais' : 'Alguns servicos com problemas'}
             </Typography>
           </CardContent>
@@ -88,8 +97,8 @@ const StatusPage = () => {
           </Typography>
         )}
 
-        {/* Metricas customizadas do FortunAI */}
-        <Typography variant="h6" fontWeight={600} sx={{ color: '#fff', mb: 2, mt: 2 }}>
+        {/* Metricas customizadas do Pondero */}
+        <Typography variant="h6" fontWeight={600} sx={{ color: 'text.primary', mb: 2, mt: 2 }}>
           Metricas da Aplicacao
         </Typography>
         <Grid container spacing={2} sx={{ mb: 3 }}>
@@ -119,7 +128,7 @@ const StatusPage = () => {
           </Grid>
         </Grid>
 
-        <Typography variant="h6" fontWeight={600} sx={{ color: '#fff', mb: 2 }}>
+        <Typography variant="h6" fontWeight={600} sx={{ color: 'text.primary', mb: 2 }}>
           Status dos Servicos
         </Typography>
         <Grid container spacing={2}>
@@ -127,7 +136,7 @@ const StatusPage = () => {
             const config = statusConfig[servico.status] || statusConfig.FORA
             return (
               <Grid key={i} size={{ xs: 12 }}>
-                <Card data-testid="servico-card" sx={{ borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <Card data-testid="servico-card" sx={{ borderRadius: '12px', border: '1px solid', borderColor: 'divider' }}>
                   <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Box>
                       <Typography variant="h6" fontWeight={600}>

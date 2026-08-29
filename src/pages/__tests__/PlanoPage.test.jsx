@@ -2,6 +2,8 @@ import React from 'react'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
+import { ThemeProvider } from '@mui/material/styles'
+import theme from '../../theme'
 import PlanoPage from '../PlanoPage'
 import usePlano from '../../hooks/usePlano'
 
@@ -32,11 +34,13 @@ beforeEach(() => {
 
 const renderPage = () =>
   render(
-    <MemoryRouter initialEntries={['/plano']}>
-      <Routes>
-        <Route path="/plano" element={<PlanoPage />} />
-      </Routes>
-    </MemoryRouter>
+    <ThemeProvider theme={theme}>
+      <MemoryRouter initialEntries={['/plano']}>
+        <Routes>
+          <Route path="/plano" element={<PlanoPage />} />
+        </Routes>
+      </MemoryRouter>
+    </ThemeProvider>
   )
 
 describe('PlanoPage', () => {

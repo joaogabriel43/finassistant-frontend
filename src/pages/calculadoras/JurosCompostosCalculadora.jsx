@@ -23,21 +23,24 @@ import {
     XAxis,
     YAxis,
 } from 'recharts';
+import { useTheme } from '@mui/material/styles';
 import { useJurosCompostos } from '../../hooks/useJurosCompostos';
 import { formatCurrency } from '../../utils/formatCurrency';
 
-const cardStyle = {
+// Funcao do tema: a hairline precisa mudar entre claro e escuro. Como o `sx`
+// do MUI aceita callback com o tema, `sx={cardStyle}` continua valido.
+const cardStyle = (t) => ({
     p: 3,
-    border: '1px solid rgba(255,255,255,0.08)',
+    border: `1px solid ${t.palette.lines.subtle}`,
     borderRadius: '16px',
     boxShadow: 'none',
-};
+});
 
-const PERFIS = [
-    { key: 'Conservador', color: '#64B5F6', taxa: '6% aa' },
-    { key: 'Moderado',    color: '#81C784', taxa: '8% aa' },
-    { key: 'Arrojado',    color: '#9575CD', taxa: '12% aa' },
-];
+const perfis = (t) => ([
+    { key: 'Conservador', color: t.palette.series[1], taxa: '6% aa' },
+    { key: 'Moderado',    color: t.palette.series[3], taxa: '8% aa' },
+    { key: 'Arrojado',    color: t.palette.series[4], taxa: '12% aa' },
+]);
 
 const applyMask = (value) =>
     value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -46,6 +49,8 @@ const stripMask = (value) =>
     Number(String(value).replace(/\./g, '')) || 0;
 
 const JurosCompostosCalculadora = () => {
+    const theme = useTheme();
+    const PERFIS = perfis(theme);
     const { loading, error, resultado, calcular } = useJurosCompostos();
 
     const [patrimonioInicial, setPatrimonioInicial] = useState('');
@@ -135,7 +140,7 @@ const JurosCompostosCalculadora = () => {
                                     { value: 360, label: '30a' },
                                     { value: 600, label: '50a' },
                                 ]}
-                                sx={{ color: '#7C6AF7' }}
+                                sx={{ color: 'primary.main' }}
                             />
                         </Grid>
                         <Grid size={{ xs: 12 }}>
@@ -144,7 +149,7 @@ const JurosCompostosCalculadora = () => {
                                     <Switch
                                         checked={usarDadosReais}
                                         onChange={(e) => setUsarDadosReais(e.target.checked)}
-                                        sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#7C6AF7' } }}
+                                        sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: 'primary.main' } }}
                                     />
                                 }
                                 label={
@@ -184,7 +189,7 @@ const JurosCompostosCalculadora = () => {
             {resultado && (
                 <Box sx={{ mt: 3 }}>
                     {/* Total investido */}
-                    <Card sx={{ ...cardStyle, mb: 2 }}>
+                    <Card sx={(t) => ({ ...cardStyle(t), mb: 2 })}>
                         <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
                             <Typography variant="body2" sx={{ color: 'text.secondary', mb: 0.5 }}>
                                 Total investido no período
@@ -196,7 +201,7 @@ const JurosCompostosCalculadora = () => {
                                 <Chip
                                     label="Baseado nos seus dados reais"
                                     size="small"
-                                    sx={{ mt: 1, bgcolor: 'rgba(124,106,247,0.15)', color: '#7C6AF7', fontSize: 11 }}
+                                    sx={(t) => ({ mt: 1, bgcolor: t.palette.accent.primarySoft, color: 'primary.main', fontSize: 11 })}
                                 />
                             )}
                         </CardContent>
@@ -210,7 +215,7 @@ const JurosCompostosCalculadora = () => {
                                 <Grid key={cenario.perfil} size={{ xs: 12, md: 4 }}>
                                     <Card
                                         sx={{
-                                            ...cardStyle,
+                                            ...cardStyle(theme),
                                             borderColor: `${perfil.color}33`,
                                             background: `linear-gradient(135deg, ${perfil.color}12, ${perfil.color}06)`,
                                         }}
@@ -249,24 +254,24 @@ const JurosCompostosCalculadora = () => {
                                 <Box sx={{ width: '100%', height: 280 }}>
                                     <ResponsiveContainer width="100%" height="100%">
                                         <AreaChart data={dadosGrafico} margin={{ top: 4, right: 8, left: 8, bottom: 4 }}>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                                            <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.chart.grid} />
                                             <XAxis
                                                 dataKey="mes"
-                                                tick={{ fill: '#8B8BA8', fontSize: 11 }}
-                                                label={{ value: 'Meses', position: 'insideBottom', offset: -2, fill: '#8B8BA8', fontSize: 11 }}
+                                                tick={{ fill: theme.palette.text.secondary, fontSize: 11 }}
+                                                label={{ value: 'Meses', position: 'insideBottom', offset: -2, fill: theme.palette.text.secondary, fontSize: 11 }}
                                             />
                                             <YAxis
                                                 tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`}
-                                                tick={{ fill: '#8B8BA8', fontSize: 11 }}
+                                                tick={{ fill: theme.palette.text.secondary, fontSize: 11 }}
                                                 width={70}
                                             />
                                             <Tooltip
                                                 formatter={(value, name) => [formatCurrency(value), name]}
-                                                contentStyle={{ backgroundColor: '#1A1A2E', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8 }}
+                                                contentStyle={{ backgroundColor: theme.palette.surfaces.raised, border: `1px solid ${theme.palette.lines.subtle}`, borderRadius: 8 }}
                                             />
-                                            <Area type="monotone" dataKey="Conservador" stroke="#64B5F6" fill="#64B5F620" strokeWidth={2} dot={false} />
-                                            <Area type="monotone" dataKey="Moderado"    stroke="#81C784" fill="#81C78420" strokeWidth={2} dot={false} />
-                                            <Area type="monotone" dataKey="Arrojado"    stroke="#9575CD" fill="#9575CD20" strokeWidth={2} dot={false} />
+                                            <Area type="monotone" dataKey="Conservador" stroke={theme.palette.series[1]} fill={`${theme.palette.series[1]}20`} strokeWidth={2} dot={false} />
+                                            <Area type="monotone" dataKey="Moderado"    stroke={theme.palette.series[3]} fill={`${theme.palette.series[3]}20`} strokeWidth={2} dot={false} />
+                                            <Area type="monotone" dataKey="Arrojado"    stroke={theme.palette.series[4]} fill={`${theme.palette.series[4]}20`} strokeWidth={2} dot={false} />
                                         </AreaChart>
                                     </ResponsiveContainer>
                                 </Box>

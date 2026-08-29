@@ -93,6 +93,17 @@ describe('Registro — política de senha (ADR-028)', () => {
   });
 });
 
+describe('Registro — integração com a navegação pública', () => {
+  it('exibe o header público com logo e navegação de volta ao início', () => {
+    renderRegistro();
+
+    expect(screen.getByTestId('public-header')).toBeInTheDocument();
+    expect(screen.getByTestId('theme-toggle')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Pondero' })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: /voltar ao início/i })).toHaveAttribute('href', '/');
+  });
+});
+
 describe('Registro — confirmação de senha', () => {
   beforeEach(() => {
     vi.clearAllMocks();

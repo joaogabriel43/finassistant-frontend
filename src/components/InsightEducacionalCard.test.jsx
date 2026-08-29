@@ -1,6 +1,8 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
+import { render as renderRTL, screen, fireEvent, waitFor, act } from '@testing-library/react'
+import { ThemeProvider } from '@mui/material/styles'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
+import theme from '../theme'
 
 // ← RED: InsightEducacionalCard.jsx não existe ainda — import falha na compilação
 import InsightEducacionalCard from './InsightEducacionalCard'
@@ -12,6 +14,10 @@ vi.mock('../services/api', () => ({
 }))
 
 import api from '../services/api'
+
+// O card le tokens customizados do tema (radius, lines, accent) — precisa do
+// ThemeProvider no teste, como manda o design system do projeto.
+const render = (ui) => renderRTL(<ThemeProvider theme={theme}>{ui}</ThemeProvider>)
 
 // ── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -27,7 +33,9 @@ const COR_POR_TIPO = {
   FUNDO_EMERGENCIA:       '#F59E0B',
   SCORE_SAUDE_BAIXO:      '#EF4444',
   REGRA_50_30_20:         '#3B82F6',
-  DIVERSIFICACAO_PORTFOLIO: '#7C3AED',
+  // Era o roxo da paleta antiga (#7C3AED). Aponta para o token de marca do
+  // tema — o mapa aqui so enumera os TipoInsight, nao e asserido como cor.
+  DIVERSIFICACAO_PORTFOLIO: theme.palette.primary.main,
   CONSISTENCIA_APORTES:   '#10B981',
   MAIOR_CATEGORIA_GASTO:  '#6B7280',
 }
@@ -67,15 +75,15 @@ describe('InsightEducacionalCard', () => {
     expect(screen.getByRole('button', { name: /entendi/i })).toBeInTheDocument()
   })
 
-  // 4. Clicar "Entendi" chama POST /api/insights/{id}/visto
-  it('clicar "Entendi" chama POST /api/insights/{id}/visto', async () => {
+  // 4. Clicar "Entendi" chama POST /insights/{id}/visto
+  it('clicar "Entendi" chama POST /insights/{id}/visto', async () => {
     render(<InsightEducacionalCard insight={MOCK_INSIGHT} onDismiss={onDismiss} />)
 
     fireEvent.click(screen.getByRole('button', { name: /entendi/i }))
 
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith(
-        `/api/insights/${MOCK_INSIGHT.id}/visto`
+        `/insights/${MOCK_INSIGHT.id}/visto`
       )
     })
   })
@@ -146,5 +154,15 @@ describe('InsightEducacionalCard', () => {
     // "3 a 6 meses" está entre ** no conteúdo — deve virar <strong>
     const strongEl = screen.getByText(/3 a 6 meses/i)
     expect(strongEl.tagName).toBe('STRONG')
+  })
+  // 8. Hierarquia de cabecalho: o titulo do insight e o cabecalho DA SECAO,
+  //    e as demais secoes do dashboard usam h2. Um h3 aqui pularia nivel
+  //    (h1 do cabecalho -> h3), quebrando a navegacao por cabecalhos de
+  //    leitor de tela (WCAG 2.2 AA, 1.3.1).
+  it('expoe o titulo do insight como cabecalho de nivel 2', () => {
+    render(<InsightEducacionalCard insight={MOCK_INSIGHT} onDismiss={onDismiss} />)
+    expect(
+      screen.getByRole('heading', { level: 2, name: MOCK_INSIGHT.titulo })
+    ).toBeInTheDocument()
   })
 })

@@ -4,7 +4,7 @@ import {
     Accordion, AccordionDetails, AccordionSummary, Box, Button, Chip, Container,
     Divider, Grid, IconButton, Link, Paper, Typography,
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
@@ -17,10 +17,8 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import CreditCardOffOutlinedIcon from '@mui/icons-material/CreditCardOffOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import GitHubIcon from '@mui/icons-material/GitHub';
-import LinkedInIcon from '@mui/icons-material/LinkedIn';
-import InstagramIcon from '@mui/icons-material/Instagram';
-import XIcon from '@mui/icons-material/X';
 import useInView from '../components/landing/useInView';
+import PublicHeader from '../components/public/PublicHeader';
 
 /**
  * Landing page pública v2 (ADR-039/ADR-042): scroll próprio (o app confina o
@@ -29,12 +27,10 @@ import useInView from '../components/landing/useInView';
  * chamada de API, nenhum input — superfície de ataque nula.
  */
 
-const ACENTO = '#7C6AF7';
-
 const FEATURES = [
-    { icon: SmartToyOutlinedIcon, titulo: 'Assistente com IA', texto: 'Registre gastos e consulte investimentos conversando: "gastei R$ 50 no mercado" vira lançamento na hora.' },
+    { icon: SmartToyOutlinedIcon, titulo: 'Organização assistida', texto: 'Registre gastos em linguagem natural e mantenha seu orçamento atualizado sem interromper sua rotina.' },
     { icon: AccountBalanceWalletOutlinedIcon, titulo: 'Orçamento inteligente', texto: 'Limites por categoria com projeção de estouro, calendário de gastos, cartões virtuais e assinaturas detectadas automaticamente.' },
-    { icon: ShowChartIcon, titulo: 'Investimentos e risco', texto: 'Carteira consolidada, estratégia por setores, correlação, fronteira eficiente e preço-teto por Bazin e Graham.' },
+    { icon: ShowChartIcon, titulo: 'Carteira e análises', texto: 'Acompanhe carteira, setores, correlação, simulações de alocação e metodologias de preço-teto em uma visão organizada.' },
     { icon: ReceiptLongOutlinedIcon, titulo: 'IR da bolsa sem susto', texto: 'Apuração mensal com isenção de R$ 20 mil, compensação de prejuízos, DARF pronto e relatório anual para a declaração.' },
     { icon: QrCodeScannerIcon, titulo: 'Scanner de notas fiscais', texto: 'Aponte para o QR Code da NF-e e os itens entram categorizados no seu orçamento.' },
     { icon: GroupOutlinedIcon, titulo: 'Orçamento a dois', texto: 'Compartilhe as finanças com quem divide a vida com você — visão unificada, contas separadas.' },
@@ -42,22 +38,22 @@ const FEATURES = [
 
 const STATS = [
     { numero: '35+', rotulo: 'ferramentas de orçamento, investimento e IR' },
-    { numero: '960+', rotulo: 'testes automatizados garantindo cada cálculo' },
+    { numero: 'Acesso antecipado', rotulo: 'Pondero está em desenvolvimento' },
     { numero: '100%', rotulo: 'em conformidade com a LGPD, por design' },
     { numero: 'R$ 0', rotulo: 'para começar — sem cartão de crédito' },
 ];
 
 const PASSOS = [
-    { n: '1', titulo: 'Crie sua conta grátis', texto: 'Sem cartão de crédito, sem burocracia.' },
-    { n: '2', titulo: 'Conecte sua rotina', texto: 'Lance pelo chat, importe extratos ou escaneie notas.' },
-    { n: '3', titulo: 'Decida com clareza', texto: 'Dashboards, alertas e análises trabalham por você.' },
+    { n: '1', titulo: 'Organize sua base', texto: 'Crie sua conta e defina como quer acompanhar sua vida financeira.' },
+    { n: '2', titulo: 'Centralize sua rotina', texto: 'Registre gastos, importe extratos e acompanhe investimentos em um só lugar.' },
+    { n: '3', titulo: 'Decida com clareza', texto: 'Dashboards, análises e simulações ajudam você a entender cenários e próximos passos.' },
 ];
 
 const FAQ = [
-    { p: 'O FortunAI é gratuito?', r: 'Sim — o plano gratuito cobre o essencial do orçamento e dos investimentos. Recursos avançados (como a apuração de IR e análises exclusivas) fazem parte do plano Premium.' },
+    { p: 'O Pondero é gratuito?', r: 'Sim — o plano gratuito cobre o essencial do orçamento e dos investimentos. Recursos avançados (como a apuração de IR e análises exclusivas) fazem parte do plano Premium.' },
     { p: 'Preciso informar dados do meu banco ou cartão?', r: 'Não. Você lança pelo chat, importa extratos CSV/OFX ou escaneia notas fiscais. Os cartões do orçamento são 100% virtuais — nunca pedimos número real, CVV ou validade.' },
     { p: 'Meus dados estão seguros?', r: 'Senhas com bcrypt, sessão com tokens rotativos de curta duração, consentimento LGPD explícito e exclusão total da conta quando você quiser.' },
-    { p: 'A IA toma decisões pelo meu dinheiro?', r: 'Nunca. A IA interpreta o que você escreve; todos os números e análises são calculados de forma determinística pelo sistema — e nada aqui é recomendação de investimento.' },
+    { p: 'Como a IA participa da experiência?', r: 'A IA ajuda a interpretar registros em linguagem natural e a organizar informações. Análises, simulações e cálculos financeiros seguem regras determinísticas do sistema, mantendo você no controle das decisões.' },
 ];
 
 const ANCORAS = [
@@ -74,10 +70,10 @@ const MediaPlaceholder = ({ label, icon: Icon, testid }) => {
             sx={{
                 width: '100%', aspectRatio: '16 / 9', borderRadius: '16px',
                 border: `1px dashed ${theme.palette.divider}`,
-                background: 'linear-gradient(135deg, rgba(124,106,247,0.14) 0%, rgba(124,106,247,0.03) 100%)',
+                background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.14)} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1,
             }}>
-            <Icon sx={{ fontSize: 56, color: ACENTO, opacity: 0.85 }} />
+            <Icon sx={{ fontSize: 56, color: 'primary.main', opacity: 0.85 }} />
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>{label}</Typography>
         </Box>
     );
@@ -101,8 +97,8 @@ const LandingPage = () => {
     const theme = useTheme();
 
     useEffect(() => {
-        document.title = 'FortunAI — Assistente financeiro com IA';
-        return () => { document.title = 'FortunAI'; };
+        document.title = 'Pondero — Clareza para organizar suas finanças';
+        return () => { document.title = 'Pondero'; };
     }, []);
 
     const irPara = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -112,56 +108,27 @@ const LandingPage = () => {
             height: '100vh', overflowY: 'auto', overflowX: 'hidden',
             bgcolor: 'background.default', color: 'text.primary', scrollBehavior: 'smooth',
         }}>
-            {/* Header sticky translúcido */}
-            <Box component="header" sx={{
-                position: 'sticky', top: 0, zIndex: 10,
-                backdropFilter: 'blur(12px)', bgcolor: 'rgba(10,10,15,0.75)',
-                borderBottom: `1px solid ${theme.palette.divider}`,
-            }}>
-                <Container maxWidth="lg">
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1.5 }}>
-                        <Typography variant="h6" fontWeight={700} sx={{ color: ACENTO, letterSpacing: '-0.5px' }}>
-                            FortunAI
-                        </Typography>
-                        <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2.5 }}>
-                            {ANCORAS.map((a) => (
-                                <Button key={a.id} size="small" variant="text" color="inherit"
-                                    onClick={() => irPara(a.id)} sx={{ color: 'text.secondary' }}>
-                                    {a.label}
-                                </Button>
-                            ))}
-                        </Box>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                            <Button component={RouterLink} to="/login" variant="text" data-testid="landing-btn-entrar">
-                                Entrar
-                            </Button>
-                            <Button component={RouterLink} to="/registrar" variant="contained" data-testid="landing-btn-criar-conta">
-                                Criar conta grátis
-                            </Button>
-                        </Box>
-                    </Box>
-                </Container>
-            </Box>
+            <PublicHeader anchors={ANCORAS} onNavigateSection={irPara} />
 
             <Container maxWidth="lg" component="main">
                 {/* Hero com glow */}
                 <Box sx={{ position: 'relative' }}>
                     <Box aria-hidden sx={{
                         position: 'absolute', top: -120, right: -180, width: 480, height: 480,
-                        background: 'radial-gradient(circle, rgba(124,106,247,0.22) 0%, transparent 65%)',
+                        background: `radial-gradient(circle, ${alpha(theme.palette.primary.main, 0.22)} 0%, transparent 65%)`,
                         pointerEvents: 'none',
                     }} />
                     <Grid container spacing={6} alignItems="center" sx={{ py: { xs: 6, md: 10 } }}>
                         <Grid size={{ xs: 12, md: 6 }}>
                             <Reveal>
-                                <Chip label="Orçamento + investimentos + IA em um só lugar" size="small"
-                                    sx={{ mb: 2, bgcolor: 'rgba(124,106,247,0.15)', color: '#A99DF9', fontWeight: 600 }} />
+                                <Chip label="Orçamento e investimentos em uma visão integrada" size="small"
+                                    sx={{ mb: 2, bgcolor: alpha(theme.palette.primary.main, 0.15), color: 'primary.main', fontWeight: 600 }} />
                                 <Typography component="h1" variant="h3" fontWeight={800} sx={{ letterSpacing: '-1px', mb: 2 }}>
-                                    Suas finanças, guiadas por inteligência artificial
+                                    Clareza para organizar suas finanças e planejar o futuro
                                 </Typography>
                                 <Typography variant="h6" sx={{ color: 'text.secondary', fontWeight: 400, mb: 3 }}>
-                                    Controle gastos, acompanhe investimentos e apure seu IR da bolsa —
-                                    conversando com um assistente que entende você.
+                                    Acompanhe orçamento, investimentos e IR em uma visão integrada —
+                                    com análises, insights e simulações para entender melhor suas escolhas.
                                 </Typography>
                                 <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
                                     <Button component={RouterLink} to="/registrar" variant="contained" size="large"
@@ -192,7 +159,7 @@ const LandingPage = () => {
                         <Grid container spacing={2}>
                             {STATS.map((s) => (
                                 <Grid key={s.rotulo} size={{ xs: 6, md: 3 }}>
-                                    <Typography variant="h4" fontWeight={800} sx={{ color: ACENTO }}>{s.numero}</Typography>
+                                    <Typography variant="h4" fontWeight={800} sx={{ color: 'primary.main' }}>{s.numero}</Typography>
                                     <Typography variant="caption" sx={{ color: 'text.secondary' }}>{s.rotulo}</Typography>
                                 </Grid>
                             ))}
@@ -206,10 +173,10 @@ const LandingPage = () => {
                     <Reveal>
                         <Typography id="landing-features-titulo" component="h2" variant="h4" fontWeight={700}
                             sx={{ textAlign: 'center', mb: 1 }}>
-                            Tudo o que os apps de finanças fazem. E o que eles não fazem.
+                            Orçamento e investimentos conectados à sua rotina
                         </Typography>
                         <Typography variant="body1" sx={{ textAlign: 'center', color: 'text.secondary', mb: 5 }}>
-                            Do lançamento por chat à fronteira eficiente de Markowitz.
+                            Da organização dos gastos às análises da carteira, tudo em uma visão integrada.
                         </Typography>
                     </Reveal>
                     <Grid container spacing={3}>
@@ -220,9 +187,9 @@ const LandingPage = () => {
                                         p: 3, height: '100%', borderRadius: '16px', boxShadow: 'none',
                                         border: `1px solid ${theme.palette.divider}`,
                                         transition: 'transform 0.25s ease, border-color 0.25s ease',
-                                        '&:hover': { transform: 'translateY(-4px)', borderColor: 'rgba(124,106,247,0.5)' },
+                                        '&:hover': { transform: 'translateY(-4px)', borderColor: alpha(theme.palette.primary.main, 0.5) },
                                     }}>
-                                        <f.icon sx={{ color: ACENTO, fontSize: 32, mb: 1.5 }} />
+                                        <f.icon sx={{ color: 'primary.main', fontSize: 32, mb: 1.5 }} />
                                         <Typography component="h3" variant="subtitle1" fontWeight={700} sx={{ mb: 0.5 }}>
                                             {f.titulo}
                                         </Typography>
@@ -251,7 +218,7 @@ const LandingPage = () => {
                                         <Box sx={{
                                             width: 44, height: 44, borderRadius: '50%', mx: 'auto', mb: 1.5,
                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            bgcolor: 'rgba(124,106,247,0.15)', color: ACENTO, fontWeight: 800,
+                                            bgcolor: alpha(theme.palette.primary.main, 0.15), color: 'primary.main', fontWeight: 800,
                                         }}>{p.n}</Box>
                                         <Typography component="h3" variant="subtitle1" fontWeight={700}>{p.titulo}</Typography>
                                         <Typography variant="body2" sx={{ color: 'text.secondary' }}>{p.texto}</Typography>
@@ -284,7 +251,7 @@ const LandingPage = () => {
                                 ].map((s, i) => (
                                     <Grid key={i} size={{ xs: 12, md: 4 }}>
                                         <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
-                                            <s.icon sx={{ color: ACENTO }} />
+                                            <s.icon sx={{ color: 'primary.main' }} />
                                             <Typography variant="body2" sx={{ color: 'text.secondary' }}>{s.texto}</Typography>
                                         </Box>
                                     </Grid>
@@ -333,31 +300,19 @@ const LandingPage = () => {
 
             {/* Footer completo */}
             <Divider />
-            <Box component="footer" data-testid="landing-footer" sx={{ bgcolor: 'rgba(255,255,255,0.02)' }}>
+            <Box component="footer" data-testid="landing-footer" sx={{ bgcolor: 'background.paper' }}>
                 <Container maxWidth="lg">
                     <Grid container spacing={4} sx={{ py: 5 }}>
                         <Grid size={{ xs: 12, md: 4 }}>
-                            <Typography variant="h6" fontWeight={700} sx={{ color: ACENTO, mb: 1 }}>FortunAI</Typography>
+                            <Typography variant="h6" fontWeight={700} sx={{ color: 'primary.main', mb: 1 }}>Pondero</Typography>
                             <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
-                                Assistente financeiro pessoal com inteligência artificial —
-                                orçamento, investimentos e IR em um só lugar.
+                                Plataforma de organização financeira que integra orçamento,
+                                investimentos e IR em um só lugar.
                             </Typography>
                             <Box sx={{ display: 'flex', gap: 0.5 }}>
-                                <IconButton size="small" aria-label="GitHub do FortunAI"
-                                    component="a" href="https://github.com/joaogabriel43" target="_blank" rel="noopener noreferrer">
+                                <IconButton size="small" aria-label="GitHub do Pondero"
+                                    component="a" href="https://github.com/joaogabriel43/fortunai-frontend" target="_blank" rel="noopener noreferrer">
                                     <GitHubIcon fontSize="small" />
-                                </IconButton>
-                                <IconButton size="small" aria-label="LinkedIn do FortunAI"
-                                    component="a" href="#" rel="noopener noreferrer">
-                                    <LinkedInIcon fontSize="small" />
-                                </IconButton>
-                                <IconButton size="small" aria-label="Instagram do FortunAI"
-                                    component="a" href="#" rel="noopener noreferrer">
-                                    <InstagramIcon fontSize="small" />
-                                </IconButton>
-                                <IconButton size="small" aria-label="X (Twitter) do FortunAI"
-                                    component="a" href="#" rel="noopener noreferrer">
-                                    <XIcon fontSize="small" />
                                 </IconButton>
                             </Box>
                         </Grid>
@@ -388,10 +343,10 @@ const LandingPage = () => {
                     <Divider />
                     <Box sx={{ py: 2.5, display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'space-between' }}>
                         <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                            © 2026 FortunAI — Assistente Financeiro. Todos os direitos reservados.
+                            © 2026 Pondero — Organização Financeira. Todos os direitos reservados.
                         </Typography>
                         <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                            Feito no Brasil 🇧🇷 • As análises do FortunAI não são recomendação de investimento.
+                            Feito no Brasil 🇧🇷 • Análises e simulações para apoiar decisões mais conscientes.
                         </Typography>
                     </Box>
                 </Container>

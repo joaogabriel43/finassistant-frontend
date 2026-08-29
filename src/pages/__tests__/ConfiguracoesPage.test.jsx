@@ -1,7 +1,9 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
+import { render as renderRTL, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import Configuracoes from '../Configuracoes'
+import { ThemeProvider } from '@mui/material/styles'
+import theme from '../../theme'
 
 // ── Mocks ──────────────────────────────────────────────────────────────────
 
@@ -49,6 +51,11 @@ beforeEach(() => {
 })
 
 // ── Testes ─────────────────────────────────────────────────────────────────
+
+// O componente le tokens customizados do tema (palette.lines / palette.surfaces
+// / palette.series), entao precisa do ThemeProvider no teste — regra do
+// design system.
+const render = (ui) => renderRTL(<ThemeProvider theme={theme}>{ui}</ThemeProvider>)
 
 describe('Configuracoes — pagina de configuracoes', () => {
 

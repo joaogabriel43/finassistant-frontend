@@ -1,7 +1,9 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render as renderRTL, screen, fireEvent, waitFor } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import FluxoCaixa from '../FluxoCaixa'
+import { ThemeProvider } from '@mui/material/styles'
+import theme from '../../theme'
 
 // --- MOCK: AuthContext ---
 vi.mock('../../contexts/AuthContext', () => ({
@@ -54,6 +56,11 @@ const mockProjecao30 = {
 
 const mockProjecao60 = { ...mockProjecao30, periodo: 60, saldoProjetado: 8600.0, receitasEsperadas: 6000.0, despesasEsperadas: 2400.0 }
 const mockProjecao90 = { ...mockProjecao30, periodo: 90, saldoProjetado: 10400.0, receitasEsperadas: 9000.0, despesasEsperadas: 3600.0 }
+
+// O componente le tokens customizados do tema (palette.lines / palette.surfaces
+// / palette.series), entao precisa do ThemeProvider no teste — regra do
+// design system.
+const render = (ui) => renderRTL(<ThemeProvider theme={theme}>{ui}</ThemeProvider>)
 
 describe('FluxoCaixaPage', () => {
   let useAuth

@@ -1,7 +1,9 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render as renderRTL, screen, fireEvent, waitFor } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import FireCalculator from '../FireCalculator'
+import { ThemeProvider } from '@mui/material/styles'
+import theme from '../../theme'
 
 // --- MOCK: AuthContext ---
 vi.mock('../../contexts/AuthContext', () => ({
@@ -23,6 +25,10 @@ vi.mock('recharts', async (importOriginal) => {
     ),
   }
 })
+
+// A pagina le tokens customizados do tema (palette.series / palette.lines),
+// entao precisa do ThemeProvider no teste — regra do design system.
+const render = (ui) => renderRTL(<ThemeProvider theme={theme}>{ui}</ThemeProvider>)
 
 describe('FireCalculatorPage', () => {
   let useAuth

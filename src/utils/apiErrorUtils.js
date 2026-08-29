@@ -1,5 +1,5 @@
 /**
- * Extrai uma mensagem humana de um erro Axios vindo do backend FortunAI.
+ * Extrai uma mensagem humana de um erro Axios vindo do backend Pondero.
  *
  * Formatos conhecidos do GlobalExceptionHandler:
  *  - 400 Bean Validation: { status, error: "Validation Failed", fields: { campo: mensagem } }

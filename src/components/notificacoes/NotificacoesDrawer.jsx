@@ -11,11 +11,11 @@ import InsightsIcon from '@mui/icons-material/Insights'
 import CloseIcon from '@mui/icons-material/Close'
 
 const TIPO_ICONE = {
-  PRECO: <TrendingUpIcon fontSize="small" sx={{ color: '#00bcd4' }} />,
-  GASTO: <AccountBalanceWalletIcon fontSize="small" sx={{ color: '#ff9800' }} />,
-  PORTFOLIO: <InsightsIcon fontSize="small" sx={{ color: '#9c27b0' }} />,
-  DIGEST_SEMANAL: <BarChartIcon fontSize="small" sx={{ color: '#4caf50' }} />,
-  META_ATINGIDA: <TrendingUpIcon fontSize="small" sx={{ color: '#4ade80' }} />,
+  PRECO: <TrendingUpIcon fontSize="small" sx={{ color: 'info.main' }} />,
+  GASTO: <AccountBalanceWalletIcon fontSize="small" sx={{ color: 'warning.main' }} />,
+  PORTFOLIO: <InsightsIcon fontSize="small" sx={{ color: 'secondary.main' }} />,
+  DIGEST_SEMANAL: <BarChartIcon fontSize="small" sx={{ color: 'primary.main' }} />,
+  META_ATINGIDA: <TrendingUpIcon fontSize="small" sx={{ color: 'success.main' }} />,
 }
 
 function tempoRelativo(criadaEm) {
@@ -40,7 +40,7 @@ export default function NotificacoesDrawer({ open, onClose, notificacoes = [], o
       anchor="right"
       open={open}
       onClose={onClose}
-      PaperProps={{ sx: { width: 360, bgcolor: '#1a1a24', color: 'text.primary' } }}
+      PaperProps={{ sx: { width: 360, bgcolor: 'background.paper', color: 'text.primary' } }}
     >
       <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Typography variant="h6" fontWeight={600}>
@@ -56,7 +56,7 @@ export default function NotificacoesDrawer({ open, onClose, notificacoes = [], o
         </Box>
       </Box>
 
-      <Divider sx={{ borderColor: 'rgba(255,255,255,0.08)' }} />
+      <Divider sx={(t) => ({ borderColor: t.palette.lines.subtle })} />
 
       {notificacoes.length === 0 ? (
         <Box sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>
@@ -72,8 +72,8 @@ export default function NotificacoesDrawer({ open, onClose, notificacoes = [], o
                 onClick={() => !n.lida && onMarcarComoLida(n.id)}
                 sx={{
                   cursor: n.lida ? 'default' : 'pointer',
-                  bgcolor: n.lida ? 'transparent' : 'rgba(255,255,255,0.04)',
-                  '&:hover': { bgcolor: 'rgba(255,255,255,0.06)' },
+                  bgcolor: (t) => (n.lida ? 'transparent' : t.palette.surfaces.surfaceSoft),
+                  '&:hover': { bgcolor: (t) => t.palette.surfaces.raised },
                   px: 2, py: 1.5,
                 }}
               >
@@ -104,7 +104,7 @@ export default function NotificacoesDrawer({ open, onClose, notificacoes = [], o
                   }
                 />
               </ListItem>
-              <Divider sx={{ borderColor: 'rgba(255,255,255,0.04)' }} />
+              <Divider sx={(t) => ({ borderColor: t.palette.lines.subtle })} />
             </React.Fragment>
           ))}
         </List>

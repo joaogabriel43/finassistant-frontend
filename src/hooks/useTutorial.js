@@ -6,7 +6,7 @@ const STEPS = [
   {
     target: '[data-tutorial="chat"]',
     title: 'Fale com seu assistente',
-    description: 'Digite qualquer coisa: "gastei 50 reais no mercado" ou "comprei 20 ações de PETR4". O FortunAI entende linguagem natural em português.',
+    description: 'Digite qualquer coisa: "gastei 50 reais no mercado" ou "comprei 20 ações de PETR4". O Pondero entende linguagem natural em português.',
     placement: 'right',
   },
   {

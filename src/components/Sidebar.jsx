@@ -1,8 +1,9 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
-import { Box, Chip, Typography } from '@mui/material'
+import { Box, Chip, Typography, useTheme } from '@mui/material'
 import NotificacoesBadge from './notificacoes/NotificacoesBadge'
 import UserMenu from './layout/UserMenu'
+import ThemeToggle from './layout/ThemeToggle'
 import PlanoBadge from './plano/PlanoBadge'
 import usePlano from '../hooks/usePlano'
 
@@ -22,6 +23,9 @@ const NAV_LINKS = [
 
 const Sidebar = () => {
   const { isPremium } = usePlano()
+  // NavLink usa `style` (função), fora do sistema `sx` do MUI — por isso os
+  // tokens precisam ser lidos do tema aqui, e não escritos à mão.
+  const theme = useTheme()
 
   return (
     <Box
@@ -34,19 +38,24 @@ const Sidebar = () => {
         overflow: 'hidden',
       }}
     >
-      {/* TOPO: Layout em 2 linhas para caber nos 220px da sidebar
-           Linha 1: [FortunAI]  →  [🔔] [J]
-           Linha 2: [Assistente Financeiro] [Free/Premium]         */}
+      {/* TOPO: 3 linhas empilhadas para caber nos 220px da sidebar.
+           A logo (≈111px medidos) + os 3 controles (≈120px) somavam ~231px
+           numa faixa util de 180px — o excedente era engolido pelo
+           `overflow: hidden` do drawer e o AVATAR (ultimo da fila) sumia
+           cortado. Cada bloco agora tem a largura inteira para si.
+           Linha 1: [Pondero]
+           Linha 2: [Assistente Financeiro] [Free/Premium]
+           Linha 3: [tema] [🔔] [J]  — alinhados à direita          */}
       <Box
         sx={{
           px: 2.5,
           pt: 2,
           pb: 1.5,
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          borderBottom: `1px solid ${theme.palette.lines.subtle}`,
           flexShrink: 0,
         }}
       >
-        {/* Linha 1: Logo ←→ Controles */}
+        {/* Linha 1: Logo */}
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           {/* Logo clicável — convenção universal de web: marca leva à home */}
           <Typography
@@ -54,63 +63,113 @@ const Sidebar = () => {
             to="/dashboard"
             variant="h6"
             fontWeight={700}
-            data-testid="logo-fortunai"
+            data-testid="logo-pondero"
             sx={{
-              color: '#7C6AF7',
-              letterSpacing: '-0.5px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              color: 'text.primary',
+              letterSpacing: '-0.04em',
               lineHeight: 1.2,
               textDecoration: 'none',
               cursor: 'pointer',
               '&:hover': { opacity: 0.85 },
             }}
           >
-            FortunAI
+            {/* Marca geométrica do protótipo — decorativa, sem conteúdo semântico */}
+            <Box
+              aria-hidden="true"
+              sx={{
+                position: 'relative',
+                width: 26,
+                height: 26,
+                flexShrink: 0,
+                borderRadius: '9px',
+                border: `1px solid ${theme.palette.primary.main}`,
+                backgroundColor: theme.palette.accent.primarySoft,
+                '&::before, &::after': {
+                  content: '""',
+                  position: 'absolute',
+                  left: '6px',
+                  height: '2px',
+                  borderRadius: '999px',
+                  backgroundColor: theme.palette.primary.main,
+                },
+                '&::before': { top: '8px', width: '12px', transform: 'rotate(24deg)' },
+                '&::after': { top: '15px', width: '14px', transform: 'rotate(-24deg)' },
+              }}
+            />
+            Pondero
           </Typography>
-
-          {/* Notificações + Avatar — visíveis apenas em desktop */}
-          <Box
-            sx={{
-              display: { xs: 'none', md: 'flex' },
-              alignItems: 'center',
-              gap: 0.5,
-              flexShrink: 0,
-            }}
-          >
-            <NotificacoesBadge />
-            <UserMenu />
-          </Box>
         </Box>
 
         {/* Linha 2: Subtítulo + Badge de plano */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.25 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.75,
+            rowGap: 0.5,
+            flexWrap: 'wrap',
+            mt: 0.25,
+          }}
+        >
           <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 11 }}>
             Assistente Financeiro
           </Typography>
           <PlanoBadge />
+        </Box>
+
+        {/* Linha 3: Tema + Notificações + Avatar — apenas em desktop.
+            No mobile esses mesmos controles vivem no AppBar do Layout. */}
+        <Box
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            gap: 0.25,
+            mt: 0.5,
+          }}
+        >
+          <ThemeToggle />
+          <NotificacoesBadge />
+          <UserMenu />
         </Box>
       </Box>
 
       {/* MEIO: Navegação */}
       <Box component="nav" sx={{ flexGrow: 1, px: 1.5, py: 2, overflow: 'hidden' }}>
         {NAV_LINKS.map(({ to, label, tutorial, premiumOnly }) => (
-          <NavLink
+          <Box
             key={to}
+            component={NavLink}
             to={to}
             {...(tutorial ? { 'data-tutorial': tutorial } : {})}
-            style={({ isActive }) => ({
+            sx={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              padding: '10px 14px',
-              borderRadius: '8px',
-              marginBottom: '4px',
+              minHeight: 40,
+              px: 1.75,
+              py: 1.25,
+              mb: 0.5,
+              borderRadius: '11px',
               textDecoration: 'none',
-              color: isActive ? '#ffffff' : '#8B8BA8',
-              backgroundColor: isActive ? 'rgba(124, 106, 247, 0.15)' : 'transparent',
-              fontWeight: isActive ? 600 : 400,
+              color: 'text.secondary',
               fontSize: '0.875rem',
-              transition: 'background-color 0.15s, color 0.15s',
-            })}
+              fontWeight: 500,
+              transition: 'background-color .16s ease, color .16s ease',
+              '&:hover': {
+                backgroundColor: 'accent.primarySoft',
+                color: 'text.primary',
+              },
+              // Item ativo não depende só de cor: o peso da fonte também muda.
+              '&.active': {
+                backgroundColor: 'accent.primarySoft',
+                color: 'primary.main',
+                fontWeight: 700,
+              },
+            }}
           >
             <span>{label}</span>
             {premiumOnly && !isPremium && (
@@ -121,14 +180,14 @@ const Sidebar = () => {
                   height: 16,
                   fontSize: 9,
                   fontWeight: 700,
-                  bgcolor: 'rgba(255,215,0,0.15)',
-                  color: '#FFD700',
-                  border: '1px solid rgba(255,215,0,0.3)',
+                  bgcolor: 'transparent',
+                  color: 'accent.copperText',
+                  border: `1px solid ${theme.palette.accent.copperText}`,
                   '& .MuiChip-label': { px: 0.75 },
                 }}
               />
             )}
-          </NavLink>
+          </Box>
         ))}
       </Box>
 
@@ -138,7 +197,7 @@ const Sidebar = () => {
           sx={{
             px: 1.5,
             py: 2,
-            borderTop: '1px solid rgba(255,255,255,0.06)',
+            borderTop: `1px solid ${theme.palette.lines.subtle}`,
             flexShrink: 0,
           }}
         >

@@ -1,18 +1,46 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FortunAI</title>
-    <meta name="theme-color" content="#7C3AED">
+    <title>Pondero</title>
+    <meta name="description" content="Organize orçamento, investimentos e IR em uma visão integrada, com análises, insights e simulações para decidir com mais clareza.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Pondero">
+    <meta property="og:description" content="Organize orçamento, investimentos e IR em uma visão integrada, com análises, insights e simulações para decidir com mais clareza.">
+    <meta property="og:url" content="https://fortunai-frontend.vercel.app">
+    <meta property="og:locale" content="pt_BR">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Pondero">
+    <meta name="twitter:description" content="Organize orçamento, investimentos e IR em uma visão integrada, com análises, insights e simulações para decidir com mais clareza.">
+    <meta name="theme-color" content="#09100E">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="FortunAI">
+    <meta name="apple-mobile-web-app-title" content="Pondero">
     <link rel="apple-touch-icon" href="/icons/pwa-192x192.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+      // Anti-flash: resolve o tema ANTES do primeiro paint, para que a tela
+      // nunca apareça no modo errado enquanto o React monta.
+      // Precisa concordar com resolverModoInicial() em src/contexts/colorMode.js.
+      (function () {
+        try {
+          var salvo = localStorage.getItem('pondero-color-mode');
+          var modo = (salvo === 'light' || salvo === 'dark')
+            ? salvo
+            : (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+          var raiz = document.documentElement;
+          raiz.setAttribute('data-theme', modo);
+          raiz.style.colorScheme = modo;
+          raiz.style.backgroundColor = modo === 'light' ? '#F4EEE3' : '#09100E';
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
