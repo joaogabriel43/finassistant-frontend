@@ -116,7 +116,7 @@ const AdicionarTransacaoForm = ({ onTransacaoAdicionada }) => {
             if (!categoria || !categoria.value) { setError('Selecione ou informe uma categoria.'); return; }
             const requestData = { valor, categoria: categoria.value, descricao, tipo, data };
             await api.post(`/orcamento/transacao/${user.id}`, requestData);
-            setSuccess('Transação adicionada com sucesso!');
+            setSuccess(requestData.descricao);
             setValor('');
             setCategoria(null);
             setDescricao('');
@@ -149,8 +149,14 @@ const AdicionarTransacaoForm = ({ onTransacaoAdicionada }) => {
                 />
 
                 <FormControl size="small">
-                    <InputLabel>Tipo</InputLabel>
-                    <Select value={tipo} label="Tipo" onChange={(e) => setTipo(e.target.value)}>
+                    <InputLabel id="tipo-transacao-label">Tipo</InputLabel>
+                    <Select
+                        id="tipo-transacao"
+                        labelId="tipo-transacao-label"
+                        value={tipo}
+                        label="Tipo"
+                        onChange={(e) => setTipo(e.target.value)}
+                    >
                         <MenuItem value="SAIDA">Despesa</MenuItem>
                         <MenuItem value="ENTRADA">Receita</MenuItem>
                     </Select>
@@ -200,7 +206,11 @@ const AdicionarTransacaoForm = ({ onTransacaoAdicionada }) => {
                 </Box>
             </Box>
 
-            {success && <Alert severity="success" sx={{ mt: 1.5 }}>{success}</Alert>}
+            {success && (
+                <Alert severity="success" sx={{ mt: 1.5 }}>
+                    Transação adicionada com sucesso: <strong>{success}</strong>
+                </Alert>
+            )}
             {error && <Alert severity="error" sx={{ mt: 1.5 }}>{error}</Alert>}
         </Box>
     );
