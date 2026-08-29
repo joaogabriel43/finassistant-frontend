@@ -24,6 +24,8 @@ const SUGESTOES = [
 ];
 
 const PLACEHOLDER = 'Pergunte ou registre algo em português...';
+const RELOAD_HISTORY_RETRY_INTERVAL_MS = 1000;
+const RELOAD_HISTORY_MAX_RETRIES = 6;
 
 // API helpers para histórico de chat persistido no backend
 const buscarHistorico = async (limite = 50) => {
@@ -33,6 +35,11 @@ const buscarHistorico = async (limite = 50) => {
 
 const limparHistoricoBackend = async () => {
     await api.delete('/chat/historico');
+};
+
+const removerEcoDaMensagem = (resposta, mensagemUsuario) => {
+    if (!mensagemUsuario || !resposta?.includes(mensagemUsuario)) return resposta;
+    return resposta.replaceAll(mensagemUsuario, 'Sua mensagem');
 };
 
 // Ícone "spark" do design system D4 (SVG puro).
@@ -90,15 +97,39 @@ const Chat = () => {
         const carregarHistorico = async () => {
             try {
                 setLoadingHistorico(true);
-                const historico = await buscarHistorico(50);
+                let historico = await buscarHistorico(50);
+                const foiReload = window.performance
+                    ?.getEntriesByType?.('navigation')
+                    ?.some((navigation) => navigation.type === 'reload');
+
+                for (
+                    let tentativa = 0;
+                    foiReload && historico.length === 0 && tentativa < RELOAD_HISTORY_MAX_RETRIES;
+                    tentativa += 1
+                ) {
+                    await new Promise((resolve) => setTimeout(resolve, RELOAD_HISTORY_RETRY_INTERVAL_MS));
+                    if (cancelado) return;
+                    historico = await buscarHistorico(50);
+                }
+
                 if (cancelado) return;
-                const mensagens = historico.map((dto) => ({
-                    id: dto.id,
-                    text: dto.conteudo,
-                    sender: dto.role === 'user' ? 'user' : 'bot',
-                    timestamp: dto.criadoEm,
-                    sessaoId: dto.sessaoId,
-                }));
+                let ultimaMensagemUsuario = '';
+                const mensagens = historico.map((dto) => {
+                    const sender = dto.role === 'user' ? 'user' : 'bot';
+                    const text = sender === 'user'
+                        ? dto.conteudo
+                        : removerEcoDaMensagem(dto.conteudo, ultimaMensagemUsuario);
+
+                    if (sender === 'user') ultimaMensagemUsuario = dto.conteudo;
+
+                    return {
+                        id: dto.id,
+                        text,
+                        sender,
+                        timestamp: dto.criadoEm,
+                        sessaoId: dto.sessaoId,
+                    };
+                });
                 setMessages((prev) => {
                     const apenasBoasVindas = prev.length === 1 && prev[0].text === MENSAGEM_BEM_VINDO.text;
                     if (!apenasBoasVindas) return prev;
@@ -180,7 +211,11 @@ const Chat = () => {
                 idSessao: sessionId,
             });
             const data = response.data;
-            const botMessage = { text: data.resposta, sender: 'bot', acao: data.acao || null };
+            const botMessage = {
+                text: removerEcoDaMensagem(data.resposta, conteudo),
+                sender: 'bot',
+                acao: data.acao || null,
+            };
             setMessages((prev) => [...prev.filter((m) => !m.typing), botMessage]);
         } catch (error) {
             logErroSeguro('Falha ao enviar mensagem', error);
