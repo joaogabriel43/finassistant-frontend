@@ -1,9 +1,13 @@
 import { Page, request as playwrightRequest } from '@playwright/test'
 
-// Credenciais únicas por run — garante isolamento entre execuções
-const TIMESTAMP = Date.now()
-export const TEST_USER_EMAIL = `e2e-${TIMESTAMP}@fortunai-test.com`
-export const TEST_USER_PASSWORD = `E2ePass${TIMESTAMP}!`
+// O global setup é carregado antes dos workers. Persistir o identificador no
+// ambiente garante uma única credencial por execução, inclusive após restart
+// de worker, conforme o mecanismo de compartilhamento documentado pelo Playwright.
+const E2E_RUN_ID = process.env.PLAYWRIGHT_E2E_RUN_ID ?? `${Date.now()}-${process.pid}`
+process.env.PLAYWRIGHT_E2E_RUN_ID = E2E_RUN_ID
+
+export const TEST_USER_EMAIL = `e2e-${E2E_RUN_ID}@fortunai-test.com`
+export const TEST_USER_PASSWORD = `E2ePass${E2E_RUN_ID}!`
 
 const BACKEND_URL = process.env.PLAYWRIGHT_API_URL || 'http://localhost:3333'
 

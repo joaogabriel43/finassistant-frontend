@@ -8,6 +8,7 @@ import {
 
 // Cenário 1 + 2 + 3 + 4 + 5: testes de autenticação
 // Sem storageState — esses testes validam o próprio fluxo de auth
+test.use({ storageState: { cookies: [], origins: [] } })
 
 test.describe('Autenticação', () => {
 

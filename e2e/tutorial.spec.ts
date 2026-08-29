@@ -3,6 +3,8 @@ import { test, expect, request as playwrightRequest } from '@playwright/test'
 const BACKEND_URL = process.env.PLAYWRIGHT_API_URL || 'http://localhost:3333'
 
 // These tests create FRESH users — no storageState — to ensure tutorial appears
+test.use({ storageState: { cookies: [], origins: [] } })
+
 test.describe('Tutorial de Onboarding', () => {
 
   async function registrarNovoUsuario(): Promise<{ email: string; senha: string; token: string }> {
