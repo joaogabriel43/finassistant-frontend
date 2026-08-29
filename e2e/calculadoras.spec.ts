@@ -40,7 +40,7 @@ test.describe('Calculadoras Financeiras', () => {
     await expect(page.getByText(/Juros Compostos/i).first()).toBeVisible({ timeout: 5_000 })
 
     // Ativa o toggle "Usar dados reais do meu portfólio"
-    const toggle = page.getByRole('checkbox', { name: /dados reais|portfólio real/i })
+    const toggle = page.getByRole('switch', { name: /dados reais|portfólio real/i })
     await toggle.check()
     await expect(toggle).toBeChecked()
 
@@ -61,8 +61,8 @@ test.describe('Calculadoras Financeiras', () => {
     // Clica em Calcular
     await page.getByRole('button', { name: /calcular/i }).click()
 
-    // Aguarda gráfico de área (Recharts renderiza um SVG)
-    await expect(page.locator('svg').first()).toBeVisible({ timeout: 10_000 })
+    // Aguarda o SVG do Recharts, sem confundir com ícones SVG ocultos da navegação.
+    await expect(page.locator('.recharts-responsive-container svg').first()).toBeVisible({ timeout: 10_000 })
 
     // Verifica que os 3 cenários aparecem
     await expect(page.getByText('Conservador').first()).toBeVisible({ timeout: 8_000 })
@@ -91,8 +91,8 @@ test.describe('Calculadoras Financeiras', () => {
     await expect(page.getByText('Moderado').first()).toBeVisible({ timeout: 10_000 })
     await expect(page.getByText('Arrojado').first()).toBeVisible({ timeout: 10_000 })
 
-    // Verifica suficiente/insuficiente por cenário
-    const suficienteOuNao = page.getByText(/suficiente|insuficiente/i).first()
-    await expect(suficienteOuNao).toBeVisible({ timeout: 8_000 })
+    // Cada cenário compara a meta com o patrimônio projetado.
+    await expect(page.getByText(/Meta:/i).first()).toBeVisible({ timeout: 8_000 })
+    await expect(page.getByText(/Projetado:/i).first()).toBeVisible({ timeout: 8_000 })
   })
 })

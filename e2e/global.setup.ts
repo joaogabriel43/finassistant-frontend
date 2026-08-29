@@ -16,6 +16,7 @@ async function globalSetup() {
 
   // 2. Obtém token JWT via login API
   const token = await getAuthToken(TEST_USER_EMAIL, TEST_USER_PASSWORD)
+  process.env.PLAYWRIGHT_E2E_AUTH_TOKEN = token
   console.log('[E2E Setup] Token JWT obtido.')
 
   // 2.5 Marca tutorial como concluído para que o overlay não apareça nos testes

@@ -34,7 +34,7 @@ test.describe('Investimentos', () => {
     await page.goto('/investimentos')
 
     // Localiza o formulário de adição de ativo
-    const tickerInput = page.getByPlaceholder(/ticker|símbolo|ativo/i).first()
+    const tickerInput = page.getByLabel('Ticker').first()
     await expect(tickerInput).toBeVisible({ timeout: 8_000 })
     await tickerInput.fill('PETR4')
 
@@ -42,8 +42,8 @@ test.describe('Investimentos', () => {
     const qtdInput = page.getByLabel(/quantidade/i).first()
     await qtdInput.fill('10')
 
-    // Preço médio
-    const precoInput = page.getByLabel(/preço.*(médio|medio)/i).first()
+    // Preço da compra
+    const precoInput = page.getByLabel(/preço de compra/i).first()
     await precoInput.fill('30')
 
     // Submete
@@ -87,6 +87,9 @@ test.describe('Investimentos', () => {
     await addAtivo('VALE3', 3, 65.0)
 
     await page.goto('/investimentos')
+
+    // A otimização pertence à aba Estratégia; Carteira é a aba inicial.
+    await page.getByTestId('tab-estrategia').click()
 
     // Clica no botão de otimizar
     const btnOtimizar = page.getByRole('button', { name: /otimizar/i })

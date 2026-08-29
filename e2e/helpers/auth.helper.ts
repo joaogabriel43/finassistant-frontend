@@ -33,7 +33,7 @@ export async function createTestUser(email: string, password: string): Promise<v
 export async function loginAs(page: Page, email: string, password: string): Promise<void> {
   await page.goto('/login')
   await page.getByLabel('Endereço de Email').fill(email)
-  await page.getByLabel('Senha').fill(password)
+  await page.locator('input[type="password"]').first().fill(password)
   await page.getByRole('button', { name: 'Entrar' }).click()
   // Aguarda redirect — pode ir para /dashboard ou /questionario
   await page.waitForURL(/\/(dashboard|questionario)/, { timeout: 10_000 })
@@ -43,6 +43,14 @@ export async function loginAs(page: Page, email: string, password: string): Prom
  * Obtém JWT via API e retorna o token para uso em requisições autenticadas.
  */
 export async function getAuthToken(email: string, password: string): Promise<string> {
+  if (
+    email === TEST_USER_EMAIL &&
+    password === TEST_USER_PASSWORD &&
+    process.env.PLAYWRIGHT_E2E_AUTH_TOKEN
+  ) {
+    return process.env.PLAYWRIGHT_E2E_AUTH_TOKEN
+  }
+
   const context = await playwrightRequest.newContext({ baseURL: BACKEND_URL })
   const response = await context.post('/api/auth/login', {
     data: { username: email, password },
