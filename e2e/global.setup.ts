@@ -1,8 +1,10 @@
 import { chromium, request as playwrightRequest } from '@playwright/test'
-import path from 'path'
+import path, { dirname } from 'path'
+import { fileURLToPath } from 'url'
 import { TEST_USER_EMAIL, TEST_USER_PASSWORD, createTestUser, getAuthToken } from './helpers/auth.helper'
 
-const AUTH_STATE_PATH = path.join(__dirname, '.auth', 'user.json')
+const currentDir = dirname(fileURLToPath(import.meta.url))
+const AUTH_STATE_PATH = path.join(currentDir, '.auth', 'user.json')
 const BACKEND_URL = process.env.PLAYWRIGHT_API_URL || 'http://localhost:3333'
 
 async function globalSetup() {
