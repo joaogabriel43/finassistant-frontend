@@ -134,10 +134,20 @@ const ListaTransacoes = ({ refreshKey, onChanged }) => {
                                             {t.tipo === 'CREDIT' ? '+ ' : '- '}{formatBRL(t.valor?.quantia ?? t.valor)}
                                         </TableCell>
                                         <TableCell align="center">
-                                            <IconButton size="small" color="primary" onClick={() => openModal(t)}>
+                                            <IconButton
+                                                size="small"
+                                                color="primary"
+                                                aria-label="Editar transação"
+                                                onClick={() => openModal(t)}
+                                            >
                                                 <EditIcon fontSize="small" />
                                             </IconButton>
-                                            <IconButton size="small" color="error" onClick={() => handleDelete(t.id)}>
+                                            <IconButton
+                                                size="small"
+                                                color="error"
+                                                aria-label="Excluir transação"
+                                                onClick={() => handleDelete(t.id)}
+                                            >
                                                 <DeleteIcon fontSize="small" />
                                             </IconButton>
                                         </TableCell>

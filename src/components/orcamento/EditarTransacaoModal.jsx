@@ -15,7 +15,7 @@ const EditarTransacaoModal = ({ isOpen, onRequestClose, transacao, onUpdate }) =
     useEffect(() => {
         if (transacao) {
             setFormData({
-                valor: transacao?.valor?.quantia ?? '',
+                valor: transacao?.valor?.quantia ?? transacao?.valor ?? '',
                 categoria: transacao?.categoria ?? '',
                 descricao: transacao?.descricao ?? '',
                 tipo: transacao?.tipo === 'CREDIT' ? 'ENTRADA' : 'SAIDA',
@@ -88,7 +88,16 @@ const EditarTransacaoModal = ({ isOpen, onRequestClose, transacao, onUpdate }) =
             <form onSubmit={handleSubmit} style={formGrid}>
                 <input type="number" step="0.01" name="valor" placeholder="Valor" value={formData.valor} onChange={handleChange} required style={inputStyle} />
                 <input type="text" name="categoria" placeholder="Categoria" value={formData.categoria} onChange={handleChange} required style={inputStyle} />
-                <input type="text" name="descricao" placeholder="Descrição" value={formData.descricao} onChange={handleChange} required style={inputStyle} />
+                <input
+                    type="text"
+                    name="descricao"
+                    aria-label="Descrição"
+                    placeholder="Descrição"
+                    value={formData.descricao}
+                    onChange={handleChange}
+                    required
+                    style={inputStyle}
+                />
                 <select name="tipo" value={formData.tipo} onChange={handleChange} style={inputStyle}>
                     <option value="SAIDA">Despesa</option>
                     <option value="ENTRADA">Receita</option>

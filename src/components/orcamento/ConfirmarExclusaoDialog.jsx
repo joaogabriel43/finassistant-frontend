@@ -22,7 +22,7 @@ const ConfirmarExclusaoDialog = ({ open, onConfirm, onCancel }) => {
           Cancelar
         </Button>
         <Button onClick={onConfirm} color="error" variant="contained" autoFocus>
-          Confirmar
+          Excluir
         </Button>
       </DialogActions>
     </Dialog>
