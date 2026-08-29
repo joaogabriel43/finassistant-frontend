@@ -255,10 +255,13 @@ test.describe('Sprint D — Insights Educacionais', () => {
 
   // ── UI: Dashboard carrega após adição das features Sprint A-D ─────────
 
-  test('Sprint D-3 — UI: Dashboard renderiza "Patrimônio" sem erro após Sprints A-D', async ({ page }) => {
+  test('Sprint D-3 — UI: Dashboard renderiza o estado atual sem erro após Sprints A-D', async ({ page }) => {
     await page.goto('/dashboard')
-    // Regressão crítica: verifica que o Dashboard não quebrou com as novas features
-    await expect(page.getByText(/Patrimônio/i).first()).toBeVisible({ timeout: 10_000 })
+    // Com dados, o Panorama G3-A exibe seu headline; sem dados, o onboarding
+    // ocupa a tela. Ambos são estados válidos para o usuário sintético.
+    await expect(
+      page.getByText(/Sua posição consolidada hoje|Comece registrando uma transação no chat/i).first()
+    ).toBeVisible({ timeout: 10_000 })
     await expect(page.getByText(/Internal Server Error/i)).not.toBeVisible()
   })
 

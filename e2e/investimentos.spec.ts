@@ -53,7 +53,9 @@ test.describe('Investimentos', () => {
     await expect(page.getByText(/sucesso|adicionado/i).first()).toBeVisible({ timeout: 8_000 })
 
     // Verifica PETR4 na tabela
-    await expect(page.getByText('PETR4')).toBeVisible({ timeout: 8_000 })
+    const portfolioRow = page.getByTestId('portfolio-row-PETR4')
+    await expect(portfolioRow.getByRole('cell', { name: 'PETR4', exact: true }))
+      .toBeVisible({ timeout: 8_000 })
 
     // Cleanup
     await removeAtivo('PETR4')

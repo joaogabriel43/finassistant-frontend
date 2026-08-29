@@ -116,6 +116,7 @@ const PortfolioTable = ({
                         return (
                             <TableRow
                                 key={ativo.ticker}
+                                data-testid={`portfolio-row-${ativo.ticker}`}
                                 sx={{
                                     '& td': { borderBottom: `1px solid ${theme.palette.lines.subtle}`, py: 1.25 },
                                     '&:hover': { bgcolor: theme.palette.surfaces.surfaceSoft },

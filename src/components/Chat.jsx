@@ -353,6 +353,7 @@ const Chat = () => {
                     return (
                         <Box
                             key={index}
+                            data-testid={`chat-message-${isUser ? 'user' : 'assistant'}`}
                             sx={{
                                 display: 'flex',
                                 alignItems: 'flex-end',

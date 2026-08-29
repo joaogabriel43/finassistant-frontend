@@ -38,7 +38,10 @@ test.describe('Histórico do Chat', () => {
     await page.waitForTimeout(2_000)
 
     // Message should still be visible (loaded from backend)
-    await expect(page.getByText(mensagem)).toBeVisible({ timeout: 8_000 })
+    const mensagemPersistida = page
+      .getByTestId('chat-message-user')
+      .filter({ hasText: mensagem })
+    await expect(mensagemPersistida).toContainText(mensagem, { timeout: 8_000 })
 
     // Cleanup
     const cleanCtx = await playwrightRequest.newContext({ baseURL: BACKEND_URL })
