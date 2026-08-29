@@ -19,12 +19,24 @@ async function globalSetup() {
   console.log('[E2E Setup] Token JWT obtido.')
 
   // 2.5 Marca tutorial como concluído para que o overlay não apareça nos testes
-  const tutorialCtx = await playwrightRequest.newContext({ baseURL: BACKEND_URL })
-  await tutorialCtx.patch('/api/usuario/tutorial-concluido', {
+  const setupCtx = await playwrightRequest.newContext({ baseURL: BACKEND_URL })
+  await setupCtx.patch('/api/usuario/tutorial-concluido', {
     headers: { Authorization: `Bearer ${token}` },
   })
-  await tutorialCtx.dispose()
   console.log('[E2E Setup] Tutorial marcado como concluído.')
+
+  // 2.6 Aceita os documentos vigentes para o modal legal não bloquear os testes
+  const consentimentoResponse = await setupCtx.post('/api/conta/consentimento', {
+    headers: { Authorization: `Bearer ${token}` },
+    data: { versaoTermos: '1.0', versaoPrivacidade: '1.0' },
+  })
+  if (!consentimentoResponse.ok()) {
+    throw new Error(
+      `Falha ao registrar consentimento E2E: ${consentimentoResponse.status()} ${await consentimentoResponse.text()}`,
+    )
+  }
+  await setupCtx.dispose()
+  console.log('[E2E Setup] Termos e Política aceitos.')
 
   // 3. Salva storage state com token no localStorage
   //    Playwright reutiliza esse estado em testes com storageState
