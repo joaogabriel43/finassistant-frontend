@@ -9,6 +9,7 @@ const FullDarkOverlay = () => (
     top: 0, left: 0, right: 0, bottom: 0,
     background: 'rgba(0,0,0,0.75)',
     backdropFilter: 'blur(2px)',
+    pointerEvents: 'none',
   }} />
 )
 
@@ -27,6 +28,7 @@ const SpotlightOverlay = ({ targetRect, theme }) => {
         height: Math.max(0, top - pad),
         background: 'rgba(0,0,0,0.75)',
         backdropFilter: 'blur(2px)',
+        pointerEvents: 'none',
       }} />
       {/* Left */}
       <div style={{
@@ -36,6 +38,7 @@ const SpotlightOverlay = ({ targetRect, theme }) => {
         height: height + pad * 2,
         background: 'rgba(0,0,0,0.75)',
         backdropFilter: 'blur(2px)',
+        pointerEvents: 'none',
       }} />
       {/* Right */}
       <div style={{
@@ -46,6 +49,7 @@ const SpotlightOverlay = ({ targetRect, theme }) => {
         height: height + pad * 2,
         background: 'rgba(0,0,0,0.75)',
         backdropFilter: 'blur(2px)',
+        pointerEvents: 'none',
       }} />
       {/* Bottom */}
       <div style={{
@@ -54,6 +58,7 @@ const SpotlightOverlay = ({ targetRect, theme }) => {
         left: 0, right: 0, bottom: 0,
         background: 'rgba(0,0,0,0.75)',
         backdropFilter: 'blur(2px)',
+        pointerEvents: 'none',
       }} />
       {/* Purple border ring around target */}
       <div
