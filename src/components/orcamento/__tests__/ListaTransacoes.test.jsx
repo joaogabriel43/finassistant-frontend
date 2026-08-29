@@ -71,7 +71,7 @@ const mockTransacao = {
 // design system.
 const render = (ui) => renderRTL(<ThemeProvider theme={theme}>{ui}</ThemeProvider>)
 
-describe('ListaTransacoes — editar e excluir (TDD RED phase)', () => {
+describe('ListaTransacoes — editar e excluir', () => {
     beforeEach(() => {
         vi.clearAllMocks()
         // Default: GET returns one transaction
@@ -87,8 +87,8 @@ describe('ListaTransacoes — editar e excluir (TDD RED phase)', () => {
         // Wait for async data load
         await screen.findByText('Almoço')
 
-        const editButtons = screen.getAllByRole('button', { name: /EditIcon/i })
-        const deleteButtons = screen.getAllByRole('button', { name: /DeleteIcon/i })
+        const editButtons = screen.getAllByRole('button', { name: /editar transação/i })
+        const deleteButtons = screen.getAllByRole('button', { name: /excluir transação/i })
 
         expect(editButtons.length).toBeGreaterThanOrEqual(1)
         expect(deleteButtons.length).toBeGreaterThanOrEqual(1)
@@ -104,7 +104,7 @@ describe('ListaTransacoes — editar e excluir (TDD RED phase)', () => {
         const row = await screen.findByText('Almoço')
         expect(row).toBeInTheDocument()
 
-        const editButton = screen.getByRole('button', { name: /EditIcon/i })
+        const editButton = screen.getByRole('button', { name: /editar transação/i })
         await waitFor(() => fireEvent.click(editButton))
 
         // Modal should be visible — useEffect inside EditarTransacaoModal
@@ -114,55 +114,34 @@ describe('ListaTransacoes — editar e excluir (TDD RED phase)', () => {
     })
 
     // -----------------------------------------------------------------------
-    // Test 3 — RED: clicking delete opens ConfirmarExclusaoDialog (not window.confirm)
-    //
-    // WHY FAILS: ListaTransacoes uses window.confirm() — there is no
-    // ConfirmarExclusaoDialog rendered in the DOM. The test looks for
-    // data-testid="confirmar-exclusao-dialog" which never appears.
+    // Test 3 — clicking delete opens ConfirmarExclusaoDialog (not window.confirm)
     // -----------------------------------------------------------------------
     it('clicar em excluir abre dialog de confirmação em vez de window.confirm', async () => {
         render(<ListaTransacoes />)
 
         await screen.findByText('Almoço')
 
-        const deleteButton = screen.getByRole('button', { name: /DeleteIcon/i })
+        const deleteButton = screen.getByRole('button', { name: /excluir transação/i })
         fireEvent.click(deleteButton)
 
-        // Expect a MUI confirmation dialog in the DOM
-        // FAILS RED: ListaTransacoes uses window.confirm(), not a Dialog component
         const dialog = screen.getByTestId('confirmar-exclusao-dialog')
         expect(dialog).toBeInTheDocument()
     })
 
     // -----------------------------------------------------------------------
-    // Test 4 — RED: confirming delete calls api.delete and removes the row
-    //
-    // WHY FAILS: The confirmation flow relies on window.confirm(), which is
-    // not interactive in jsdom (returns undefined/false). Even if we spy on
-    // window.confirm to return true, the test cannot reliably simulate the
-    // user pressing "OK" on a real MUI Dialog — the design contract requires
-    // a controlled React component.
+    // Test 4 — confirming delete calls api.delete and removes the row
     // -----------------------------------------------------------------------
     it('confirmar exclusão chama DELETE e remove da lista', async () => {
-        // Spy window.confirm to return true — workaround to expose the actual
-        // gap: even with confirm=true the component doesn't use a controlled
-        // dialog, so this test documents the design contract.
-        vi.spyOn(window, 'confirm').mockReturnValue(true)
         mockApiDelete.mockResolvedValue({})
 
         render(<ListaTransacoes />)
 
         await screen.findByText('Almoço')
 
-        const deleteButton = screen.getByRole('button', { name: /DeleteIcon/i })
+        const deleteButton = screen.getByRole('button', { name: /excluir transação/i })
         fireEvent.click(deleteButton)
 
-        // Simulating dialog confirm programmatically — this is where the gap is.
-        // In the current implementation window.confirm is called; after the fix,
-        // there will be a Dialog with a "Confirmar" button we can click.
-        // The test below looks for the Dialog confirm button (doesn't exist yet).
-        // FAILS RED: no "Confirmar" button inside a controlled Dialog
-        const confirmButton = await screen.findByRole('button', { name: /confirmar/i })
+        const confirmButton = await screen.findByRole('button', { name: 'Excluir' })
         fireEvent.click(confirmButton)
 
         await waitFor(() => {
@@ -174,24 +153,19 @@ describe('ListaTransacoes — editar e excluir (TDD RED phase)', () => {
         // Row should be removed from the list
         expect(screen.queryByText('Almoço')).not.toBeInTheDocument()
 
-        vi.restoreAllMocks()
     })
 
     // -----------------------------------------------------------------------
-    // Test 5 — RED: cancelling delete does NOT call api.delete
-    //
-    // WHY FAILS: Same reason as Test 4 — no controlled Dialog cancel button.
+    // Test 5 — cancelling delete does NOT call api.delete
     // -----------------------------------------------------------------------
     it('cancelar exclusão não chama api.delete', async () => {
         render(<ListaTransacoes />)
 
         await screen.findByText('Almoço')
 
-        const deleteButton = screen.getByRole('button', { name: /DeleteIcon/i })
+        const deleteButton = screen.getByRole('button', { name: /excluir transação/i })
         fireEvent.click(deleteButton)
 
-        // Look for a cancel button inside the Dialog — doesn't exist yet.
-        // FAILS RED: no "Cancelar" button inside a controlled Dialog
         const cancelButton = await screen.findByRole('button', { name: /cancelar/i })
         fireEvent.click(cancelButton)
 
@@ -199,14 +173,7 @@ describe('ListaTransacoes — editar e excluir (TDD RED phase)', () => {
     })
 
     // -----------------------------------------------------------------------
-    // Test 6 — RED: saving an edit calls api.put and updates the list
-    //
-    // WHY FAILS: The EditarTransacaoModal does not have a date field. After
-    // the fix, the modal will include a date input and the form submission
-    // flow will use it. Additionally, this test verifies the full round-trip
-    // including list refresh — the current implementation does call api.put
-    // but the modal structure may differ from what this test expects once
-    // the date field is added. Marked RED to track that contract.
+    // Test 6 — saving an edit calls api.put and updates the list
     // -----------------------------------------------------------------------
     it('salvar edição chama PUT e atualiza a lista', async () => {
         mockApiPut.mockResolvedValue({})
@@ -220,10 +187,9 @@ describe('ListaTransacoes — editar e excluir (TDD RED phase)', () => {
         await screen.findByText('Almoço')
 
         // Open the edit modal
-        const editButton = screen.getByRole('button', { name: /EditIcon/i })
+        const editButton = screen.getByRole('button', { name: /editar transação/i })
         fireEvent.click(editButton)
 
-        // The modal must contain a date input field — FAILS RED: no date field yet
         const dateInput = screen.getByRole('textbox', { name: /data/i })
         expect(dateInput).toBeInTheDocument()
 
