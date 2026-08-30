@@ -22,25 +22,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <script>
-      // Anti-flash: resolve o tema ANTES do primeiro paint, para que a tela
-      // nunca apareça no modo errado enquanto o React monta.
-      // Precisa concordar com resolverModoInicial() em src/contexts/colorMode.js.
-      (function () {
-        try {
-          var salvo = localStorage.getItem('pondero-color-mode');
-          var modo = (salvo === 'light' || salvo === 'dark')
-            ? salvo
-            : (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-          var raiz = document.documentElement;
-          raiz.setAttribute('data-theme', modo);
-          raiz.style.colorScheme = modo;
-          raiz.style.backgroundColor = modo === 'light' ? '#F4EEE3' : '#09100E';
-        } catch (e) {
-          document.documentElement.setAttribute('data-theme', 'dark');
-        }
-      })();
-    </script>
+    <script src="/theme-init.js"></script>
   </head>
   <body>
     <div id="root"></div>
