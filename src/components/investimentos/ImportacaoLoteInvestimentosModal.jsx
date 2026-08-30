@@ -3,7 +3,7 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Button, Typography, Box, CircularProgress, Alert, Chip,
   Table, TableHead, TableRow, TableCell, TableBody, TableContainer,
-  Checkbox, Paper, useTheme, TextField,
+  Checkbox, Paper, useTheme, TextField, MenuItem,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
@@ -71,6 +71,7 @@ const ImportacaoLoteInvestimentosModal = ({ open, onClose, onImportado }) => {
   const mono = theme.typography.fontFamilyMono;
   const {
     preview, loading, confirming, error, resultado,
+    eventoCorporativoNaoDetectado,
     analisarArquivo, confirmarImportacao, resetar,
   } = useImportacaoLoteInvestimentos();
 
@@ -78,6 +79,7 @@ const ImportacaoLoteInvestimentosModal = ({ open, onClose, onImportado }) => {
   const [dragOver, setDragOver] = useState(false);
   const [selecionados, setSelecionados] = useState({});
   const [fatores, setFatores] = useState({});
+  const [eventoManual, setEventoManual] = useState(null);
   const fileInputRef = useRef(null);
 
   const handleClose = () => {
@@ -86,6 +88,7 @@ const ImportacaoLoteInvestimentosModal = ({ open, onClose, onImportado }) => {
     setDragOver(false);
     setSelecionados({});
     setFatores({});
+    setEventoManual(null);
     resetar();
     onClose();
     if (importouComSucesso) onImportado?.();
@@ -117,6 +120,7 @@ const ImportacaoLoteInvestimentosModal = ({ open, onClose, onImportado }) => {
     if (preview?.prontos) {
       setSelecionados(Object.fromEntries(preview.prontos.map((_item, i) => [i, true])));
       setFatores({});
+      setEventoManual(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [preview]);
@@ -132,8 +136,39 @@ const ImportacaoLoteInvestimentosModal = ({ open, onClose, onImportado }) => {
     (evento) => evento.precisaFator && !fatorValido(fatores[evento.linha]),
   );
 
+  const vendaComFalhaSelecionada = eventoCorporativoNaoDetectado
+    ? itensSelecionados.some((item) => (
+      item.linha === eventoCorporativoNaoDetectado.linha
+      && normalizarTicker(item.ticker) === normalizarTicker(eventoCorporativoNaoDetectado.ticker)
+    ))
+    : false;
+
+  const eventoManualValido = eventoCorporativoNaoDetectado
+    && eventoManual
+    && ['DESDOBRAMENTO', 'GRUPAMENTO'].includes(eventoManual.operacao)
+    && eventoManual.data
+    && eventoManual.data <= eventoCorporativoNaoDetectado.dataVenda
+    && fatorValido(eventoManual.fator);
+
+  const iniciarEventoManual = () => {
+    setEventoManual({
+      ticker: eventoCorporativoNaoDetectado.ticker,
+      operacao: '',
+      data: '',
+      fator: '',
+    });
+  };
+
+  const handleEventoManualChange = (campo, valor) => {
+    setEventoManual((prev) => ({ ...prev, [campo]: valor }));
+  };
+
   const handleConfirmar = () => {
-    if (itensSelecionados.length === 0 || eventosPendentesDeFator.length > 0) return;
+    if (
+      itensSelecionados.length === 0
+      || eventosPendentesDeFator.length > 0
+      || (vendaComFalhaSelecionada && eventoManual && !eventoManualValido)
+    ) return;
     const eventosCorporativos = eventosComStatus
       .filter((evento) => evento.precisaFator)
       .map((evento) => ({
@@ -143,6 +178,15 @@ const ImportacaoLoteInvestimentosModal = ({ open, onClose, onImportado }) => {
         data: evento.data,
         fator: Number(fatores[evento.linha]),
       }));
+    if (vendaComFalhaSelecionada && eventoManualValido) {
+      eventosCorporativos.push({
+        linha: Math.max(0, eventoCorporativoNaoDetectado.linha - 1),
+        ticker: eventoManual.ticker,
+        operacao: eventoManual.operacao,
+        data: eventoManual.data,
+        fator: Number(eventoManual.fator),
+      });
+    }
     confirmarImportacao(itensSelecionados, eventosCorporativos);
   };
 
@@ -188,6 +232,74 @@ const ImportacaoLoteInvestimentosModal = ({ open, onClose, onImportado }) => {
         <DialogTitle>Preview da Importação</DialogTitle>
         <DialogContent>
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+          {eventoCorporativoNaoDetectado && vendaComFalhaSelecionada && (
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                A venda de {eventoCorporativoNaoDetectado.ticker} na linha{' '}
+                {eventoCorporativoNaoDetectado.linha} excede a quantidade disponível.
+              </Typography>
+              <Typography variant="caption" component="div" sx={{ mb: 1 }}>
+                Se houve desdobramento ou grupamento antes dessa venda, informe o evento para
+                que o lote seja recalculado na ordem correta.
+              </Typography>
+
+              {!eventoManual ? (
+                <Button size="small" variant="outlined" onClick={iniciarEventoManual}>
+                  Informar evento corporativo anterior
+                </Button>
+              ) : (
+                <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mt: 1 }}>
+                  <TextField
+                    size="small"
+                    label="Ticker"
+                    value={eventoManual.ticker}
+                    slotProps={{ input: { readOnly: true } }}
+                    data-testid="input-ticker-evento-manual"
+                    sx={{ width: 140 }}
+                  />
+                  <TextField
+                    select
+                    required
+                    size="small"
+                    label="Tipo do evento"
+                    value={eventoManual.operacao}
+                    onChange={(e) => handleEventoManualChange('operacao', e.target.value)}
+                    sx={{ minWidth: 190 }}
+                  >
+                    <MenuItem value="DESDOBRAMENTO">Desdobramento</MenuItem>
+                    <MenuItem value="GRUPAMENTO">Grupamento</MenuItem>
+                  </TextField>
+                  <TextField
+                    required
+                    size="small"
+                    type="date"
+                    label="Data do evento"
+                    value={eventoManual.data}
+                    onChange={(e) => handleEventoManualChange('data', e.target.value)}
+                    slotProps={{
+                      inputLabel: { shrink: true },
+                      htmlInput: { max: eventoCorporativoNaoDetectado.dataVenda },
+                    }}
+                    data-testid="input-data-evento-manual"
+                    sx={{ width: 170 }}
+                  />
+                  <TextField
+                    required
+                    size="small"
+                    type="number"
+                    label={LABEL_FATOR[eventoManual.operacao] ?? 'Fator de ajuste'}
+                    value={eventoManual.fator}
+                    onChange={(e) => handleEventoManualChange('fator', e.target.value)}
+                    error={eventoManual.fator !== '' && !fatorValido(eventoManual.fator)}
+                    inputProps={{ step: 'any' }}
+                    data-testid="input-fator-evento-manual"
+                    sx={{ width: 340 }}
+                  />
+                </Box>
+              )}
+            </Alert>
+          )}
 
           <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
             <Chip label={`${preview.totalLinhas} linhas encontradas`} color="primary" />
@@ -310,7 +422,12 @@ const ImportacaoLoteInvestimentosModal = ({ open, onClose, onImportado }) => {
           <Button
             variant="contained"
             onClick={handleConfirmar}
-            disabled={confirming || itensSelecionados.length === 0 || eventosPendentesDeFator.length > 0}
+            disabled={
+              confirming
+              || itensSelecionados.length === 0
+              || eventosPendentesDeFator.length > 0
+              || (vendaComFalhaSelecionada && eventoManual && !eventoManualValido)
+            }
             data-testid="btn-confirmar-importacao"
           >
             {confirming ? 'Importando...' : `Importar ${itensSelecionados.length} operações`}

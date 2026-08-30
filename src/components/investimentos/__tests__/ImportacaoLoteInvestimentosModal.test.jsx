@@ -317,4 +317,81 @@ describe('ImportacaoLoteInvestimentosModal', () => {
     })
     expect(screen.queryByText('Erro ao importar os ativos.')).not.toBeInTheDocument()
   })
+
+  it('deve oferecer evento manual e reenviar o lote em ordem antes da venda excedente', async () => {
+    const compra = itemPronto({ linha: 2, ticker: 'SINT3', operacao: 'COMPRA', data: '2026-01-01', quantidade: 100 })
+    const venda = itemPronto({ linha: 456, ticker: 'SINT3', operacao: 'VENDA', data: '2026-01-20', quantidade: 150 })
+
+    api.post
+      .mockResolvedValueOnce({
+        data: {
+          prontos: [compra, venda],
+          eventosCorporativos: [],
+          erros: [],
+          totalLinhas: 2,
+          previewId: PREVIEW_ID,
+        },
+      })
+      .mockRejectedValueOnce({
+        response: {
+          status: 422,
+          data: {
+            erro: 'EVENTO_CORPORATIVO_NAO_DETECTADO',
+            mensagem: 'Venda de SINT3 na linha 456 excede a quantidade disponível.',
+            ticker: 'SINT3',
+            linha: 456,
+            dataVenda: '2026-01-20',
+          },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: { mensagem: '2 operações importadas com sucesso!', totalImportadas: 2 },
+      })
+
+    render(<ImportacaoLoteInvestimentosModal open={true} onClose={vi.fn()} />)
+
+    fireEvent.change(document.querySelector('input[type="file"]'), {
+      target: { files: [createMockFile()] },
+    })
+    fireEvent.click(screen.getByText('Analisar Arquivo'))
+
+    await waitFor(() => screen.getByText(/Importar 2 operações/))
+    fireEvent.click(screen.getByTestId('btn-confirmar-importacao'))
+
+    const oferecerEvento = await screen.findByRole('button', {
+      name: 'Informar evento corporativo anterior',
+    })
+    fireEvent.click(oferecerEvento)
+
+    expect(screen.getByTestId('input-ticker-evento-manual').querySelector('input')).toHaveValue('SINT3')
+
+    fireEvent.mouseDown(screen.getByLabelText(/Tipo do evento/))
+    fireEvent.click(screen.getByRole('option', { name: 'Desdobramento' }))
+    fireEvent.change(screen.getByTestId('input-data-evento-manual').querySelector('input'), {
+      target: { value: '2026-01-10' },
+    })
+    fireEvent.change(screen.getByTestId('input-fator-evento-manual').querySelector('input'), {
+      target: { value: '2' },
+    })
+
+    fireEvent.click(screen.getByTestId('btn-confirmar-importacao'))
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenLastCalledWith(
+        '/investimentos/portfolio/ativos/lote/confirmar',
+        {
+          itens: [compra, venda],
+          eventosCorporativos: [
+            {
+              linha: 455,
+              ticker: 'SINT3',
+              operacao: 'DESDOBRAMENTO',
+              data: '2026-01-10',
+              fator: 2,
+            },
+          ],
+        }
+      )
+    })
+  })
 })
