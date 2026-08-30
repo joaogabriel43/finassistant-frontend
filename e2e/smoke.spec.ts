@@ -62,24 +62,21 @@ test.describe('Smoke Tests — Produção', () => {
     await ctx.dispose()
   })
 
-  // ─── 6. GET /api/chat/historico → 200 com auth ────────────────────────
-  test('6. GET /api/chat/historico → 200 com auth', async () => {
+  // ─── 6. GET /api/chat/historico → existe e exige auth ─────────────────
+  //
+  // Ramo de login removido em 30/08/2026: este teste tentava autenticar como
+  // `smoke-auth@fortunai-test.com` com senha hardcoded no código-fonte e caía
+  // num `else` que aceitava 401/403 como sucesso. Verificação read-only contra
+  // produção (POST /api/auth/login) retornou 401 — a conta não existe, logo o
+  // ramo autenticado NUNCA executou e o teste passava exclusivamente pelo
+  // `else`. Mantida só a asserção que de fato era exercida. Credencial de
+  // produção não volta para o código-fonte (CLAUDE.md §8.3); se o smoke um dia
+  // precisar de sessão real, a senha entra como secret do Actions.
+  test('6. GET /api/chat/historico → existe e exige auth (401/403 sem token)', async () => {
     const ctx = await playwrightRequest.newContext({ baseURL: API_URL })
-    // Get a token first
-    const loginRes = await ctx.post('/api/auth/login', {
-      data: { username: 'smoke-auth@fortunai-test.com', password: 'SmokePass123!' },
-    })
-    // If user doesn't exist, just verify the endpoint exists (401/403 is fine for smoke)
-    if (loginRes.ok()) {
-      const { token } = await loginRes.json()
-      const res = await ctx.get('/api/chat/historico', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      expect(res.status()).toBe(200)
-    } else {
-      const res = await ctx.get('/api/chat/historico')
-      expect([401, 403]).toContain(res.status())
-    }
+    const res = await ctx.get('/api/chat/historico')
+    expect(res.status()).not.toBe(404)
+    expect([401, 403]).toContain(res.status())
     await ctx.dispose()
   })
 
