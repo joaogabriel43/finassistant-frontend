@@ -91,7 +91,7 @@ describe('useWebSocket', () => {
     expect(Client._deactivate).toHaveBeenCalled()
   })
 
-  it('publica heartbeat ping a cada 20s', () => {
+  it('usa o heartbeat STOMP sem publicar keep-alive no destino de aplicacao', () => {
     Client._activate.mockImplementationOnce(function() {
       const config = Client._lastConfig
       if (config?.onConnect) {
@@ -102,10 +102,8 @@ describe('useWebSocket', () => {
 
     renderHook(() => useWebSocket({ onNotificacao: vi.fn() }))
 
-    act(() => { vi.advanceTimersByTime(20000) })
+    act(() => { vi.advanceTimersByTime(60000) })
 
-    expect(Client._publish).toHaveBeenCalledWith(
-      expect.objectContaining({ destination: '/app/ping' })
-    )
+    expect(Client._publish).not.toHaveBeenCalled()
   })
 })
