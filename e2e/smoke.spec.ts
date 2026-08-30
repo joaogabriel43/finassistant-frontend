@@ -26,9 +26,9 @@ test.describe('Smoke Tests — Produção', () => {
   })
 
   // ─── 2. Frontend carrega com título correto ────────────────────────────
-  test('2. Frontend carrega e título contém "FortunAI"', async ({ page }) => {
+  test('2. Frontend carrega e título contém "Pondero"', async ({ page }) => {
     await page.goto('/')
-    await expect(page).toHaveTitle(/FortunAI/i, { timeout: 15_000 })
+    await expect(page).toHaveTitle(/Pondero/i, { timeout: 15_000 })
   })
 
   // ─── 3. Página /login renderiza campo de email ─────────────────────────
@@ -54,8 +54,11 @@ test.describe('Smoke Tests — Produção', () => {
     const response = await ctx.get('/api/status')
     expect(response.status()).toBe(200)
     const body = await response.json()
-    // O endpoint retorna informações de status dos serviços
-    expect(body).toHaveProperty('status')
+    expect(Array.isArray(body)).toBe(true)
+    expect(body).toEqual(expect.arrayContaining([
+      expect.objectContaining({ nome: 'Gemini AI', status: expect.any(String) }),
+      expect.objectContaining({ nome: 'Database', status: expect.any(String) }),
+    ]))
     await ctx.dispose()
   })
 
@@ -74,20 +77,22 @@ test.describe('Smoke Tests — Produção', () => {
       })
       expect(res.status()).toBe(200)
     } else {
-      // Endpoint exists and rejects invalid credentials — good sign
-      expect([401, 403, 404]).not.toContain(404) // 404 would mean route doesn't exist
+      const res = await ctx.get('/api/chat/historico')
+      expect([401, 403]).toContain(res.status())
     }
     await ctx.dispose()
   })
 
   // ─── 7. PWA manifest disponível ───────────────────────────────────────
-  test('7. GET /manifest.webmanifest → 200 com name FortunAI', async ({ page }) => {
+  test('7. GET /manifest.webmanifest → 200 com identidade Pondero', async ({ page }) => {
     test.skip(process.env.NODE_ENV === 'development', 'PWA manifest only available in production build')
     const response = await page.goto('/manifest.webmanifest')
     expect(response?.status()).toBe(200)
-    const body = await response?.text()
-    expect(body).toContain('FortunAI')
-    expect(body).toContain('#7C3AED')
+    const body = await response?.json()
+    expect(body?.name).toContain('Pondero')
+    expect(body?.short_name).toBe('Pondero')
+    expect(body?.background_color).toBe('#09100E')
+    expect(body?.theme_color).toBe('#09100E')
   })
 
   // ─── 8. PATCH /api/usuario/tutorial-concluido existe (401/403 esperado sem token) ──
