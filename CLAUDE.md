@@ -59,11 +59,26 @@ NUNCA inverta esse contrato
 **Exemplo**: `<Typography variant="h6" component="span">Título</Typography>` — corrigido em [ConsentimentoModal.jsx](src/components/ConsentimentoModal.jsx) e [ExclusaoContaModal.jsx](src/components/ExclusaoContaModal.jsx).
 **Varredura feita**: `grep -rn -B3 'Typography variant="h6"' src --include="*.jsx" | grep -i dialogtitle` — esses eram os dois únicos casos no projeto.
 
+### [2026-08-31] Erro: z-index ignorado em `position: static` — mascarado com `pointerEvents: 'none'`
+**O que aconteceu**: o tooltip do `TutorialOnboarding` ficava atrás do overlay e inclicável. O fix anterior (`09fd706`) adicionou `pointerEvents: 'none'` nos painéis do scrim só para destravar um E2E — mascarou a causa raiz e destruiu a modalidade: com o scrim transparente a cliques, o app inteiro seguia operável por trás do tutorial.
+**Por que**: `useState({})` para o estilo do tooltip + um `useEffect` com `if (!targetRect) return` faziam `position` nunca ser definido. Em elemento `position: static` o `z-index` **é ignorado** — o tooltip afundava para trás do overlay (`fixed`, z-index 10000).
+**Como prevenir**: (1) todo estilo posicional guardado em estado deve **nascer** com `position` definido no valor inicial, nunca `{}`; um early return não pode ser o único caminho que decide se o elemento é posicionado. (2) **Sinal de alerta**: se o fix de um E2E é "desligar a interatividade de um elemento", ele quase certamente está mascarando um bug de stacking/layout — investigar antes de aceitar.
+**Padrão adotado**: overlay modal só é modal se o scrim **capturar** clique. A saída (foco, teclado) é responsabilidade do diálogo — `role="dialog"`, `aria-modal`, focus trap, `Escape` — nunca de um scrim furado. Exceção legítima: elementos puramente decorativos sobre o alvo (o anel de destaque) mantêm `pointerEvents: 'none'`, senão engolem o clique no próprio alvo.
+**Bônus**: geometria calculada por instância vai em `style`, não em `sx` — evita gerar classe nova do emotion a cada reposicionamento, e em jsdom o `getComputedStyle` passa a devolver `fixed` de forma determinística. Corrigido em [TutorialOnboarding.jsx](src/components/onboarding/TutorialOnboarding.jsx) (`9e2aa4e`).
+
 ## Configurações do Ambiente
 
 ### Vitest no Windows: timeout de forks com suíte completa
 `npx vitest run` rodando a suíte inteira pode falhar em ~11 arquivos com "[vitest-pool]: Failed to start forks worker" / "Timeout waiting for worker to respond", por pressão de recursos ao subir muitos workers em paralelo. Os testes em si não têm relação com o erro — reexecutar os arquivos afetados com `--maxWorkers=1` resolve. Considerar fixar `test.maxWorkers` (ou `poolOptions.forks.maxForks`) no `vitest.config` se o problema persistir.
 **Atenção ao contar testes**: uma execução com forks falhando reporta um total PARCIAL (ex.: 273) sem falhar visivelmente. Sempre conferir o número de arquivos (`Test Files X passed (X)`) — se o total de arquivos for menor que o esperado, a contagem de testes está incompleta.
 
+### E2E de auth/tutorial vs. rate limiter local do backend
+O `RateLimitingFilter` do backend limita `POST /api/auth/registrar` a **5 por hora por IP** (`REGISTRAR_MAX`) e `POST /api/auth/login` a 10/min, com buckets Bucket4j **em memória** (Caffeine). Uma rodada de `e2e/tutorial.spec.ts` consome 4 registros (1 do `globalSetup` + 3 cenários), então **duas rodadas seguidas na mesma hora falham por design**, não por regressão.
+**Como se manifesta**: a falha nem sempre é um 429 legível. O 429 vem no `registrar`, mas se o estouro pegar o `login`, o `token` chega vazio e o erro que aparece é um **403 no `/api/conta/consentimento`** — sintoma a três saltos da causa.
+**O que fazer**: reiniciar o backend zera os buckets (são em memória) — é o caminho rápido, não esperar a janela de 1h.
+**Pré-requisitos de uma rodada E2E local**: Docker + `finassistant-db` na porta **5439**, backend dev na 3333, Vite na 5173 (o `webServer` do Playwright reusa um Vite já de pé fora do CI). Sempre fixar `PLAYWRIGHT_API_URL=http://localhost:3333` e `PLAYWRIGHT_BASE_URL=http://localhost:5173` explicitamente — há default silencioso apontando para produção em `smoke.spec.ts`, o mesmo formato de falha do incidente do smoke test.
+**Falso alarme conhecido**: `/actuator/health` responde **503** em dev por causa do health indicator de mail (não há SMTP local). Não indica backend quebrado — validar com `POST /api/auth/registrar` (201) ou `login` (200/401).
+
 ## 📝 Changelog do CLAUDE.md
 - 2026-07-19: adicionadas seções "Erros Conhecidos" e "Configurações do Ambiente" (heading aninhado em DialogTitle; timeout de forks do Vitest); corrigida a contagem de testes em "Estado Atual" para os números reais medidos em clone limpo (958 backend / 441 frontend).
+- 2026-08-31: registrado o erro de `z-index` em `position: static` mascarado por `pointerEvents: 'none'` (tutorial de onboarding) e os pré-requisitos/rate limiter do E2E local de auth e tutorial.
