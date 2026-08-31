@@ -14,8 +14,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 import { useTheme, alpha } from '@mui/material/styles';
 import CreatableSelect from 'react-select/creatable';
+import { hojeLocal } from '../../utils/dateUtils';
 
-const hoje = () => new Date().toISOString().split('T')[0]; // "yyyy-MM-dd"
+const hoje = hojeLocal; // "yyyy-MM-dd" no fuso America/Sao_Paulo
 
 // O react-select recebe um objeto de estilos, nao um `sx` — por isso aqui o
 // tema entra como parametro explicito (`selectStyles(theme)`) em vez do

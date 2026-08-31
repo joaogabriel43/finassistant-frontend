@@ -16,8 +16,9 @@ import { investimentoService } from '../../services/investimentoService';
 import { extrairMensagemErroApi } from '../../utils/apiErrorUtils';
 import { CLASSES_ATIVO } from '../../constants/taxonomiaB3';
 import ClassificacaoAtivoSelects from './ClassificacaoAtivoSelects';
+import { hojeLocal } from '../../utils/dateUtils';
 
-const hoje = () => new Date().toISOString().split('T')[0]; // "yyyy-MM-dd"
+const hoje = hojeLocal; // "yyyy-MM-dd" no fuso America/Sao_Paulo
 
 // Rótulos PT-BR dos tipos aceitos pelo backend (enum TipoAtivo).
 // Valor vazio = backend infere o tipo via catálogo (comportamento legado).

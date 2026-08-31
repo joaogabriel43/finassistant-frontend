@@ -18,3 +18,24 @@ export const formatarDataLocal = (dataString) => {
   return data.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 };
 
+/**
+ * Data de "hoje" no fuso America/Sao_Paulo, no formato "YYYY-MM-DD" que os
+ * endpoints esperam.
+ *
+ * NÃO usar `new Date().toISOString().split('T')[0]` para isso: o `toISOString`
+ * devolve a data em UTC. Entre 21:00 e 23:59 (BRT) o UTC já virou o dia
+ * seguinte, então o formulário nascia preenchido com AMANHÃ e o backend
+ * rejeitava com "não pode ser futura" — os DTOs validam `@PastOrPresent`
+ * contra a JVM, cujo fuso é fixado em America/Sao_Paulo no boot da aplicação.
+ *
+ * O fuso é fixado em São Paulo (e não lido do navegador) de propósito: é ele
+ * que o backend usa para decidir o que é futuro, então é ele que define o
+ * maior valor aceitável no campo.
+ */
+export const hojeLocal = () =>
+  new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Sao_Paulo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());

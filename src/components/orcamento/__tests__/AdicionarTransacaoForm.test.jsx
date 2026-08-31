@@ -32,7 +32,10 @@ import theme from '../../../theme'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const hoje = () => new Date().toISOString().split('T')[0] // "yyyy-MM-dd"
+// Mesma fonte do componente: o helper duplicado aqui repetia o bug de UTC
+// e por isso nunca poderia flagrar a data errada no formulario.
+import { hojeLocal } from '../../../utils/dateUtils'
+const hoje = hojeLocal
 
 // Preenche os campos obrigatórios que JÁ existem no formulário.
 const preencherCamposBase = async () => {

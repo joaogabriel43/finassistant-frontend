@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import usePlano from '../hooks/usePlano';
 import useIr from '../hooks/useIr';
+import { hojeLocal } from '../utils/dateUtils';
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -41,7 +42,7 @@ const TIPOS_ATIVO    = ['ACAO', 'FII', 'ETF', 'BDR', 'OPCAO'];
 const FORM_INICIAL = {
   ticker: '', tipoOperacao: 'COMPRA', tipoTrade: 'SWING',
   tipoAtivo: 'ACAO', quantidade: '', precoUnitario: '',
-  corretagem: '', dataOperacao: new Date().toISOString().slice(0, 10),
+  corretagem: '', dataOperacao: hojeLocal(),
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
