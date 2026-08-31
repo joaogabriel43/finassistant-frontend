@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { fileURLToPath, URL } from 'node:url'
+import { apiRuntimeCaching } from './src/pwa/apiRuntimeCaching.js'
 
 // Vite configuration with explicit proxy to Spring Boot backend on port 3333
 export default defineConfig({
@@ -36,20 +37,9 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/finassistant-api\.onrender\.com\/api\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 300
-              },
-              networkTimeoutSeconds: 10
-            }
-          }
-        ]
+        // F-01: allowlist positiva. Nada sob /api/** e cacheado por padrao;
+        // ver src/pwa/apiRuntimeCaching.js para o criterio de classificacao.
+        runtimeCaching: apiRuntimeCaching
       }
     })
   ],
