@@ -2,13 +2,19 @@ import { test, expect, request as playwrightRequest } from '@playwright/test'
 
 /**
  * Smoke tests de produção — rodam apenas contra o ambiente real.
- * 5 testes rápidos (< 30s total) que verificam o sistema está UP.
+ * 12 testes rápidos (< 30s total) que verificam se o sistema está UP.
+ *
+ * SEMPRE rodar via `npm run test:smoke`, que usa playwright.smoke.config.ts
+ * (read-only). NÃO usar `npx playwright test e2e/smoke.spec.ts`: isso carrega
+ * playwright.config.ts e dispara o globalSetup, que registra um usuário novo
+ * no backend apontado por PLAYWRIGHT_API_URL — em produção, uma conta
+ * descartável com consentimento LGPD fabricado a cada execução.
  *
  * Uso local:   PLAYWRIGHT_BASE_URL=https://fortunai-frontend.vercel.app \
  *              PLAYWRIGHT_API_URL=https://finassistant-api.onrender.com \
- *              npx playwright test e2e/smoke.spec.ts
+ *              npm run test:smoke
  *
- * No CI: executado pelo job "smoke" pós-deploy.
+ * No CI: executado pelo job "smoke" pós-deploy (ci.yml do repo finassistant).
  */
 
 const API_URL = process.env.PLAYWRIGHT_API_URL || 'https://finassistant-api.onrender.com'
