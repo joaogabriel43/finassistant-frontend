@@ -259,3 +259,130 @@ describe('TutorialOnboarding — RED phase (stub renders null)', () => {
     expect(voltarStep).toHaveBeenCalledTimes(1)
   })
 })
+
+// ── Comportamento modal ──────────────────────────────────────────────────────
+
+/**
+ * Contexto: o commit 09fd706 adicionou `pointerEvents: 'none'` nos painéis do
+ * scrim para destravar um E2E em que o clique em "Próximo"/"Pular" era
+ * interceptado. Isso mascarou a causa raiz e quebrou a semântica de modal — com
+ * o scrim transparente a cliques, o app inteiro atrás do tutorial ficava
+ * clicável.
+ *
+ * Causa raiz: `tooltipStyle` nasce `{}` e o effect que o preenche tem um
+ * early-return quando `targetRect === null`. Sem `position`, o <Paper> renderiza
+ * `position: static`, e `z-index` é ignorado em elemento estático — o tooltip
+ * fica ATRÁS do overlay (fixed, z-index 10000).
+ */
+describe('TutorialOnboarding — comportamento modal', () => {
+  const stepFalso = {
+    target: '[data-tutorial="inexistente-no-dom"]',
+    title: 'Fale com seu assistente',
+    description: 'Descrição do passo.',
+    placement: 'right',
+  }
+
+  const montarTutorialVisivel = (overrides = {}) => {
+    const hook = {
+      visible: true,
+      step: 0,
+      totalSteps: 5,
+      currentStep: stepFalso,
+      concluirTutorial: vi.fn(),
+      pularTutorial: vi.fn(),
+      proximoStep: vi.fn(),
+      voltarStep: vi.fn(),
+      ...overrides,
+    }
+    mockUseTutorial.mockReturnValue(hook)
+    render(<ThemeProvider theme={theme}><TutorialOnboarding /></ThemeProvider>)
+    return hook
+  }
+
+  // Os painéis do scrim são os únicos elementos que aplicam backdrop-filter
+  // inline — serve de seletor estável sem depender de testid de produção.
+  const scrims = () =>
+    Array.from(document.querySelectorAll('div')).filter((d) => d.style.backdropFilter)
+
+  it('mantem o tooltip em position fixed mesmo sem targetRect (alvo ausente do DOM)', () => {
+    montarTutorialVisivel()
+
+    const tooltip = document.querySelector('[data-testid="tutorial-tooltip"]')
+    expect(tooltip).not.toBeNull()
+    // RED: sem targetRect o effect faz early-return, tooltipStyle continua {}
+    // e o Paper cai em position: static — z-index ignorado, tooltip sob o scrim.
+    expect(window.getComputedStyle(tooltip).position).toBe('fixed')
+  })
+
+  it('o scrim bloqueia cliques no app por tras (nao usa pointerEvents none)', () => {
+    montarTutorialVisivel()
+
+    const paineis = scrims()
+    expect(paineis.length).toBeGreaterThan(0)
+    // RED: 09fd706 marcou todos os painéis com pointerEvents: 'none'.
+    paineis.forEach((painel) => {
+      expect(painel.style.pointerEvents).not.toBe('none')
+    })
+  })
+
+  it('expoe o tooltip como dialogo modal acessivel', () => {
+    montarTutorialVisivel()
+
+    const dialogo = screen.getByRole('dialog')
+    expect(dialogo).toBe(document.querySelector('[data-testid="tutorial-tooltip"]'))
+    expect(dialogo).toHaveAttribute('aria-modal', 'true')
+    expect(dialogo).toHaveAccessibleName(stepFalso.title)
+  })
+
+  it('move o foco para dentro do dialogo ao abrir', () => {
+    montarTutorialVisivel()
+
+    const dialogo = screen.getByRole('dialog')
+    expect(dialogo.contains(document.activeElement)).toBe(true)
+  })
+
+  it('Escape encerra o tutorial chamando pularTutorial', () => {
+    const { pularTutorial } = montarTutorialVisivel()
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+
+    expect(pularTutorial).toHaveBeenCalledTimes(1)
+  })
+
+  it('prende o foco: Tab no ultimo botao volta para o primeiro', () => {
+    montarTutorialVisivel()
+
+    const dialogo = screen.getByRole('dialog')
+    const focaveis = Array.from(dialogo.querySelectorAll('button'))
+    expect(focaveis.length).toBeGreaterThan(1)
+
+    const primeiro = focaveis[0]
+    const ultimo = focaveis[focaveis.length - 1]
+
+    ultimo.focus()
+    fireEvent.keyDown(ultimo, { key: 'Tab' })
+    expect(document.activeElement).toBe(primeiro)
+
+    fireEvent.keyDown(primeiro, { key: 'Tab', shiftKey: true })
+    expect(document.activeElement).toBe(ultimo)
+  })
+
+  it('nao intercepta teclado quando o tutorial esta invisivel', () => {
+    const pularTutorial = vi.fn()
+    mockUseTutorial.mockReturnValue({
+      visible: false,
+      step: 0,
+      totalSteps: 5,
+      currentStep: stepFalso,
+      concluirTutorial: vi.fn(),
+      pularTutorial,
+      proximoStep: vi.fn(),
+      voltarStep: vi.fn(),
+    })
+
+    render(<ThemeProvider theme={theme}><TutorialOnboarding /></ThemeProvider>)
+    fireEvent.keyDown(document, { key: 'Escape' })
+
+    expect(pularTutorial).not.toHaveBeenCalled()
+  })
+})
