@@ -37,6 +37,11 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        // Script auxiliar do SW — importado, nao precacheado (ver importScripts)
+        globIgnores: ['sw-purge-caches.js'],
+        // F-01: purga do 'api-cache' legado no activate, para instalacoes que
+        // ja tem SW antigo + Cache Storage populado com resposta autenticada.
+        importScripts: ['/sw-purge-caches.js'],
         // F-01: allowlist positiva. Nada sob /api/** e cacheado por padrao;
         // ver src/pwa/apiRuntimeCaching.js para o criterio de classificacao.
         runtimeCaching: apiRuntimeCaching
