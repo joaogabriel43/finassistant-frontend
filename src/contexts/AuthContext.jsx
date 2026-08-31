@@ -59,7 +59,9 @@ export function AuthProvider({ children }) {
                 navigate('/dashboard');
             }
         } catch (e) {
-            authLogout();
+            // await: a limpeza do Cache Storage precisa terminar antes de a UI
+            // liberar a próxima tentativa de login (F-01).
+            await authLogout();
             setUser(null);
             setToken(null);
             try { delete api.defaults.headers.common['Authorization']; } catch (_) {}
@@ -69,11 +71,16 @@ export function AuthProvider({ children }) {
         return data;
     }, [navigate, authLogout]);
 
-    const logout = useCallback(() => {
-        authLogout();
+    // F-01: assíncrono de propósito. A sessão em memória cai imediatamente, mas
+    // só navegamos para /login depois que o Cache Storage do usuário anterior
+    // foi destruído — antes, a limpeza era uma promise solta e a próxima conta
+    // podia logar com o cache da anterior ainda de pé. `authLogout` nunca
+    // rejeita e tem teto de tempo próprio, então isto não trava a UI.
+    const logout = useCallback(async () => {
         setUser(null);
         setToken(null);
         try { delete api.defaults.headers.common['Authorization']; } catch (_) {}
+        await authLogout();
         navigate('/login');
     }, [navigate]);
 

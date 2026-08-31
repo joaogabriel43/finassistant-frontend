@@ -39,6 +39,33 @@ export const CACHE_API_PUBLICA = 'api-publica-cache-v1'
  */
 export const CACHES_LEGADOS = ['api-cache']
 
+/**
+ * O nome pertence ao namespace de cache da API?
+ *
+ * Fonte unica de verdade para os DOIS pontos de purga do PWA, que tem alvos
+ * ligeiramente diferentes e por isso nao compartilham a funcao inteira:
+ *  - `sw-purge-caches.js` (activate do SW) purga o namespace MENOS o cache
+ *    publico corrente, que acabou de ser criado pela versao nova do SW;
+ *  - `authService.limparCachesDoPwa()` (logout) purga o namespace INTEIRO,
+ *    porque ali nada de API pode sobreviver a troca de conta.
+ *
+ * O que nenhum dos dois toca: `workbox-precache-*` e demais caches internos do
+ * Workbox. Eles guardam apenas os `globPatterns` estaticos (js/css/html/ico/
+ * png/svg) — nunca resposta de API, nunca dado de usuario. Apaga-los nao
+ * protegeria nada e quebraria a navegacao offline, que depende do precache via
+ * `createHandlerBoundToURL('index.html')`.
+ *
+ * O `api[-_]` defensivo cobre caches deixados por versoes anteriores do SW cujo
+ * nome nao esteja mais listado em CACHES_LEGADOS.
+ *
+ * @param {string} nome nome do cache no Cache Storage
+ * @returns {boolean}
+ */
+export const ehCacheDeApi = (nome) =>
+  nome === CACHE_API_PUBLICA ||
+  CACHES_LEGADOS.includes(nome) ||
+  /^api[-_]/i.test(nome)
+
 /** Escapa metacaracteres para embutir uma string literal numa RegExp. */
 const escaparParaRegex = (texto) => texto.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
