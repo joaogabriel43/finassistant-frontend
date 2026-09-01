@@ -44,7 +44,8 @@ const ExclusaoContaModal = ({ open, onClose }) => {
       await api.delete('/conta', {
         data: { confirmacao: CONFIRMACAO_REQUIRED },
       })
-      logout()
+      // await: exclusao de conta nao pode deixar cache do PWA para tras (F-01)
+      await logout()
       navigate('/')
     } catch (e) {
       const msg =
