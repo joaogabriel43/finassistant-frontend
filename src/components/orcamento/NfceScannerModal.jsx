@@ -155,7 +155,7 @@ const NfceScannerModal = ({ open, onClose, onSuccess }) => {
             {step === 3 && 'Importação concluída'}
           </Typography>
         </Box>
-        <IconButton size="small" onClick={handleClose}>
+        <IconButton size="small" aria-label="fechar" onClick={handleClose}>
           <CloseIcon fontSize="small" />
         </IconButton>
       </DialogTitle>

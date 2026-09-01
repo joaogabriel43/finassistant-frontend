@@ -430,7 +430,7 @@ const TabelaOperacoes = ({ operacoes, onExcluir }) => {
                 </TableCell>
                 <TableCell sx={{ borderColor: 'lines.subtle' }}>
                   <Tooltip title="Excluir operação">
-                    <IconButton size="small" onClick={() => onExcluir(op.id)}
+                    <IconButton size="small" aria-label="excluir operação" onClick={() => onExcluir(op.id)}
                         sx={{ color: 'text.disabled', '&:hover': { color: 'error.main' } }}>
                       <DeleteOutlineIcon fontSize="small" />
                     </IconButton>

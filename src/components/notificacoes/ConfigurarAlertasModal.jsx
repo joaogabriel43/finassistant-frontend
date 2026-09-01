@@ -200,7 +200,7 @@ export default function ConfigurarAlertasModal({ open, onClose }) {
                       secondary={`${a.tipo} — ${a.status}`}
                     />
                     <ListItemSecondaryAction>
-                      <IconButton edge="end" onClick={() => deletarAlerta(a.id)} size="small">
+                      <IconButton edge="end" aria-label="excluir alerta" onClick={() => deletarAlerta(a.id)} size="small">
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </ListItemSecondaryAction>
