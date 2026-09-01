@@ -235,8 +235,10 @@ const Orcamento = () => {
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: 2 }}>
                         <FormControl size="small" sx={{ minWidth: 140 }}>
-                            <InputLabel>Mês</InputLabel>
+                            <InputLabel id="orcamento-export-mes-label">Mês</InputLabel>
                             <Select
+                                id="orcamento-export-mes"
+                                labelId="orcamento-export-mes-label"
                                 value={mesSelecionado}
                                 label="Mês"
                                 onChange={(e) => setMesSelecionado(e.target.value)}
@@ -247,8 +249,10 @@ const Orcamento = () => {
                             </Select>
                         </FormControl>
                         <FormControl size="small" sx={{ minWidth: 100 }}>
-                            <InputLabel>Ano</InputLabel>
+                            <InputLabel id="orcamento-export-ano-label">Ano</InputLabel>
                             <Select
+                                id="orcamento-export-ano"
+                                labelId="orcamento-export-ano-label"
                                 value={anoSelecionado}
                                 label="Ano"
                                 onChange={(e) => setAnoSelecionado(e.target.value)}

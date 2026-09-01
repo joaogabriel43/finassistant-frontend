@@ -98,8 +98,10 @@ export default function EstrategiaForm() {
                 <Grid key={idx} container spacing={1} alignItems="center" sx={{ mb: 1 }}>
                     <Grid size={{ xs: 6 }}>
                         <FormControl size="small" fullWidth>
-                            <InputLabel>Classe</InputLabel>
+                            <InputLabel id={`classe-ativo-label-${idx}`}>Classe</InputLabel>
                             <Select
+                                id={`classe-ativo-${idx}`}
+                                labelId={`classe-ativo-label-${idx}`}
                                 value={l.tipo}
                                 label="Classe"
                                 onChange={(e) => changeTipo(idx, e.target.value)}

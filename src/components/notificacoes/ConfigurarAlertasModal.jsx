@@ -134,8 +134,14 @@ export default function ConfigurarAlertasModal({ open, onClose }) {
               fullWidth size="small"
             />
             <FormControl fullWidth size="small">
-              <InputLabel>Direção</InputLabel>
-              <Select value={direcao} label="Direção" onChange={e => setDirecao(e.target.value)}>
+              <InputLabel id="direcao-alerta-label">Direção</InputLabel>
+              <Select
+                id="direcao-alerta"
+                labelId="direcao-alerta-label"
+                value={direcao}
+                label="Direção"
+                onChange={e => setDirecao(e.target.value)}
+              >
                 <MenuItem value="ABAIXO">Abaixo ou igual</MenuItem>
                 <MenuItem value="ACIMA">Acima ou igual</MenuItem>
               </Select>

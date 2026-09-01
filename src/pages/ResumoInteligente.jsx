@@ -221,14 +221,14 @@ const ResumoInteligente = () => {
 
         <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
           <FormControl size="small" sx={{ minWidth: 130 }}>
-            <InputLabel>Mês</InputLabel>
-            <Select value={mes} label="Mês" onChange={(e) => setMes(e.target.value)}>
+            <InputLabel id="resumo-mes-label">Mês</InputLabel>
+            <Select id="resumo-mes" labelId="resumo-mes-label" value={mes} label="Mês" onChange={(e) => setMes(e.target.value)}>
               {MESES.map((m) => <MenuItem key={m.value} value={m.value}>{m.label}</MenuItem>)}
             </Select>
           </FormControl>
           <FormControl size="small" sx={{ minWidth: 90 }}>
-            <InputLabel>Ano</InputLabel>
-            <Select value={ano} label="Ano" onChange={(e) => setAno(e.target.value)}>
+            <InputLabel id="resumo-ano-label">Ano</InputLabel>
+            <Select id="resumo-ano" labelId="resumo-ano-label" value={ano} label="Ano" onChange={(e) => setAno(e.target.value)}>
               {ANOS.map((a) => <MenuItem key={a} value={a}>{a}</MenuItem>)}
             </Select>
           </FormControl>

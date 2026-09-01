@@ -164,10 +164,17 @@ const AdicionarTransacaoForm = ({ onTransacaoAdicionada }) => {
                 </FormControl>
 
                 <Box sx={{ gridColumn: '1 / -1' }}>
-                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}>
+                    <Typography
+                        component="label"
+                        htmlFor="categoria-transacao"
+                        variant="caption"
+                        sx={{ color: 'text.secondary', display: 'block', mb: 0.5, ml: 0.5 }}
+                    >
                         Categoria
                     </Typography>
                     <CreatableSelect
+                        inputId="categoria-transacao"
+                        aria-label="Categoria"
                         isClearable
                         isDisabled={isLoadingCategorias}
                         isLoading={isLoadingCategorias}
