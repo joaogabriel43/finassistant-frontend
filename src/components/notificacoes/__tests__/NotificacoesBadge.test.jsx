@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { render as renderRTL, screen } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock useNotificacoes hook
@@ -9,6 +9,13 @@ vi.mock('../../../hooks/useNotificacoes', () => ({
 
 import NotificacoesBadge from '../NotificacoesBadge'
 import { useNotificacoes } from '../../../hooks/useNotificacoes'
+import { ThemeProvider } from '@mui/material/styles'
+import theme from '../../../theme'
+
+// O componente le tokens customizados do tema (palette.lines / palette.surfaces
+// / palette.series), entao precisa do ThemeProvider no teste — regra do
+// design system.
+const render = (ui) => renderRTL(<ThemeProvider theme={theme}>{ui}</ThemeProvider>)
 
 describe('NotificacoesBadge', () => {
   beforeEach(() => {

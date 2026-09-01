@@ -2,7 +2,6 @@ import { defineConfig } from '@playwright/test'
 
 export default defineConfig({
   testDir: './e2e',
-  testIgnore: ['**/smoke.spec.ts'], // smoke só roda em prod via CI
   fullyParallel: false,       // Testes financeiros com estado — sequencial
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
@@ -11,6 +10,7 @@ export default defineConfig({
 
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5173',
+    storageState: 'e2e/.auth/user.json',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'on-first-retry',

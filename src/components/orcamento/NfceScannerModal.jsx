@@ -7,21 +7,25 @@ import {
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import CloseIcon from '@mui/icons-material/Close'
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner'
+import { useTheme, alpha } from '@mui/material/styles'
 import api from '../../services/api'
 
 // ── Cores por categoria de item NFC-e ────────────────────────────────────────
 
-const COR_CATEGORIA = {
-  Alimentação: '#10B981',
-  Higiene:     '#3B82F6',
-  Limpeza:     '#F59E0B',
-  Pet:         '#8B5CF6',
-  Bebidas:     '#EF4444',
-  Eletrônicos: '#0EA5E9',
-  Vestuário:   '#EC4899',
-  Saúde:       '#14B8A6',
-  Outros:      '#6B7280',
-}
+// Taxonomia fixa do parser de NFC-e (nao e dado do usuario). As 9 categorias
+// precisam continuar DISTINGUIVEIS entre si, entao o mapa usa as 5 cores da
+// serie do tema mais 4 hues semanticas — nenhuma se repete.
+const corCategoria = (t) => ({
+  Alimentação: t.palette.series[0],
+  Higiene:     t.palette.series[1],
+  Limpeza:     t.palette.warning.main,
+  Pet:         t.palette.series[4],
+  Bebidas:     t.palette.error.main,
+  Eletrônicos: t.palette.info.main,
+  Vestuário:   t.palette.secondary.main,
+  Saúde:       t.palette.series[3],
+  Outros:      t.palette.text.secondary,
+})
 
 const formatBRL = (v) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v ?? 0)
@@ -46,6 +50,8 @@ const formatData = (iso) => {
  * @param {function} onSuccess - callback após importação bem-sucedida
  */
 const NfceScannerModal = ({ open, onClose, onSuccess }) => {
+  const theme = useTheme()
+  const COR_CATEGORIA = corCategoria(theme)
   const [step, setStep] = useState(1)
   const [url, setUrl] = useState('')
   const [loading, setLoading] = useState(false)
@@ -135,14 +141,14 @@ const NfceScannerModal = ({ open, onClose, onSuccess }) => {
       onClose={handleClose}
       maxWidth="sm"
       fullWidth
-      PaperProps={{ sx: { borderRadius: 3, bgcolor: '#1a1a2e' } }}
+      PaperProps={{ sx: { borderRadius: 3, bgcolor: 'background.paper' } }}
     >
       {/* Cabeçalho */}
       <DialogTitle
         sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <QrCodeScannerIcon sx={{ color: '#7C6AF7' }} />
+          <QrCodeScannerIcon sx={{ color: 'primary.main' }} />
           <Typography variant="h6" fontWeight={700}>
             {step === 1 && 'Escanear NF-e'}
             {step === 2 && 'Itens da Nota Fiscal'}
@@ -187,7 +193,7 @@ const NfceScannerModal = ({ open, onClose, onSuccess }) => {
                 variant="contained"
                 onClick={handleAnalisar}
                 disabled={!url.trim() || loading}
-                sx={{ bgcolor: '#7C6AF7', '&:hover': { bgcolor: '#6355d4' }, fontWeight: 700 }}
+                sx={{ fontWeight: 700 }}
               >
                 Analisar NF-e
               </Button>
@@ -199,7 +205,7 @@ const NfceScannerModal = ({ open, onClose, onSuccess }) => {
         {step === 2 && nfce && (
           <Box>
             {/* Header da nota */}
-            <Box sx={{ mb: 2, p: 1.5, borderRadius: 2, bgcolor: 'rgba(255,255,255,0.04)' }}>
+            <Box sx={(t) => ({ mb: 2, p: 1.5, borderRadius: 2, bgcolor: t.palette.surfaces.surfaceSoft })}>
               <Typography variant="subtitle1" fontWeight={700}>{nfce.estabelecimento}</Typography>
               <Typography variant="caption" color="text.secondary">
                 {formatData(nfce.dataEmissao)} · Total: {formatBRL(nfce.valorTotal)}
@@ -216,7 +222,7 @@ const NfceScannerModal = ({ open, onClose, onSuccess }) => {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     py: 0.75,
-                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                    borderBottom: `1px solid ${theme.palette.lines.subtle}`,
                   }}
                 >
                   <FormControlLabel
@@ -244,8 +250,8 @@ const NfceScannerModal = ({ open, onClose, onSuccess }) => {
                       label={item.categoria}
                       size="small"
                       sx={{
-                        bgcolor: `${COR_CATEGORIA[item.categoria] ?? '#6B7280'}22`,
-                        color: COR_CATEGORIA[item.categoria] ?? '#6B7280',
+                        bgcolor: alpha(COR_CATEGORIA[item.categoria] ?? theme.palette.text.secondary, 0.13),
+                        color: COR_CATEGORIA[item.categoria] ?? theme.palette.text.secondary,
                         fontWeight: 600,
                         fontSize: 10,
                         height: 20,
@@ -291,7 +297,7 @@ const NfceScannerModal = ({ open, onClose, onSuccess }) => {
                 variant="contained"
                 onClick={handleImportar}
                 disabled={selecionados.length === 0 || loadingImport}
-                sx={{ bgcolor: '#7C6AF7', '&:hover': { bgcolor: '#6355d4' }, fontWeight: 700 }}
+                sx={{ fontWeight: 700 }}
                 startIcon={loadingImport ? <CircularProgress size={16} color="inherit" /> : null}
               >
                 {loadingImport ? 'Importando...' : 'Importar'}
@@ -303,7 +309,7 @@ const NfceScannerModal = ({ open, onClose, onSuccess }) => {
         {/* ── STEP 3 ──────────────────────────────────────────────────────── */}
         {step === 3 && (
           <Box sx={{ textAlign: 'center', py: 3 }}>
-            <CheckCircleIcon sx={{ fontSize: 64, color: '#10B981', mb: 2 }} />
+            <CheckCircleIcon sx={{ fontSize: 64, color: 'success.main', mb: 2 }} />
             <Typography variant="h6" fontWeight={700} sx={{ mb: 0.5 }}>
               {totalImportado === 1
                 ? '1 transação importada com sucesso!'
@@ -315,7 +321,7 @@ const NfceScannerModal = ({ open, onClose, onSuccess }) => {
             <Button
               variant="contained"
               onClick={() => { onSuccess?.(); handleClose() }}
-              sx={{ bgcolor: '#7C6AF7', '&:hover': { bgcolor: '#6355d4' }, fontWeight: 700 }}
+              sx={{ fontWeight: 700 }}
             >
               Ver no orçamento
             </Button>

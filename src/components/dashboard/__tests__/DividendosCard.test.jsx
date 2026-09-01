@@ -1,7 +1,13 @@
 import React from 'react'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render as renderRTL, screen, waitFor } from '@testing-library/react'
+import { ThemeProvider } from '@mui/material/styles'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import DividendosCard from '../DividendosCard'
+import theme from '../../../theme'
+
+// O card le tokens customizados do tema (lines, fontFamilyMono) — precisa do
+// ThemeProvider no teste, como manda o design system do projeto.
+const render = (ui) => renderRTL(<ThemeProvider theme={theme}>{ui}</ThemeProvider>)
 
 // --- MOCK: useDividendos hook ---
 vi.mock('../../../hooks/useDividendos', () => ({
@@ -28,7 +34,9 @@ describe('DividendosCard', () => {
     render(<DividendosCard />)
 
     expect(document.querySelector('.MuiCircularProgress-root')).toBeInTheDocument()
-    expect(screen.queryByText('Dividendos e Proventos')).not.toBeInTheDocument()
+    // O titulo da secao vive no Dashboard (SectionHead "Proventos"); aqui so
+    // o total do mes identifica o cabecalho do card.
+    expect(screen.queryByText('Recebido este mês')).not.toBeInTheDocument()
   })
 
   // --- Teste 2: estado de erro ---
@@ -56,7 +64,9 @@ describe('DividendosCard', () => {
 
     render(<DividendosCard />)
 
-    expect(screen.getByText('Dividendos e Proventos')).toBeInTheDocument()
+    // Sem nenhum provento, o card NAO mostra "R$ 0,00" — ausencia de dado nao
+    // pode ser confundida com zero financeiro real.
+    expect(screen.queryByText('Recebido este mês')).not.toBeInTheDocument()
     expect(screen.getByText('Nenhum provento registrado ainda')).toBeInTheDocument()
     expect(screen.getByText('Registre dividendos e rendimentos via chat')).toBeInTheDocument()
   })
@@ -168,5 +178,60 @@ describe('DividendosCard', () => {
 
     expect(screen.getByText('Total recebido')).toBeInTheDocument()
     expect(screen.getByText('A receber')).toBeInTheDocument()
+  })
+  // --- Teste 8: ausencia de agregado nao pode virar R$ 0,00 ---
+  it('mostra travessao quando o backend omite os totais do resumo', () => {
+    const hoje = new Date()
+    const dataMesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-10`
+
+    useDividendos.mockReturnValue({
+      loading: false,
+      error: null,
+      proventos: [
+        {
+          id: '1',
+          ticker: 'PETR4',
+          tipo: 'DIVIDENDO',
+          valorPorCota: 1.5,
+          dataEx: dataMesAtual,
+          dataPagamento: dataMesAtual,
+          pago: true,
+        },
+      ],
+      // Resumo sem os campos: fonte nao informou, nao e zero financeiro.
+      resumo: {},
+    })
+
+    render(<DividendosCard />)
+
+    expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(2)
+    expect(screen.queryByText('R$ 0,00')).not.toBeInTheDocument()
+  })
+
+  // --- Teste 9: zero real continua sendo exibido como zero ---
+  it('exibe R$ 0,00 quando o backend informa zero de verdade', () => {
+    const hoje = new Date()
+    const dataMesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-10`
+
+    useDividendos.mockReturnValue({
+      loading: false,
+      error: null,
+      proventos: [
+        {
+          id: '1',
+          ticker: 'PETR4',
+          tipo: 'DIVIDENDO',
+          valorPorCota: 1.5,
+          dataEx: dataMesAtual,
+          dataPagamento: dataMesAtual,
+          pago: true,
+        },
+      ],
+      resumo: { totalPago: 0, totalProvisionado: 0 },
+    })
+
+    render(<DividendosCard />)
+
+    expect(screen.getAllByText('R$ 0,00').length).toBe(2)
   })
 })

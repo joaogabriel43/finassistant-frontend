@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react'
-import { Alert, Box, Paper, Typography, useTheme } from '@mui/material'
+import { Box, Paper, Typography } from '@mui/material'
 import PieChartIcon from '@mui/icons-material/PieChart'
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 import api from '../services/api'
 
+import { useAuth } from '../contexts/AuthContext'
 import { useDashboardData } from '../hooks/useDashboardData'
-import { Sparkline, formatBRL } from '../components/ui'
+import { formatBRL } from '../components/ui'
 import TransactionList from '../components/dashboard/TransactionList'
 import ComposicaoCard from '../components/dashboard/ComposicaoCard'
 import SaldoLineChart from '../components/dashboard/SaldoLineChart'
@@ -17,59 +18,120 @@ import DividendosCard from '../components/dashboard/DividendosCard'
 import ScoreSaudeCard from '../components/dashboard/ScoreSaudeCard'
 import ExportarRelatorioButton from '../components/dashboard/ExportarRelatorioButton'
 import InsightEducacionalCard from '../components/InsightEducacionalCard'
+import PanoramaFinanceiro from '../components/dashboard/pondero/PanoramaFinanceiro'
+import SectionHead from '../components/dashboard/pondero/SectionHead'
+import ModuloIndisponivel from '../components/dashboard/pondero/ModuloIndisponivel'
 
-// Fonte mono para valores monetários (token D4) — via callback sx.
 const mono = (t) => t.typography.fontFamilyMono
 
-// Título de seção dentro de um card do bento.
-function CardTitle({ children, action }) {
-  return (
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-      <Typography variant="h6" fontWeight={700} sx={{ fontSize: '1rem' }}>
-        {children}
-      </Typography>
-      {action}
-    </Box>
-  )
+// Ritmo vertical entre seções (protótipo Pondero: 58px desktop / 42px mobile).
+const secaoSx = { mt: { xs: '42px', md: '58px' } }
+
+// Painel de módulo: superfície de papel, sem virar "mais um cartão igual".
+const painelSx = { p: { xs: '20px', md: 'clamp(22px, 2.4vw, 30px)' }, height: '100%' }
+
+function saudacaoPorHora(hora) {
+  if (hora < 12) return 'Bom dia'
+  if (hora < 18) return 'Boa tarde'
+  return 'Boa noite'
 }
 
-// Mini-stat exibido dentro da Hero section.
-// Mantém data-testid="kpi-card" para compatibilidade com os testes existentes.
-function MiniStat({ label, value }) {
+// Data por extenso do cabeçalho operacional.
+function dataPorExtenso(agora) {
+  const texto = agora.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
+  return texto.charAt(0).toUpperCase() + texto.slice(1)
+}
+
+/**
+ * Próxima ação: NAVEGACIONAL, nunca recomendação financeira.
+ * Sem transações → orçamento. Sem investimentos → investimentos.
+ * Com os dois → resumo do mês.
+ */
+function definirProximaAcao({ temTransacoes, temInvestimentos }) {
+  if (!temTransacoes) {
+    return {
+      titulo: 'Registre seus gastos do mês',
+      descricao: 'O orçamento é onde suas entradas e despesas entram no sistema.',
+      rotulo: 'Ir para o orçamento',
+      to: '/orcamento',
+    }
+  }
+  if (!temInvestimentos) {
+    return {
+      titulo: 'Cadastre seus ativos',
+      descricao: 'Com a carteira cadastrada, o patrimônio passa a somar as duas partes.',
+      rotulo: 'Ir para investimentos',
+      to: '/investimentos',
+    }
+  }
+  return {
+    titulo: 'Veja o resumo do mês',
+    descricao: 'O resumo reúne o que aconteceu no período com mais detalhe que o painel.',
+    rotulo: 'Abrir resumo do mês',
+    to: '/resumo',
+  }
+}
+
+// Par rótulo/valor do sumário do mês. `null` = fonte indisponível; 0 = zero real.
+function ValorDoMes({ rotulo, valor, detalhe }) {
+  const indisponivel = valor === null || valor === undefined
   return (
-    <Box data-testid="kpi-card" sx={{ minWidth: 0 }}>
-      <Typography variant="overline" sx={{ color: 'text.secondary', display: 'block', lineHeight: 1.4 }}>
-        {label}
-      </Typography>
+    <Box
+      sx={(t) => ({
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '2px',
+        py: '10px',
+        borderBottom: `1px solid ${t.palette.lines.subtle}`,
+        '&:last-of-type': { borderBottom: 'none' },
+      })}
+    >
       <Typography
-        fontWeight={700}
-        sx={{ fontFamily: mono, mt: 0.25, fontSize: { xs: '0.95rem', md: '1.1rem' } }}
+        component="span"
+        sx={{
+          fontSize: 11,
+          fontWeight: 600,
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+          color: 'text.secondary',
+        }}
       >
-        {formatBRL(value)}
+        {rotulo}
       </Typography>
+      <Typography sx={{ fontFamily: mono, fontSize: '1.05rem', fontWeight: 700, color: 'text.primary' }}>
+        {indisponivel ? '—' : formatBRL(valor)}
+      </Typography>
+      {detalhe && (
+        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{detalhe}</Typography>
+      )}
     </Box>
   )
 }
 
 const Dashboard = () => {
-  const theme = useTheme()
+  const { user } = useAuth()
   const {
     loading,
-    error,
+    erros,
+    falhaTotal,
     saldoAtual,
     totalInvestido,
-    totalReceitas,
-    maiorGasto,
+    patrimonioTotal,
+    entradasDoMes,
+    despesasDoMes,
+    maiorGastoDoMes,
     transacoes,
     portfolioComposition,
     evolucaoSaldo,
+    recarregar,
   } = useDashboardData()
 
   // Insight educacional — undefined = carregando (não renderiza), null = sem insight elegível.
   const [insight, setInsight] = useState(undefined)
 
   useEffect(() => {
-    api.get('/api/insights/atual')
+    // A baseURL do axios já contém /api — prefixar de novo geraria /api/api.
+    api.get('/insights/atual')
       .then((res) => setInsight(res.data ?? null))
       .catch(() => setInsight(null))
   }, [])
@@ -78,140 +140,267 @@ const Dashboard = () => {
 
   if (loading) return <DashboardSkeleton />
 
-  if (error) return <Alert severity="error" sx={{ m: 2 }}>{error}</Alert>
+  const agora = new Date()
+  const primeiroNome = typeof user?.nome === 'string' ? user.nome.trim().split(' ')[0] : ''
 
-  const hasAnyData =
-    saldoAtual > 0 ||
-    totalInvestido > 0 ||
-    transacoes.length > 0 ||
-    portfolioComposition.length > 0
+  const listaTransacoes = transacoes ?? []
+  const listaComposicao = portfolioComposition ?? []
+  const listaEvolucao = evolucaoSaldo ?? []
 
-  if (!hasAnyData) {
+  // Alguma fonte quebrou? Entao a tela NAO pode ser substituida pelo vazio de
+  // onboarding — isso afirmaria ausencia de dados onde ha apenas uma falha de
+  // leitura, e ainda tiraria do usuario a chance de tentar de novo.
+  const algumaFalha = Object.values(erros).some(Boolean)
+
+  // `null` = fonte indisponivel; `0` = zero financeiro real. Saldo NEGATIVO
+  // tambem e dado — a versao anterior (`(saldoAtual ?? 0) > 0`) tratava conta
+  // no vermelho como "usuario sem nada".
+  const temDado =
+    (saldoAtual !== null && saldoAtual !== 0) ||
+    (totalInvestido !== null && totalInvestido !== 0) ||
+    listaTransacoes.length > 0 ||
+    listaComposicao.length > 0
+
+  // Nada carregou de nenhuma fonte: erro total, com nova tentativa.
+  if (falhaTotal) {
     return (
-      <Box sx={{ p: { xs: 1.5, md: 3 } }}>
+      <Box sx={{ p: { xs: '12px', md: '24px' } }}>
+        <ModuloIndisponivel
+          mensagem="Não foi possível carregar seus dados agora. Verifique sua conexão e tente de novo."
+          onTentarNovamente={recarregar}
+        />
+      </Box>
+    )
+  }
+
+  if (!algumaFalha && !temDado) {
+    return (
+      <Box sx={{ p: { xs: '12px', md: '24px' } }}>
         <EmptyState mensagem="Comece registrando uma transação no chat" icone={ReceiptLongIcon} />
-        <Paper sx={{ p: 3, mt: 3, overflow: 'hidden' }}>
+        <Paper sx={{ p: '24px', mt: '24px', overflow: 'hidden' }}>
           <GastosPorCategoriaChart />
         </Paper>
       </Box>
     )
   }
 
-  const patrimonioTotal = saldoAtual + totalInvestido
-  const sparkData = evolucaoSaldo.map((p) => p.saldo)
-
-  // Estilo base de cada célula do bento (estende o override de Paper do tema).
-  const cellSx = { p: { xs: 2, md: 3 }, height: '100%', overflow: 'hidden' }
+  const proximaAcao = definirProximaAcao({
+    temTransacoes: listaTransacoes.length > 0,
+    temInvestimentos: listaComposicao.length > 0,
+  })
 
   return (
-    <Box sx={{ p: { xs: 1.5, md: 3 }, width: '100%', boxSizing: 'border-box' }}>
+    <Box sx={{ p: { xs: '12px', md: '24px 28px 48px' }, width: '100%', boxSizing: 'border-box' }}>
+      {/* 1. Cabeçalho operacional ---------------------------------------- */}
       <Box
+        component="header"
         sx={{
-          display: 'grid',
-          gap: 3,
-          alignItems: 'stretch',
-          gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' },
-          gridTemplateAreas: {
-            xs: 'none',
-            md: `
-              "hero hero score insight"
-              "hero hero score comp"
-              "evo evo tx comp"
-            `,
-          },
+          display: 'flex',
+          alignItems: { xs: 'flex-start', sm: 'flex-end' },
+          justifyContent: 'space-between',
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: '14px',
+          mb: { xs: '22px', md: '30px' },
         }}
       >
-        {/* ── HERO — Patrimônio ─────────────────────────────────────────── */}
-        <Paper
-          data-tutorial="patrimonio"
-          sx={{
-            gridArea: { md: 'hero' },
-            p: { xs: 2.5, md: 4 },
-            display: 'flex',
-            flexDirection: 'column',
-            height: '100%',
-            border: `1px solid ${theme.palette.lines.strong}`,
-            background: `radial-gradient(130% 130% at 0% 0%, ${theme.palette.accent.primarySoft} 0%, transparent 55%), ${theme.palette.surfaces.surface}`,
-          }}
-        >
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <Typography variant="overline" sx={{ color: 'text.secondary' }}>
-              Patrimônio Total
-            </Typography>
-            <ExportarRelatorioButton />
-          </Box>
-
+        <Box sx={{ minWidth: 0 }}>
           <Typography
-            fontWeight={750}
-            sx={{ fontFamily: mono, mt: 0.5, mb: 3, fontSize: { xs: '2rem', md: '2.6rem' }, lineHeight: 1.05 }}
+            component="span"
+            sx={{
+              fontSize: 11,
+              fontWeight: 600,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: 'text.secondary',
+            }}
           >
-            {formatBRL(patrimonioTotal)}
+            {dataPorExtenso(agora)}
           </Typography>
+          <Typography
+            component="h1"
+            sx={{
+              fontSize: 'clamp(21px, 2.2vw, 27px)',
+              fontWeight: 700,
+              letterSpacing: '-0.02em',
+              color: 'text.primary',
+              mt: '4px',
+            }}
+          >
+            {saudacaoPorHora(agora.getHours())}{primeiroNome ? `, ${primeiroNome}` : ''}
+          </Typography>
+        </Box>
 
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          {/* Não existe filtro global de período no backend: este é um RÓTULO
+              de escopo, não um controle que finja filtrar. */}
+          <Typography
+            component="span"
+            sx={(t) => ({
+              px: '12px',
+              py: '6px',
+              borderRadius: `${t.radius.pill}px`,
+              border: `1px solid ${t.palette.lines.subtle}`,
+              backgroundColor: t.palette.surfaces.surfaceSoft,
+              fontSize: 12,
+              fontWeight: 600,
+              color: 'text.secondary',
+            })}
+          >
+            Visão atual
+          </Typography>
+          <ExportarRelatorioButton />
+        </Box>
+      </Box>
+
+      {/* 2. Panorama financeiro G3-A -------------------------------------- */}
+      <PanoramaFinanceiro
+        patrimonioTotal={patrimonioTotal}
+        saldoAtual={saldoAtual}
+        totalInvestido={totalInvestido}
+        proximaAcao={proximaAcao}
+        parcial={patrimonioTotal === null}
+        onTentarNovamente={erros.summary || erros.portfolio ? recarregar : undefined}
+      />
+
+      {/* 3. Evolução do saldo nos últimos 30 dias -------------------------- */}
+      <Box component="section" aria-labelledby="secao-evolucao" sx={secaoSx}>
+        <SectionHead
+          id="secao-evolucao"
+          titulo="Evolução do Saldo"
+          descricao="Saldo em conta nos últimos 30 dias"
+        />
+        {erros.evolucao ? (
+          <ModuloIndisponivel
+            mensagem="Não foi possível carregar a evolução do saldo."
+            onTentarNovamente={recarregar}
+          />
+        ) : (
           <Box
             sx={{
               display: 'grid',
-              gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(4, 1fr)' },
-              gap: 2,
-              mb: sparkData.length >= 2 ? 2.5 : 0,
+              gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1fr) 240px' },
+              gap: { xs: '18px', md: '26px' },
+              alignItems: 'stretch',
             }}
           >
-            <MiniStat label="Saldo Atual" value={saldoAtual} />
-            <MiniStat label="Total Investido" value={totalInvestido} />
-            <MiniStat label="Total Receitas" value={totalReceitas} />
-            <MiniStat label="Maior Gasto" value={maiorGasto?.valor ?? 0} />
-          </Box>
+            <Paper sx={{ ...painelSx, minHeight: 300 }}>
+              {listaEvolucao.length > 0 ? (
+                <SaldoLineChart data={listaEvolucao} height={260} />
+              ) : (
+                <EmptyState compact mensagem="Nenhuma movimentação registrada ainda" icone={ShowChartIcon} />
+              )}
+            </Paper>
 
-          {sparkData.length >= 2 && (
-            <Box sx={{ mt: 'auto', mx: -1 }}>
-              <Sparkline data={sparkData} color={theme.palette.primary.light} height={90} fill={0.3} />
+            <Box
+              component="aside"
+              aria-label="Resumo do mês corrente"
+              sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
+            >
+              {erros.transacoes ? (
+                <ModuloIndisponivel
+                  mensagem="Não foi possível carregar os totais do mês."
+                  onTentarNovamente={recarregar}
+                />
+              ) : (
+                <>
+                  <ValorDoMes rotulo="Entradas do mês" valor={entradasDoMes} />
+                  <ValorDoMes rotulo="Despesas do mês" valor={despesasDoMes} />
+                  <ValorDoMes
+                    rotulo="Maior gasto do mês"
+                    valor={maiorGastoDoMes ? maiorGastoDoMes.valor : null}
+                    detalhe={maiorGastoDoMes ? maiorGastoDoMes.descricao : 'Nenhuma despesa neste mês'}
+                  />
+                </>
+              )}
             </Box>
-          )}
-        </Paper>
+          </Box>
+        )}
+      </Box>
 
-        {/* ── SCORE — Saúde financeira ──────────────────────────────────── */}
-        <Paper sx={{ ...cellSx, gridArea: { md: 'score' } }}>
-          <ScoreSaudeCard />
-        </Paper>
-
-        {/* ── INSIGHT — micro-lição (retorna null quando não elegível) ───── */}
-        <Box sx={{ gridArea: { md: 'insight' } }}>
-          {insight !== undefined && (
-            <InsightEducacionalCard insight={insight} onDismiss={handleDismissInsight} />
-          )}
+      {/* 4. Composição por ativo + saúde financeira ------------------------ */}
+      <Box
+        sx={{
+          ...secaoSx,
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1.36fr) minmax(300px, 0.64fr)' },
+          gap: { xs: '32px', md: '26px' },
+          alignItems: 'start',
+        }}
+      >
+        <Box component="section" aria-labelledby="secao-composicao">
+          <SectionHead
+            id="secao-composicao"
+            titulo="Composição por ativo"
+            descricao="Distribuição da carteira por ticker, posição a posição"
+          />
+          <Paper sx={painelSx}>
+            {erros.portfolio ? (
+              <ModuloIndisponivel
+                mensagem="Não foi possível carregar a composição da carteira."
+                onTentarNovamente={recarregar}
+              />
+            ) : listaComposicao.length > 0 ? (
+              <ComposicaoCard data={listaComposicao} totalInvestido={totalInvestido ?? undefined} />
+            ) : (
+              <EmptyState compact mensagem="Adicione ativos para ver sua composição" icone={PieChartIcon} />
+            )}
+          </Paper>
         </Box>
 
-        {/* ── COMPOSIÇÃO — Portfólio (Donut) ────────────────────────────── */}
-        <Paper sx={{ ...cellSx, gridArea: { md: 'comp' } }}>
-          <CardTitle>Composição do Portfólio</CardTitle>
-          {portfolioComposition.length > 0
-            ? <ComposicaoCard data={portfolioComposition} totalInvestido={totalInvestido} />
-            : <EmptyState compact mensagem="Adicione ativos para ver sua composição" icone={PieChartIcon} />}
-        </Paper>
+        <Box component="section" aria-labelledby="secao-saude">
+          <SectionHead
+            id="secao-saude"
+            titulo="Saúde financeira"
+            descricao="Indicador calculado pelo backend a partir do seu histórico"
+          />
+          <Paper sx={painelSx}>
+            <ScoreSaudeCard />
+          </Paper>
+        </Box>
+      </Box>
 
-        {/* ── EVOLUÇÃO — Saldo (AreaChart) ──────────────────────────────── */}
-        <Paper sx={{ ...cellSx, gridArea: { md: 'evo' }, minHeight: 300 }}>
-          <CardTitle>Evolução do Saldo</CardTitle>
-          {evolucaoSaldo.length > 0
-            ? <SaldoLineChart data={evolucaoSaldo} height={260} />
-            : <EmptyState compact mensagem="Nenhuma movimentação registrada ainda" icone={ShowChartIcon} />}
-        </Paper>
-
-        {/* ── TRANSAÇÕES — Últimas ──────────────────────────────────────── */}
-        <Paper sx={{ ...cellSx, gridArea: { md: 'tx' } }}>
-          <CardTitle>Últimas Transações</CardTitle>
-          {transacoes.length > 0
-            ? <TransactionList transacoes={transacoes} />
-            : <EmptyState compact mensagem="Comece registrando uma transação no chat" icone={ReceiptLongIcon} />}
+      {/* 5. Transações recentes ------------------------------------------- */}
+      <Box component="section" aria-labelledby="secao-transacoes" sx={secaoSx}>
+        <SectionHead
+          id="secao-transacoes"
+          titulo="Transações recentes"
+          descricao="As últimas movimentações registradas na sua conta"
+        />
+        <Paper sx={painelSx}>
+          {erros.transacoes ? (
+            <ModuloIndisponivel
+              mensagem="Não foi possível carregar suas transações."
+              onTentarNovamente={recarregar}
+            />
+          ) : listaTransacoes.length > 0 ? (
+            <TransactionList transacoes={listaTransacoes} />
+          ) : (
+            <EmptyState compact mensagem="Comece registrando uma transação no chat" icone={ReceiptLongIcon} />
+          )}
         </Paper>
       </Box>
 
-      {/* ── SEÇÃO SECUNDÁRIA — Dividendos (preservado) ──────────────────── */}
-      <Box sx={{ mt: 3 }}>
-        <Paper sx={{ p: { xs: 2, md: 3 }, overflow: 'hidden' }}>
+      {/* 6. Dividendos / proventos ---------------------------------------- */}
+      <Box component="section" aria-labelledby="secao-dividendos" sx={secaoSx}>
+        <SectionHead
+          id="secao-dividendos"
+          titulo="Proventos"
+          descricao="Dividendos e proventos vindos da sua carteira"
+        />
+        <Paper sx={{ ...painelSx, overflow: 'hidden' }}>
           <DividendosCard />
         </Paper>
       </Box>
+
+      {/* 7. Insight educacional ------------------------------------------- */}
+      {insight !== undefined && insight !== null && (
+        // Unica secao sem SectionHead visivel (o titulo do insight faz esse
+        // papel) — o nome do landmark vem por aria-label, para que a
+        // navegacao por regioes nao encontre uma secao anonima.
+        <Box component="section" aria-label="Insight educacional" sx={secaoSx}>
+          <InsightEducacionalCard insight={insight} onDismiss={handleDismissInsight} />
+        </Box>
+      )}
     </Box>
   )
 }

@@ -15,6 +15,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import SellIcon from '@mui/icons-material/Sell';
@@ -27,6 +28,7 @@ const PortfolioTable = ({
     onRemoveRequest = null,
     refreshKey = 0,
 }) => {
+    const theme = useTheme();
     const [portfolio, setPortfolio] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -60,7 +62,7 @@ const PortfolioTable = ({
 
     if (!user || !user.id) {
         return (
-            <SkeletonTheme baseColor="#202020" highlightColor="#444">
+            <SkeletonTheme baseColor={theme.palette.surfaces.surfaceSoft} highlightColor={theme.palette.surfaces.raised}>
                 <p><Skeleton width={200} /></p>
             </SkeletonTheme>
         );
@@ -68,7 +70,7 @@ const PortfolioTable = ({
 
     if (loading) {
         return (
-            <SkeletonTheme baseColor="#202020" highlightColor="#444">
+            <SkeletonTheme baseColor={theme.palette.surfaces.surfaceSoft} highlightColor={theme.palette.surfaces.raised}>
                 <Box sx={{ mt: 2 }}>
                     {Array.from({ length: 3 }).map((_, index) => (
                         <Skeleton key={index} height={40} style={{ marginBottom: 8 }} />
@@ -98,7 +100,7 @@ const PortfolioTable = ({
         <TableContainer sx={{ mt: 1, overflowX: 'auto' }}>
             <Table size="small">
                 <TableHead>
-                    <TableRow sx={{ '& th': { borderBottom: '1px solid rgba(255,255,255,0.12)', color: 'text.secondary', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' } }}>
+                    <TableRow sx={{ '& th': { borderBottom: `1px solid ${theme.palette.lines.strong}`, color: 'text.secondary', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' } }}>
                         <TableCell>Ticker</TableCell>
                         <TableCell>Tipo</TableCell>
                         <TableCell align="right">Qtd</TableCell>
@@ -114,9 +116,10 @@ const PortfolioTable = ({
                         return (
                             <TableRow
                                 key={ativo.ticker}
+                                data-testid={`portfolio-row-${ativo.ticker}`}
                                 sx={{
-                                    '& td': { borderBottom: '1px solid rgba(255,255,255,0.06)', py: 1.25 },
-                                    '&:hover': { bgcolor: 'rgba(255,255,255,0.03)' },
+                                    '& td': { borderBottom: `1px solid ${theme.palette.lines.subtle}`, py: 1.25 },
+                                    '&:hover': { bgcolor: theme.palette.surfaces.surfaceSoft },
                                 }}
                             >
                                 <TableCell sx={{ fontWeight: 600 }}>{ativo.ticker}</TableCell>

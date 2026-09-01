@@ -14,10 +14,12 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import StarIcon from '@mui/icons-material/Star';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import CalculateIcon from '@mui/icons-material/Calculate';
+import { useTheme, alpha } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import usePlano from '../hooks/usePlano';
 import useIr from '../hooks/useIr';
+import { hojeLocal } from '../utils/dateUtils';
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -40,7 +42,7 @@ const TIPOS_ATIVO    = ['ACAO', 'FII', 'ETF', 'BDR', 'OPCAO'];
 const FORM_INICIAL = {
   ticker: '', tipoOperacao: 'COMPRA', tipoTrade: 'SWING',
   tipoAtivo: 'ACAO', quantidade: '', precoUnitario: '',
-  corretagem: '', dataOperacao: new Date().toISOString().slice(0, 10),
+  corretagem: '', dataOperacao: hojeLocal(),
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -55,7 +57,8 @@ const formatData = (iso) => {
 };
 
 const cardStyle = {
-  border: '1px solid rgba(255,255,255,0.08)',
+  border: '1px solid',
+  borderColor: 'lines.subtle',
   borderRadius: '16px',
   boxShadow: 'none',
 };
@@ -72,35 +75,38 @@ const TipoChip = ({ tipo, trade }) => {
 
 // ── Disclaimer legal obrigatório ──────────────────────────────────────────────
 
-const Disclaimer = () => (
+const Disclaimer = () => {
+  const theme = useTheme();
+  return (
   <Paper
     elevation={0}
     sx={{
       mt: 3,
       p: 2,
       borderRadius: 2,
-      border: '1px solid rgba(255, 193, 7, 0.35)',
-      bgcolor: 'rgba(255, 193, 7, 0.06)',
+      border: `1px solid ${alpha(theme.palette.warning.main, 0.35)}`,
+      bgcolor: alpha(theme.palette.warning.main, 0.06),
       display: 'flex',
       alignItems: 'flex-start',
       gap: 1.5,
     }}
   >
-    <WarningAmberIcon sx={{ color: '#FFC107', mt: 0.2, flexShrink: 0 }} />
+    <WarningAmberIcon sx={{ color: 'warning.main', mt: 0.2, flexShrink: 0 }} />
     <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.6 }}>
-      <strong style={{ color: '#FFC107' }}>⚠️ Aviso importante:</strong> Este cálculo é{' '}
+      <strong style={{ color: theme.palette.warning.main }}>⚠️ Aviso importante:</strong> Este cálculo é{' '}
       <strong>apenas informativo</strong> e pode conter imprecisões. Ele não substitui a
       orientação de um contador ou especialista tributário. Consulte um profissional para
       sua declaração oficial do Imposto de Renda.
     </Typography>
   </Paper>
-);
+  );
+};
 
 // ── Gate de plano Premium ─────────────────────────────────────────────────────
 
 const PremiumGate = ({ navigate }) => (
   <Box sx={{ width: '100%', maxWidth: 560, mx: 'auto', mt: 8, textAlign: 'center', px: 2 }}>
-    <StarIcon sx={{ fontSize: 56, color: '#FFD700', mb: 2 }} />
+    <StarIcon sx={{ fontSize: 56, color: 'secondary.main', mb: 2 }} />
     <Typography variant="h5" fontWeight={700} sx={{ mb: 1 }}>
       Recurso exclusivo Premium
     </Typography>
@@ -113,8 +119,7 @@ const PremiumGate = ({ navigate }) => (
       size="large"
       startIcon={<StarIcon />}
       onClick={() => navigate('/plano')}
-      sx={{ borderRadius: 2, px: 4, fontWeight: 700, bgcolor: '#7C6AF7',
-            '&:hover': { bgcolor: '#6355d4' } }}
+      sx={{ borderRadius: 2, px: 4, fontWeight: 700 }}
     >
       Ver planos
     </Button>
@@ -131,7 +136,7 @@ const ResumoCard = ({ apuracao, onGerarDarf, loadingDarf, darf, errorDarf }) => 
     <Card sx={cardStyle}>
       <CardContent sx={{ p: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
-          <CalculateIcon sx={{ color: '#7C6AF7' }} />
+          <CalculateIcon sx={{ color: 'primary.main' }} />
           <Typography variant="h6" fontWeight={700}>
             Resumo da Apuração
           </Typography>
@@ -156,12 +161,12 @@ const ResumoCard = ({ apuracao, onGerarDarf, loadingDarf, darf, errorDarf }) => 
             { label: 'IRRF já retido (deduzido)', value: apuracao.irrfDeduzido, highlight: 'warning' },
           ].map(({ label, value, highlight }) => (
             <Grid size={{ xs: 6, sm: 3 }} key={label}>
-              <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'rgba(255,255,255,0.04)' }}>
+              <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'surfaces.surfaceSoft' }}>
                 <Typography variant="caption" color="text.secondary">{label}</Typography>
                 <Typography
                   variant="body1"
                   fontWeight={700}
-                  sx={{ color: highlight === 'warning' ? '#FFC107' : 'text.primary' }}
+                  sx={{ color: highlight === 'warning' ? 'warning.main' : 'text.primary' }}
                 >
                   {formatBRL(value)}
                 </Typography>
@@ -170,7 +175,7 @@ const ResumoCard = ({ apuracao, onGerarDarf, loadingDarf, darf, errorDarf }) => 
           ))}
         </Grid>
 
-        <Divider sx={{ mb: 2, borderColor: 'rgba(255,255,255,0.08)' }} />
+        <Divider sx={{ mb: 2, borderColor: 'lines.subtle' }} />
 
         {/* IR Devido */}
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
@@ -178,8 +183,8 @@ const ResumoCard = ({ apuracao, onGerarDarf, loadingDarf, darf, errorDarf }) => 
             <Typography variant="caption" color="text.secondary">IR Devido</Typography>
             {isento ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
-                <CheckCircleIcon sx={{ color: '#4caf50', fontSize: 20 }} />
-                <Typography variant="h6" fontWeight={700} sx={{ color: '#4caf50' }}>
+                <CheckCircleIcon sx={{ color: 'success.main', fontSize: 20 }} />
+                <Typography variant="h6" fontWeight={700} sx={{ color: 'success.main' }}>
                   Isento
                 </Typography>
                 <Tooltip title="Vendas de ações abaixo de R$20.000 no mês — isenção de IR (Swing Trade de ações)">
@@ -187,7 +192,7 @@ const ResumoCard = ({ apuracao, onGerarDarf, loadingDarf, darf, errorDarf }) => 
                 </Tooltip>
               </Box>
             ) : (
-              <Typography variant="h5" fontWeight={700} sx={{ color: '#ef5350', mt: 0.5 }}>
+              <Typography variant="h5" fontWeight={700} sx={{ color: 'error.main', mt: 0.5 }}>
                 {formatBRL(irDevido)}
               </Typography>
             )}
@@ -204,8 +209,7 @@ const ResumoCard = ({ apuracao, onGerarDarf, loadingDarf, darf, errorDarf }) => 
               startIcon={<ReceiptLongIcon />}
               onClick={onGerarDarf}
               disabled={loadingDarf}
-              sx={{ borderRadius: 2, fontWeight: 700, bgcolor: '#7C6AF7',
-                    '&:hover': { bgcolor: '#6355d4' } }}
+              sx={{ borderRadius: 2, fontWeight: 700 }}
             >
               {loadingDarf ? <CircularProgress size={20} color="inherit" /> : 'Gerar DARF'}
             </Button>
@@ -214,10 +218,10 @@ const ResumoCard = ({ apuracao, onGerarDarf, loadingDarf, darf, errorDarf }) => 
 
         {/* DARF gerado */}
         {darf && (
-          <Box sx={{ mt: 2.5, p: 2, borderRadius: 2,
-              border: '1px solid rgba(124,106,247,0.4)',
-              bgcolor: 'rgba(124,106,247,0.06)' }}>
-            <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1.5, color: '#7C6AF7' }}>
+          <Box sx={(t) => ({ mt: 2.5, p: 2, borderRadius: 2,
+              border: `1px solid ${alpha(t.palette.primary.main, 0.4)}`,
+              bgcolor: alpha(t.palette.primary.main, 0.06) })}>
+            <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1.5, color: 'primary.main' }}>
               📋 DARF Gerado
             </Typography>
             <Grid container spacing={1.5}>
@@ -230,7 +234,7 @@ const ResumoCard = ({ apuracao, onGerarDarf, loadingDarf, darf, errorDarf }) => 
                 <Grid size={{ xs: 6, sm: 3 }} key={label}>
                   <Typography variant="caption" color="text.secondary">{label}</Typography>
                   <Typography variant={big ? 'h6' : 'body2'} fontWeight={big ? 800 : 600}
-                      sx={{ color: big ? '#7C6AF7' : 'text.primary' }}>
+                      sx={{ color: big ? 'primary.main' : 'text.primary' }}>
                     {value}
                   </Typography>
                 </Grid>
@@ -280,7 +284,7 @@ const OperacaoDialog = ({ open, onClose, onSalvar, loading }) => {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth
-        PaperProps={{ sx: { borderRadius: 3, bgcolor: '#1a1a2e' } }}>
+        PaperProps={{ sx: { borderRadius: 3, bgcolor: 'background.paper' } }}>
       <DialogTitle sx={{ fontWeight: 700 }}>Registrar Operação</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
         <Grid container spacing={2}>
@@ -355,8 +359,7 @@ const OperacaoDialog = ({ open, onClose, onSalvar, loading }) => {
           onClick={handleSalvar}
           variant="contained"
           disabled={!valido || loading}
-          sx={{ borderRadius: 2, fontWeight: 700, bgcolor: '#7C6AF7',
-                '&:hover': { bgcolor: '#6355d4' } }}
+          sx={{ borderRadius: 2, fontWeight: 700 }}
         >
           {loading ? <CircularProgress size={20} color="inherit" /> : 'Salvar'}
         </Button>
@@ -385,7 +388,7 @@ const TabelaOperacoes = ({ operacoes, onExcluir }) => {
           <TableRow>
             {['Data', 'Ticker', 'Tipo', 'Trade', 'Ativo', 'Qtd', 'Preço', 'Corretagem', 'Total', ''].map((h) => (
               <TableCell key={h} sx={{ fontWeight: 700, color: 'text.secondary', fontSize: 11,
-                  whiteSpace: 'nowrap', borderColor: 'rgba(255,255,255,0.06)' }}>
+                  whiteSpace: 'nowrap', borderColor: 'lines.subtle' }}>
                 {h}
               </TableCell>
             ))}
@@ -396,39 +399,39 @@ const TabelaOperacoes = ({ operacoes, onExcluir }) => {
             const total = (op.precoUnitario * op.quantidade).toFixed(2);
             return (
               <TableRow key={op.id} hover
-                  sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.03)' } }}>
-                <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)', whiteSpace: 'nowrap' }}>
+                  sx={{ '&:hover': { bgcolor: 'surfaces.surfaceSoft' } }}>
+                <TableCell sx={{ borderColor: 'lines.subtle', whiteSpace: 'nowrap' }}>
                   {formatData(op.dataOperacao)}
                 </TableCell>
-                <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)', fontWeight: 700 }}>
+                <TableCell sx={{ borderColor: 'lines.subtle', fontWeight: 700 }}>
                   {op.ticker}
                 </TableCell>
-                <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                <TableCell sx={{ borderColor: 'lines.subtle' }}>
                   <TipoChip tipo={op.tipoOperacao} trade={op.tipoTrade} />
                 </TableCell>
-                <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                <TableCell sx={{ borderColor: 'lines.subtle' }}>
                   <Chip label={op.tipoTrade === 'DAY_TRADE' ? 'Day Trade' : 'Swing'}
                       size="small" variant="outlined"
-                      sx={{ fontSize: 10, borderColor: 'rgba(255,255,255,0.2)' }} />
+                      sx={{ fontSize: 10, borderColor: 'lines.strong' }} />
                 </TableCell>
-                <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                <TableCell sx={{ borderColor: 'lines.subtle' }}>
                   <Chip label={op.tipoAtivo} size="small" variant="outlined"
-                      sx={{ fontSize: 10, borderColor: 'rgba(255,255,255,0.15)' }} />
+                      sx={{ fontSize: 10, borderColor: 'lines.strong' }} />
                 </TableCell>
-                <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)' }}>{op.quantidade}</TableCell>
-                <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                <TableCell sx={{ borderColor: 'lines.subtle' }}>{op.quantidade}</TableCell>
+                <TableCell sx={{ borderColor: 'lines.subtle' }}>
                   {formatBRL(op.precoUnitario)}
                 </TableCell>
-                <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                <TableCell sx={{ borderColor: 'lines.subtle' }}>
                   {formatBRL(op.corretagem)}
                 </TableCell>
-                <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)', fontWeight: 600 }}>
+                <TableCell sx={{ borderColor: 'lines.subtle', fontWeight: 600 }}>
                   {formatBRL(total)}
                 </TableCell>
-                <TableCell sx={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                <TableCell sx={{ borderColor: 'lines.subtle' }}>
                   <Tooltip title="Excluir operação">
                     <IconButton size="small" onClick={() => onExcluir(op.id)}
-                        sx={{ color: 'text.disabled', '&:hover': { color: '#ef5350' } }}>
+                        sx={{ color: 'text.disabled', '&:hover': { color: 'error.main' } }}>
                       <DeleteOutlineIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
@@ -480,7 +483,7 @@ const IrPage = () => {
       <Box sx={{ p: 3 }}>
         {[1, 2, 3].map((i) => (
           <Skeleton key={i} animation="wave" variant="rectangular" height={80}
-              sx={{ mb: 2, borderRadius: 2, bgcolor: 'rgba(255,255,255,0.05)' }} />
+              sx={{ mb: 2, borderRadius: 2, bgcolor: 'surfaces.surfaceSoft' }} />
         ))}
       </Box>
     );
@@ -549,7 +552,7 @@ const IrPage = () => {
             size="small"
             onClick={() => apurar(mes, ano)}
             disabled={loading}
-            sx={{ borderRadius: 2, borderColor: 'rgba(255,255,255,0.2)' }}
+            sx={{ borderRadius: 2, borderColor: 'lines.strong' }}
           >
             {loading ? <CircularProgress size={16} /> : 'Apurar'}
           </Button>
@@ -568,7 +571,7 @@ const IrPage = () => {
         <Box>
           {[1, 2].map((i) => (
             <Skeleton key={i} animation="wave" variant="rectangular" height={120}
-                sx={{ mb: 2, borderRadius: 2, bgcolor: 'rgba(255,255,255,0.05)' }} />
+                sx={{ mb: 2, borderRadius: 2, bgcolor: 'surfaces.surfaceSoft' }} />
           ))}
         </Box>
       )}
@@ -611,8 +614,7 @@ const IrPage = () => {
               size="small"
               startIcon={<AddIcon />}
               onClick={() => setDialogOpen(true)}
-              sx={{ borderRadius: 2, fontWeight: 700, bgcolor: '#7C6AF7',
-                    '&:hover': { bgcolor: '#6355d4' } }}
+              sx={{ borderRadius: 2, fontWeight: 700 }}
             >
               Registrar
             </Button>
@@ -620,7 +622,7 @@ const IrPage = () => {
 
           {loading ? (
             <Skeleton animation="wave" variant="rectangular" height={120}
-                sx={{ borderRadius: 2, bgcolor: 'rgba(255,255,255,0.05)' }} />
+                sx={{ borderRadius: 2, bgcolor: 'surfaces.surfaceSoft' }} />
           ) : (
             <TabelaOperacoes operacoes={operacoes} onExcluir={handleExcluir} />
           )}

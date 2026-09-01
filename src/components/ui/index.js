@@ -1,6 +1,6 @@
 // src/components/ui/index.js
 // ───────────────────────────────────────────────────────────────────
-// Barrel for the FortunAI data-viz primitives. Plain JS (no JSX) so it
+// Barrel for the Pondero data-viz primitives. Plain JS (no JSX) so it
 // stays valid regardless of Vite's .js/.jsx loader config.
 //
 //   import { RingGauge, Donut, Sparkline } from '@/components/ui';

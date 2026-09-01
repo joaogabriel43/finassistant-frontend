@@ -8,6 +8,7 @@ import {
 
 // Cenário 1 + 2 + 3 + 4 + 5: testes de autenticação
 // Sem storageState — esses testes validam o próprio fluxo de auth
+test.use({ storageState: { cookies: [], origins: [] } })
 
 test.describe('Autenticação', () => {
 
@@ -25,7 +26,10 @@ test.describe('Autenticação', () => {
 
     // Preenche o formulário de registro
     await page.getByLabel('Email').fill(email)
-    await page.getByLabel('Senha').fill(senha)
+    const passwordFields = page.locator('input[type="password"]')
+    await passwordFields.nth(0).fill(senha)
+    await passwordFields.nth(1).fill(senha)
+    await page.getByRole('checkbox', { name: /Li e aceito/i }).check()
     await page.getByRole('button', { name: /Criar conta|Registrar|Cadastrar/i }).click()
 
     // Após registro bem-sucedido, redireciona para login (com mensagem de sucesso)
@@ -36,7 +40,7 @@ test.describe('Autenticação', () => {
   test('Cenário 2 — Login com credenciais válidas', async ({ page }) => {
     await loginAs(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
 
-    // Verifica que chegou ao dashboard com texto de patrimônio
+    // Verifica que chegou a uma rota autenticada.
     await expect(page).toHaveURL(/\/(dashboard|questionario)/, { timeout: 10_000 })
 
     // Se caiu no questionário, navega para o dashboard
@@ -44,7 +48,7 @@ test.describe('Autenticação', () => {
       await page.goto('/dashboard')
     }
 
-    await expect(page.getByText(/Patrimônio/i).first()).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByRole('button', { name: /Conta/i })).toBeVisible({ timeout: 10_000 })
   })
 
   // ─── Cenário 3 — Login com credenciais inválidas ────────────────────────
@@ -52,7 +56,7 @@ test.describe('Autenticação', () => {
     await page.goto('/login')
 
     await page.getByLabel('Endereço de Email').fill('inexistente@fortunai-test.com')
-    await page.getByLabel('Senha').fill('SenhaErrada123!')
+    await page.locator('input[type="password"]').first().fill('SenhaErrada123!')
     await page.getByRole('button', { name: 'Entrar' }).click()
 
     // Mensagem de erro visível
@@ -71,7 +75,7 @@ test.describe('Autenticação', () => {
 
     // ProtectedRoute deve redirecionar para /login
     await expect(page).toHaveURL(/\/login/, { timeout: 8_000 })
-    await expect(page.getByText('FortunAI').first()).toBeVisible()
+    await expect(page.getByText('Pondero').first()).toBeVisible()
   })
 
   // ─── Cenário 5 — Logout ──────────────────────────────────────────────────

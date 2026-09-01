@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render as renderRTL, screen, fireEvent, waitFor } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import ImportacaoExtratoModal from '../ImportacaoExtratoModal'
 
@@ -10,10 +10,17 @@ vi.mock('../../../services/api', () => ({
 }))
 
 import api from '../../../services/api'
+import { ThemeProvider } from '@mui/material/styles'
+import theme from '../../../theme'
 
 const createMockFile = (name = 'extrato.csv', type = 'text/csv') => {
   return new File(['date,title,amount\n2026-03-01,Compra,-50.00'], name, { type })
 }
+
+// O componente le tokens customizados do tema (palette.lines / palette.surfaces
+// / palette.series), entao precisa do ThemeProvider no teste — regra do
+// design system.
+const render = (ui) => renderRTL(<ThemeProvider theme={theme}>{ui}</ThemeProvider>)
 
 describe('ImportacaoExtratoModal', () => {
   beforeEach(() => {

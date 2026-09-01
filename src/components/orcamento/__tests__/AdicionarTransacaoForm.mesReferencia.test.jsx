@@ -1,6 +1,8 @@
 import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
+import { ThemeProvider } from '@mui/material/styles'
+import theme from '../../../theme'
 import AdicionarTransacaoForm from '../AdicionarTransacaoForm'
 import { MesOrcamentoProvider, useMesOrcamento } from '../../../contexts/MesOrcamentoContext'
 
@@ -44,12 +46,18 @@ const Navegador = () => {
   )
 }
 
+// O componente le tokens customizados (palette.lines / palette.surfaces) via
+// selectStyles(theme) — sem ThemeProvider o tema default do MUI nao tem
+// `palette.lines` e a renderizacao estoura. Mesmo padrao do teste irmao
+// CartoesCard.mesReferencia.test.jsx.
 const renderComNavegacao = () =>
   render(
-    <MesOrcamentoProvider>
-      <Navegador />
-      <AdicionarTransacaoForm />
-    </MesOrcamentoProvider>
+    <ThemeProvider theme={theme}>
+      <MesOrcamentoProvider>
+        <Navegador />
+        <AdicionarTransacaoForm />
+      </MesOrcamentoProvider>
+    </ThemeProvider>
   )
 
 const preencherCamposBase = async () => {

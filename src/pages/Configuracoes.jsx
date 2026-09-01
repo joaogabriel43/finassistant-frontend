@@ -82,7 +82,7 @@ function TabPerfil({ onSuccess }) {
               alignItems: 'center', justifyContent: 'center', p: 0,
             }}
           >
-            <CameraAltIcon sx={{ fontSize: 14, color: '#fff' }} />
+            <CameraAltIcon sx={{ fontSize: 14, color: 'primary.contrastText' }} />
           </Box>
           {/* Espelha a validacao do backend (CloudinaryService: JPEG/PNG, 5 MB) — o seletor
               nao deve oferecer formatos que o servidor recusaria com 422. */}

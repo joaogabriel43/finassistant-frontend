@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render as renderRTL, screen, fireEvent, waitFor } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 
 // ← RED: NfceScannerModal.jsx não existe ainda — import falha na compilação
@@ -12,6 +12,8 @@ vi.mock('../../services/api', () => ({
 }))
 
 import api from '../../services/api'
+import { ThemeProvider } from '@mui/material/styles'
+import theme from '../../theme'
 
 // ── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -58,6 +60,11 @@ function renderModal(props = {}) {
 }
 
 // ── Testes ───────────────────────────────────────────────────────────────────
+
+// O componente le tokens customizados do tema (palette.lines / palette.surfaces
+// / palette.series), entao precisa do ThemeProvider no teste — regra do
+// design system.
+const render = (ui) => renderRTL(<ThemeProvider theme={theme}>{ui}</ThemeProvider>)
 
 describe('NfceScannerModal', () => {
   beforeEach(() => {
@@ -218,8 +225,12 @@ describe('NfceScannerModal', () => {
     expect(screen.getByLabelText(/URL da Nota Fiscal/i)).toBeInTheDocument()
 
     // Fechar modal — rerender com open=false
+    // `rerender` substitui a arvore inteira, entao precisa repetir o
+    // ThemeProvider — o wrapper do `render` local nao alcanca este caminho.
     rerender(
-      <NfceScannerModal open={false} onClose={vi.fn()} onSuccess={vi.fn()} />
+      <ThemeProvider theme={theme}>
+        <NfceScannerModal open={false} onClose={vi.fn()} onSuccess={vi.fn()} />
+      </ThemeProvider>
     )
 
     // MUI Dialog usa animação de saída (Fade 300ms) — waitFor aguarda desmontagem

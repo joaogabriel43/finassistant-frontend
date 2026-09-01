@@ -106,11 +106,11 @@ const Orcamento = () => {
             <Box sx={{ p: { xs: 1.5, md: 3 } }}>
                 {Array.from({ length: 5 }).map((_, i) => (
                     <Skeleton key={i} animation="wave" variant="rectangular" height={48}
-                        sx={{ mb: 1, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 2 }} />
+                        sx={(t) => ({ mb: 1, bgcolor: t.palette.surfaces.surfaceSoft, borderRadius: 2 })} />
                 ))}
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
                     <Skeleton animation="wave" variant="circular" width={180} height={180}
-                        sx={{ bgcolor: 'rgba(255,255,255,0.05)' }} />
+                        sx={(t) => ({ bgcolor: t.palette.surfaces.surfaceSoft })} />
                 </Box>
             </Box>
         );
@@ -128,7 +128,7 @@ const Orcamento = () => {
                         variant="outlined"
                         startIcon={<QrCodeScannerIcon />}
                         onClick={() => setNfceOpen(true)}
-                        sx={{ borderColor: 'rgba(255,255,255,0.2)' }}
+                        sx={(t) => ({ borderColor: t.palette.lines.strong })}
                     >
                         📄 Escanear NF-e
                     </Button>
@@ -166,7 +166,7 @@ const Orcamento = () => {
             {/* Sub-abas por tema (Lote K, padrão ADR-037) */}
             <Tabs value={abaAtiva} onChange={(_e, v) => setAbaAtiva(v)}
                 variant="scrollable" scrollButtons="auto" allowScrollButtonsMobile
-                sx={{ mb: 3, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                sx={(t) => ({ mb: 3, borderBottom: `1px solid ${t.palette.lines.subtle}` })}>
                 {ABAS_ORCAMENTO.map((aba) => (
                     <Tab key={aba.id} value={aba.id} label={aba.label} data-testid={`tab-orcamento-${aba.id}`} />
                 ))}
@@ -174,16 +174,29 @@ const Orcamento = () => {
 
             {abaAtiva === 'visao-geral' && (
                 <Grid container spacing={3} sx={{ mb: 3 }}>
-                    <Grid size={{ xs: 12, md: 6 }}>
+                    {/* 7/5 e nao 6/6: o formulario tem grade interna de 2 colunas
+                        e precisa da largura; o grafico e um circulo de 200px
+                        fixos (outerRadius 100) mais a legenda, e num card de
+                        metade da pagina ficava boiando. O CardContent do grafico
+                        centraliza verticalmente para que a diferenca de altura
+                        entre os dois cards nao vire um vazio no rodape. */}
+                    <Grid size={{ xs: 12, md: 7 }}>
                         <Card sx={{ height: '100%' }}>
                             <CardContent>
                                 <AdicionarTransacaoForm onTransacaoAdicionada={handleTransacaoAdicionada} />
                             </CardContent>
                         </Card>
                     </Grid>
-                    <Grid size={{ xs: 12, md: 6 }}>
+                    <Grid size={{ xs: 12, md: 5 }}>
                         <Card sx={{ height: '100%' }}>
-                            <CardContent>
+                            <CardContent
+                                sx={{
+                                    height: '100%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    justifyContent: 'center',
+                                }}
+                            >
                                 <GastosPorCategoriaChart key={refreshKey} />
                             </CardContent>
                         </Card>

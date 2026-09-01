@@ -5,6 +5,7 @@ import {
 } from '@mui/material'
 import GavelIcon from '@mui/icons-material/Gavel'
 import api from '../services/api'
+import { alpha } from '@mui/material/styles'
 
 const VERSAO_TERMOS = '1.0'
 const VERSAO_PRIVACIDADE = '1.0'
@@ -50,11 +51,15 @@ const ConsentimentoModal = ({ open, onAceitar }) => {
       fullWidth
       // Sem onClose — modal obrigatório, não pode ser fechado sem aceitar
       PaperProps={{
-        sx: { borderRadius: 3, bgcolor: '#1a1a2e', border: '1px solid rgba(124,106,247,0.3)' },
+        sx: (t) => ({
+          borderRadius: 3,
+          bgcolor: 'background.paper',
+          border: `1px solid ${alpha(t.palette.primary.main, 0.3)}`,
+        }),
       }}
     >
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, pb: 1 }}>
-        <GavelIcon sx={{ color: '#7C6AF7' }} />
+        <GavelIcon sx={{ color: 'primary.main' }} />
         <Typography variant="h6" component="span" fontWeight={700} data-testid="consentimento-titulo">
           Termos e Política atualizados
         </Typography>
@@ -63,7 +68,7 @@ const ConsentimentoModal = ({ open, onAceitar }) => {
       <DialogContent>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2, lineHeight: 1.7 }}>
           Atualizamos nossos <strong>Termos de Uso</strong> e{' '}
-          <strong>Política de Privacidade</strong>. Para continuar usando o FortunAI, leia e
+          <strong>Política de Privacidade</strong>. Para continuar usando o Pondero, leia e
           aceite os documentos atualizados.
         </Typography>
 
@@ -81,7 +86,7 @@ const ConsentimentoModal = ({ open, onAceitar }) => {
             <Checkbox
               checked={aceito}
               onChange={(e) => setAceito(e.target.checked)}
-              sx={{ color: '#7C6AF7', '&.Mui-checked': { color: '#7C6AF7' } }}
+              sx={{ color: 'primary.main', '&.Mui-checked': { color: 'primary.main' } }}
             />
           }
           label={
@@ -106,12 +111,7 @@ const ConsentimentoModal = ({ open, onAceitar }) => {
           fullWidth
           disabled={!aceito || loading}
           onClick={handleAceitar}
-          sx={{
-            bgcolor: '#7C6AF7',
-            '&:hover': { bgcolor: '#6355d4' },
-            fontWeight: 700,
-            py: 1.25,
-          }}
+          sx={{ fontWeight: 700, py: 1.25 }}
         >
           {loading ? <CircularProgress size={20} color="inherit" /> : 'Aceitar e continuar'}
         </Button>

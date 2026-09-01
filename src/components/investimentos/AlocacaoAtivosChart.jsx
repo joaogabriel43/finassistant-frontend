@@ -4,13 +4,14 @@ import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 import { logErroSeguro } from '../../utils/apiErrorUtils';
 import { Box, Typography } from '@mui/material';
-
-const COLORS = ['#7C6AF7', '#00D4AA', '#FF4D6A', '#FFB547', '#4FC3F7'];
+import { useTheme } from '@mui/material/styles';
 
 const formatBRL = (value) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
 
 const AlocacaoAtivosChart = ({ refreshKey = 0 }) => {
+    const theme = useTheme();
+    const COLORS = theme.palette.series;
     const [data, setData] = useState([]);
     const { user } = useAuth();
 
@@ -47,12 +48,12 @@ const AlocacaoAtivosChart = ({ refreshKey = 0 }) => {
                                 <Tooltip
                                     formatter={(value) => formatBRL(value)}
                                     contentStyle={{
-                                        background: '#1a1a2e',
-                                        border: '1px solid rgba(255,255,255,0.12)',
+                                        background: theme.palette.surfaces.raised,
+                                        border: `1px solid ${theme.palette.lines.strong}`,
                                         borderRadius: 8,
                                     }}
-                                    labelStyle={{ color: '#fff' }}
-                                    itemStyle={{ color: '#fff' }}
+                                    labelStyle={{ color: theme.palette.text.primary }}
+                                    itemStyle={{ color: theme.palette.text.primary }}
                                 />
                             </PieChart>
                         </ResponsiveContainer>

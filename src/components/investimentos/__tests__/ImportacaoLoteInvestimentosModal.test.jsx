@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render as renderRTL, screen, fireEvent, waitFor } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import ImportacaoLoteInvestimentosModal from '../ImportacaoLoteInvestimentosModal'
 
@@ -10,6 +10,8 @@ vi.mock('../../../services/api', () => ({
 }))
 
 import api from '../../../services/api'
+import { ThemeProvider } from '@mui/material/styles'
+import theme from '../../../theme'
 
 const PREVIEW_ID = '11111111-1111-1111-1111-111111111111'
 
@@ -35,6 +37,11 @@ const itemPronto = (overrides = {}) => ({
   previewId: PREVIEW_ID,
   ...overrides,
 })
+
+// O componente le tokens customizados do tema (palette.lines / palette.surfaces
+// / palette.series), entao precisa do ThemeProvider no teste — regra do
+// design system.
+const render = (ui) => renderRTL(<ThemeProvider theme={theme}>{ui}</ThemeProvider>)
 
 describe('ImportacaoLoteInvestimentosModal', () => {
   beforeEach(() => {
@@ -141,7 +148,7 @@ describe('ImportacaoLoteInvestimentosModal', () => {
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith(
         '/investimentos/portfolio/ativos/lote/confirmar',
-        [itemPronto()]
+        { itens: [itemPronto()], eventosCorporativos: [] }
       )
       expect(screen.getByText(/1 operações importadas com sucesso!/)).toBeInTheDocument()
     })
@@ -189,6 +196,202 @@ describe('ImportacaoLoteInvestimentosModal', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Envie um arquivo .csv de até 5MB.')).toBeInTheDocument()
+    })
+  })
+
+  const previewComEventoPendenteDeFator = () => ({
+    data: {
+      prontos: [
+        itemPronto({ linha: 2, ticker: 'FICT3', operacao: 'COMPRA', data: '2026-03-01' }),
+        itemPronto({ linha: 6, ticker: 'FICT3', operacao: 'VENDA', data: '2026-03-05' }),
+      ],
+      eventosCorporativos: [
+        {
+          linha: 4,
+          classe: 'Ações',
+          ticker: 'FICT3',
+          operacao: 'DESDOBRAMENTO',
+          data: '2026-03-03',
+          quantidade: 0,
+          precoUnitario: 0,
+          valorTotal: 0,
+          tipoAtivo: null,
+          erro: null,
+          previewId: null,
+        },
+      ],
+      erros: [],
+      totalLinhas: 3,
+      previewId: PREVIEW_ID,
+    },
+  })
+
+  it('deve exigir o fator de um evento corporativo com venda subsequente e bloquear o botão de importar', async () => {
+    api.post.mockResolvedValueOnce(previewComEventoPendenteDeFator())
+
+    render(<ImportacaoLoteInvestimentosModal open={true} onClose={vi.fn()} />)
+
+    const input = document.querySelector('input[type="file"]')
+    fireEvent.change(input, { target: { files: [createMockFile()] } })
+    fireEvent.click(screen.getByText('Analisar Arquivo'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('input-fator-evento-4')).toBeInTheDocument()
+    })
+
+    expect(screen.getByTestId('btn-confirmar-importacao')).toBeDisabled()
+  })
+
+  it('deve liberar o botão de importar ao preencher o fator do evento corporativo', async () => {
+    api.post.mockResolvedValueOnce(previewComEventoPendenteDeFator())
+
+    render(<ImportacaoLoteInvestimentosModal open={true} onClose={vi.fn()} />)
+
+    const input = document.querySelector('input[type="file"]')
+    fireEvent.change(input, { target: { files: [createMockFile()] } })
+    fireEvent.click(screen.getByText('Analisar Arquivo'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('input-fator-evento-4')).toBeInTheDocument()
+    })
+
+    const fatorInput = screen.getByTestId('input-fator-evento-4').querySelector('input')
+    fireEvent.change(fatorInput, { target: { value: '2' } })
+
+    await waitFor(() => {
+      expect(screen.getByTestId('btn-confirmar-importacao')).not.toBeDisabled()
+    })
+
+    api.post.mockResolvedValueOnce({
+      data: { mensagem: '2 operações importadas com sucesso!', totalImportadas: 2 },
+    })
+
+    fireEvent.click(screen.getByTestId('btn-confirmar-importacao'))
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith(
+        '/investimentos/portfolio/ativos/lote/confirmar',
+        {
+          itens: [
+            itemPronto({ linha: 2, ticker: 'FICT3', operacao: 'COMPRA', data: '2026-03-01' }),
+            itemPronto({ linha: 6, ticker: 'FICT3', operacao: 'VENDA', data: '2026-03-05' }),
+          ],
+          eventosCorporativos: [
+            { linha: 4, ticker: 'FICT3', operacao: 'DESDOBRAMENTO', data: '2026-03-03', fator: 2 },
+          ],
+        }
+      )
+    })
+  })
+
+  it('deve exibir a mensagem especifica de erro 422 do backend, nao um erro generico', async () => {
+    api.post.mockResolvedValueOnce(previewComEventoPendenteDeFator())
+
+    render(<ImportacaoLoteInvestimentosModal open={true} onClose={vi.fn()} />)
+
+    const input = document.querySelector('input[type="file"]')
+    fireEvent.change(input, { target: { files: [createMockFile()] } })
+    fireEvent.click(screen.getByText('Analisar Arquivo'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('input-fator-evento-4')).toBeInTheDocument()
+    })
+
+    const fatorInput = screen.getByTestId('input-fator-evento-4').querySelector('input')
+    fireEvent.change(fatorInput, { target: { value: '0.5' } })
+
+    await waitFor(() => {
+      expect(screen.getByTestId('btn-confirmar-importacao')).not.toBeDisabled()
+    })
+
+    const mensagemEspecifica = 'O evento de Desdobramento para FICT3 em 2026-03-03 (linha 4) tem uma venda '
+      + 'subsequente no mesmo lote e precisa do fator de ajuste antes de confirmar a importação.'
+    api.post.mockRejectedValueOnce({
+      response: { data: { message: mensagemEspecifica } },
+    })
+
+    fireEvent.click(screen.getByTestId('btn-confirmar-importacao'))
+
+    await waitFor(() => {
+      expect(screen.getByText(mensagemEspecifica)).toBeInTheDocument()
+    })
+    expect(screen.queryByText('Erro ao importar os ativos.')).not.toBeInTheDocument()
+  })
+
+  it('deve oferecer evento manual e reenviar o lote em ordem antes da venda excedente', async () => {
+    const compra = itemPronto({ linha: 2, ticker: 'SINT3', operacao: 'COMPRA', data: '2026-01-01', quantidade: 100 })
+    const venda = itemPronto({ linha: 456, ticker: 'SINT3', operacao: 'VENDA', data: '2026-01-20', quantidade: 150 })
+
+    api.post
+      .mockResolvedValueOnce({
+        data: {
+          prontos: [compra, venda],
+          eventosCorporativos: [],
+          erros: [],
+          totalLinhas: 2,
+          previewId: PREVIEW_ID,
+        },
+      })
+      .mockRejectedValueOnce({
+        response: {
+          status: 422,
+          data: {
+            erro: 'EVENTO_CORPORATIVO_NAO_DETECTADO',
+            mensagem: 'Venda de SINT3 na linha 456 excede a quantidade disponível.',
+            ticker: 'SINT3',
+            linha: 456,
+            dataVenda: '2026-01-20',
+          },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: { mensagem: '2 operações importadas com sucesso!', totalImportadas: 2 },
+      })
+
+    render(<ImportacaoLoteInvestimentosModal open={true} onClose={vi.fn()} />)
+
+    fireEvent.change(document.querySelector('input[type="file"]'), {
+      target: { files: [createMockFile()] },
+    })
+    fireEvent.click(screen.getByText('Analisar Arquivo'))
+
+    await waitFor(() => screen.getByText(/Importar 2 operações/))
+    fireEvent.click(screen.getByTestId('btn-confirmar-importacao'))
+
+    const oferecerEvento = await screen.findByRole('button', {
+      name: 'Informar evento corporativo anterior',
+    })
+    fireEvent.click(oferecerEvento)
+
+    expect(screen.getByTestId('input-ticker-evento-manual').querySelector('input')).toHaveValue('SINT3')
+
+    fireEvent.mouseDown(screen.getByLabelText(/Tipo do evento/))
+    fireEvent.click(screen.getByRole('option', { name: 'Desdobramento' }))
+    fireEvent.change(screen.getByTestId('input-data-evento-manual').querySelector('input'), {
+      target: { value: '2026-01-10' },
+    })
+    fireEvent.change(screen.getByTestId('input-fator-evento-manual').querySelector('input'), {
+      target: { value: '2' },
+    })
+
+    fireEvent.click(screen.getByTestId('btn-confirmar-importacao'))
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenLastCalledWith(
+        '/investimentos/portfolio/ativos/lote/confirmar',
+        {
+          itens: [compra, venda],
+          eventosCorporativos: [
+            {
+              linha: 455,
+              ticker: 'SINT3',
+              operacao: 'DESDOBRAMENTO',
+              data: '2026-01-10',
+              fator: 2,
+            },
+          ],
+        }
+      )
     })
   })
 })

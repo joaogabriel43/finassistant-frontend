@@ -14,12 +14,14 @@ export function useImportacaoLoteInvestimentos() {
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState(null);
   const [resultado, setResultado] = useState(null);
+  const [eventoCorporativoNaoDetectado, setEventoCorporativoNaoDetectado] = useState(null);
 
   const analisarArquivo = async (file) => {
     setLoading(true);
     setError(null);
     setPreview(null);
     setResultado(null);
+    setEventoCorporativoNaoDetectado(null);
     try {
       const data = await investimentoService.previewImportacaoLote(file);
       setPreview(data);
@@ -31,15 +33,27 @@ export function useImportacaoLoteInvestimentos() {
     }
   };
 
-  const confirmarImportacao = async (itens) => {
+  const confirmarImportacao = async (itens, eventosCorporativos = []) => {
     setConfirming(true);
     setError(null);
     try {
-      const data = await investimentoService.confirmarImportacaoLote(itens);
+      const data = await investimentoService.confirmarImportacaoLote(itens, eventosCorporativos);
+      setEventoCorporativoNaoDetectado(null);
       setResultado(data);
     } catch (err) {
       logErroSeguro('Erro ao confirmar importação em lote', err);
-      setError(extrairMensagemErroApi(err, 'Erro ao importar os ativos.'));
+      const detalhe = err?.response?.data;
+      if (detalhe?.erro === 'EVENTO_CORPORATIVO_NAO_DETECTADO') {
+        setEventoCorporativoNaoDetectado({
+          ticker: detalhe.ticker,
+          linha: detalhe.linha,
+          dataVenda: detalhe.dataVenda,
+          mensagem: detalhe.mensagem,
+        });
+        setError(null);
+      } else {
+        setError(extrairMensagemErroApi(err, 'Erro ao importar os ativos.'));
+      }
     } finally {
       setConfirming(false);
     }
@@ -51,7 +65,18 @@ export function useImportacaoLoteInvestimentos() {
     setConfirming(false);
     setError(null);
     setResultado(null);
+    setEventoCorporativoNaoDetectado(null);
   };
 
-  return { preview, loading, confirming, error, resultado, analisarArquivo, confirmarImportacao, resetar };
+  return {
+    preview,
+    loading,
+    confirming,
+    error,
+    resultado,
+    eventoCorporativoNaoDetectado,
+    analisarArquivo,
+    confirmarImportacao,
+    resetar,
+  };
 }

@@ -3,6 +3,8 @@ import { test, expect, request as playwrightRequest } from '@playwright/test'
 const BACKEND_URL = process.env.PLAYWRIGHT_API_URL || 'http://localhost:3333'
 
 // These tests create FRESH users — no storageState — to ensure tutorial appears
+test.use({ storageState: { cookies: [], origins: [] } })
+
 test.describe('Tutorial de Onboarding', () => {
 
   async function registrarNovoUsuario(): Promise<{ email: string; senha: string; token: string }> {
@@ -15,6 +17,15 @@ test.describe('Tutorial de Onboarding', () => {
       data: { username: email, password: senha },
     })
     const { token } = await loginRes.json()
+    const consentimentoRes = await ctx.post('/api/conta/consentimento', {
+      headers: { Authorization: `Bearer ${token}` },
+      data: { versaoTermos: '1.0', versaoPrivacidade: '1.0' },
+    })
+    if (!consentimentoRes.ok()) {
+      throw new Error(
+        `Falha ao registrar consentimento do usuário de tutorial: ${consentimentoRes.status()} ${await consentimentoRes.text()}`,
+      )
+    }
     await ctx.dispose()
     return { email, senha, token }
   }
@@ -41,7 +52,7 @@ test.describe('Tutorial de Onboarding', () => {
     // Login via UI
     await page.goto('/login')
     await page.getByLabel('Endereço de Email').fill(email)
-    await page.getByLabel('Senha').fill(senha)
+    await page.locator('input[type="password"]').first().fill(senha)
     await page.getByRole('button', { name: 'Entrar' }).click()
 
     // May land on questionário first
@@ -84,7 +95,7 @@ test.describe('Tutorial de Onboarding', () => {
     // Login and go to dashboard
     await page.goto('/login')
     await page.getByLabel('Endereço de Email').fill(email)
-    await page.getByLabel('Senha').fill(senha)
+    await page.locator('input[type="password"]').first().fill(senha)
     await page.getByRole('button', { name: 'Entrar' }).click()
     await page.waitForURL(/\/(dashboard|questionario)/, { timeout: 10_000 })
     await responderQuestionario(page)
@@ -101,7 +112,7 @@ test.describe('Tutorial de Onboarding', () => {
 
     await page.goto('/login')
     await page.getByLabel('Endereço de Email').fill(email)
-    await page.getByLabel('Senha').fill(senha)
+    await page.locator('input[type="password"]').first().fill(senha)
     await page.getByRole('button', { name: 'Entrar' }).click()
     await page.waitForURL(/\/(dashboard|questionario)/, { timeout: 10_000 })
     await responderQuestionario(page)

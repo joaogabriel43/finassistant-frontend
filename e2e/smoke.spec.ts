@@ -2,13 +2,19 @@ import { test, expect, request as playwrightRequest } from '@playwright/test'
 
 /**
  * Smoke tests de produção — rodam apenas contra o ambiente real.
- * 5 testes rápidos (< 30s total) que verificam o sistema está UP.
+ * 12 testes rápidos (< 30s total) que verificam se o sistema está UP.
+ *
+ * SEMPRE rodar via `npm run test:smoke`, que usa playwright.smoke.config.ts
+ * (read-only). NÃO usar `npx playwright test e2e/smoke.spec.ts`: isso carrega
+ * playwright.config.ts e dispara o globalSetup, que registra um usuário novo
+ * no backend apontado por PLAYWRIGHT_API_URL — em produção, uma conta
+ * descartável com consentimento LGPD fabricado a cada execução.
  *
  * Uso local:   PLAYWRIGHT_BASE_URL=https://fortunai-frontend.vercel.app \
  *              PLAYWRIGHT_API_URL=https://finassistant-api.onrender.com \
- *              npx playwright test e2e/smoke.spec.ts
+ *              npm run test:smoke
  *
- * No CI: executado pelo job "smoke" pós-deploy.
+ * No CI: executado pelo job "smoke" pós-deploy (ci.yml do repo finassistant).
  */
 
 const API_URL = process.env.PLAYWRIGHT_API_URL || 'https://finassistant-api.onrender.com'
@@ -26,9 +32,9 @@ test.describe('Smoke Tests — Produção', () => {
   })
 
   // ─── 2. Frontend carrega com título correto ────────────────────────────
-  test('2. Frontend carrega e título contém "FortunAI"', async ({ page }) => {
+  test('2. Frontend carrega e título contém "Pondero"', async ({ page }) => {
     await page.goto('/')
-    await expect(page).toHaveTitle(/FortunAI/i, { timeout: 15_000 })
+    await expect(page).toHaveTitle(/Pondero/i, { timeout: 15_000 })
   })
 
   // ─── 3. Página /login renderiza campo de email ─────────────────────────
@@ -54,40 +60,42 @@ test.describe('Smoke Tests — Produção', () => {
     const response = await ctx.get('/api/status')
     expect(response.status()).toBe(200)
     const body = await response.json()
-    // O endpoint retorna informações de status dos serviços
-    expect(body).toHaveProperty('status')
+    expect(Array.isArray(body)).toBe(true)
+    expect(body).toEqual(expect.arrayContaining([
+      expect.objectContaining({ nome: 'Gemini AI', status: expect.any(String) }),
+      expect.objectContaining({ nome: 'Database', status: expect.any(String) }),
+    ]))
     await ctx.dispose()
   })
 
-  // ─── 6. GET /api/chat/historico → 200 com auth ────────────────────────
-  test('6. GET /api/chat/historico → 200 com auth', async () => {
+  // ─── 6. GET /api/chat/historico → existe e exige auth ─────────────────
+  //
+  // Ramo de login removido em 30/08/2026: este teste tentava autenticar como
+  // `smoke-auth@fortunai-test.com` com senha hardcoded no código-fonte e caía
+  // num `else` que aceitava 401/403 como sucesso. Verificação read-only contra
+  // produção (POST /api/auth/login) retornou 401 — a conta não existe, logo o
+  // ramo autenticado NUNCA executou e o teste passava exclusivamente pelo
+  // `else`. Mantida só a asserção que de fato era exercida. Credencial de
+  // produção não volta para o código-fonte (CLAUDE.md §8.3); se o smoke um dia
+  // precisar de sessão real, a senha entra como secret do Actions.
+  test('6. GET /api/chat/historico → existe e exige auth (401/403 sem token)', async () => {
     const ctx = await playwrightRequest.newContext({ baseURL: API_URL })
-    // Get a token first
-    const loginRes = await ctx.post('/api/auth/login', {
-      data: { username: 'smoke-auth@fortunai-test.com', password: 'SmokePass123!' },
-    })
-    // If user doesn't exist, just verify the endpoint exists (401/403 is fine for smoke)
-    if (loginRes.ok()) {
-      const { token } = await loginRes.json()
-      const res = await ctx.get('/api/chat/historico', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      expect(res.status()).toBe(200)
-    } else {
-      // Endpoint exists and rejects invalid credentials — good sign
-      expect([401, 403, 404]).not.toContain(404) // 404 would mean route doesn't exist
-    }
+    const res = await ctx.get('/api/chat/historico')
+    expect(res.status()).not.toBe(404)
+    expect([401, 403]).toContain(res.status())
     await ctx.dispose()
   })
 
   // ─── 7. PWA manifest disponível ───────────────────────────────────────
-  test('7. GET /manifest.webmanifest → 200 com name FortunAI', async ({ page }) => {
+  test('7. GET /manifest.webmanifest → 200 com identidade Pondero', async ({ page }) => {
     test.skip(process.env.NODE_ENV === 'development', 'PWA manifest only available in production build')
     const response = await page.goto('/manifest.webmanifest')
     expect(response?.status()).toBe(200)
-    const body = await response?.text()
-    expect(body).toContain('FortunAI')
-    expect(body).toContain('#7C3AED')
+    const body = await response?.json()
+    expect(body?.name).toContain('Pondero')
+    expect(body?.short_name).toBe('Pondero')
+    expect(body?.background_color).toBe('#09100E')
+    expect(body?.theme_color).toBe('#09100E')
   })
 
   // ─── 8. PATCH /api/usuario/tutorial-concluido existe (401/403 esperado sem token) ──

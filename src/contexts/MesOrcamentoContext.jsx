@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useMemo, useCallback } from 'react';
+import { hojeLocal } from '../utils/dateUtils';
 
 // Mês de referência compartilhado entre os sub-componentes da aba Orçamento
 // (ex.: Cartões usa para saber de qual fatura mostrar). Padrão de Context
@@ -22,9 +23,10 @@ function diferencaEmMeses(mes, ano, mesBase, anoBase) {
 }
 
 export function MesOrcamentoProvider({ children }) {
-    const hoje = new Date();
-    const mesAtual = hoje.getMonth() + 1;
-    const anoAtual = hoje.getFullYear();
+    // Ancorado em America/Sao_Paulo, e nao no fuso do navegador: `isMesAtual`
+    // daqui alimenta o AdicionarTransacaoForm, que decide o que e' data futura
+    // contra a mesma referência que o backend usa no @PastOrPresent.
+    const [anoAtual, mesAtual] = hojeLocal().split('-').map(Number);
 
     const [mes, setMes] = useState(mesAtual);
     const [ano, setAno] = useState(anoAtual);

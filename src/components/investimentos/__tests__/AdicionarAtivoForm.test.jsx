@@ -15,7 +15,10 @@ import { investimentoService } from '../../../services/investimentoService';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const hoje = () => new Date().toISOString().split('T')[0]; // "yyyy-MM-dd"
+// Mesma fonte do componente: o helper duplicado aqui repetia o bug de UTC
+// e por isso nunca poderia flagrar a data errada no formulario.
+import { hojeLocal } from '../../../utils/dateUtils'
+const hoje = hojeLocal
 
 const preencherCamposValidos = () => {
   fireEvent.change(screen.getByTestId('input-ticker'), { target: { value: 'mxrf11' } });

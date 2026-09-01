@@ -1,4 +1,5 @@
 import api from './api';
+import { logErroSeguro } from '../utils/apiErrorUtils';
 
 // Serviço de investimentos: inclui chamada para vender um ativo
 // venderRequest deve ser um objeto { ticker, quantidade }
@@ -9,7 +10,7 @@ const venderAtivo = async (venderRequest) => {
   } catch (error) {
     // Log detalhado e rethrow para tratamento pelo chamador
     // eslint-disable-next-line no-console
-    console.error('Erro ao vender ativo:', error.response?.data || error.message);
+    logErroSeguro('Erro ao vender ativo', error);
     throw error;
   }
 };
@@ -23,7 +24,7 @@ const adicionarAtivo = async (payload) => {
     return response.data;
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Erro ao adicionar ativo:', error.response?.data || error.message);
+    logErroSeguro('Erro ao adicionar ativo', error);
     throw error;
   }
 };
@@ -40,7 +41,7 @@ const editarAtivo = async (ticker, payload) => {
     return response.data;
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Erro ao editar ativo:', error.response?.data || error.message);
+    logErroSeguro('Erro ao editar ativo', error);
     throw error;
   }
 };
@@ -51,7 +52,7 @@ const removerAtivo = async (ticker) => {
     await api.delete(`/investimentos/portfolio/ativos/${encodeURIComponent(ticker)}`);
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Erro ao remover ativo:', error.response?.data || error.message);
+    logErroSeguro('Erro ao remover ativo', error);
     throw error;
   }
 };
@@ -67,7 +68,7 @@ const getRendaPassiva = async (tipo) => {
     return response.data;
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Erro ao buscar renda passiva:', error.response?.data || error.message);
+    logErroSeguro('Erro ao buscar renda passiva', error);
     throw error;
   }
 };
@@ -81,7 +82,7 @@ const getRentabilidade = async () => {
     return response.data;
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Erro ao buscar rentabilidade:', error.response?.data || error.message);
+    logErroSeguro('Erro ao buscar rentabilidade', error);
     throw error;
   }
 };
@@ -97,7 +98,7 @@ const getBenchmarkJanelas = async () => {
     return response.data;
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Erro ao buscar benchmarks por janela:', error.response?.data || error.message);
+    logErroSeguro('Erro ao buscar benchmarks por janela', error);
     throw error;
   }
 };
@@ -112,7 +113,7 @@ const getCalendarioProventos = async () => {
     return response.data;
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Erro ao buscar calendário de proventos:', error.response?.data || error.message);
+    logErroSeguro('Erro ao buscar calendário de proventos', error);
     throw error;
   }
 };
@@ -131,7 +132,7 @@ const getEventosCorporativos = async (tipo) => {
     return response.data;
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Erro ao buscar eventos corporativos:', error.response?.data || error.message);
+    logErroSeguro('Erro ao buscar eventos corporativos', error);
     throw error;
   }
 };
@@ -147,7 +148,7 @@ const obterTetos = async () => {
     return response.data;
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Erro ao buscar tetos de alocação:', error.response?.data || error.message);
+    logErroSeguro('Erro ao buscar tetos de alocação', error);
     throw error;
   }
 };
@@ -161,7 +162,7 @@ const salvarTetos = async (payload) => {
     return response.data;
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Erro ao salvar tetos de alocação:', error.response?.data || error.message);
+    logErroSeguro('Erro ao salvar tetos de alocação', error);
     throw error;
   }
 };
@@ -176,7 +177,7 @@ const obterBreakdown = async () => {
     return response.data;
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Erro ao buscar breakdown estratégico:', error.response?.data || error.message);
+    logErroSeguro('Erro ao buscar breakdown estratégico', error);
     throw error;
   }
 };
@@ -194,7 +195,7 @@ const obterAlertas = async () => {
     return response.data;
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Erro ao buscar alertas de concentração:', error.response?.data || error.message);
+    logErroSeguro('Erro ao buscar alertas de concentração', error);
     throw error;
   }
 };
@@ -210,7 +211,7 @@ const sugerirAporte = async (valor) => {
     return response.data;
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Erro ao sugerir aporte:', error.response?.data || error.message);
+    logErroSeguro('Erro ao sugerir aporte', error);
     throw error;
   }
 };
@@ -251,7 +252,7 @@ const obterPrecoTeto = async (yieldDesejado) => {
     return response.data;
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Erro ao buscar preço-teto da carteira:', error.response?.data || error.message);
+    logErroSeguro('Erro ao buscar preço-teto da carteira', error);
     throw error;
   }
 };
@@ -267,7 +268,7 @@ const avaliarPrecoTetoAvulso = async (payload) => {
     return response.data;
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Erro ao avaliar preço-teto avulso:', error.response?.data || error.message);
+    logErroSeguro('Erro ao avaliar preço-teto avulso', error);
     throw error;
   }
 };
@@ -287,7 +288,7 @@ const previewImportacaoLote = async (file) => {
     return response.data;
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Erro ao analisar CSV de importação em lote:', error.response?.data || error.message);
+    logErroSeguro('Erro ao analisar CSV de importação em lote', error);
     throw error;
   }
 };
@@ -295,13 +296,19 @@ const previewImportacaoLote = async (file) => {
 // Confirma a importação dos itens PRONTOS selecionados pelo usuário — cada
 // item já traz o previewId emitido no preview (vínculo SEC-14). `itens` é o
 // array `preview.prontos` (ou um subconjunto filtrado pelo usuário).
-const confirmarImportacaoLote = async (itens) => {
+// `eventosCorporativos` (ADR-052, adendo) carrega o fator de ajuste informado
+// pelo usuário para eventos de Desdobramento/Grupamento com venda subsequente
+// do mesmo ticker no lote — array de { linha, ticker, operacao, data, fator }.
+const confirmarImportacaoLote = async (itens, eventosCorporativos = []) => {
   try {
-    const response = await api.post('/investimentos/portfolio/ativos/lote/confirmar', itens);
+    const response = await api.post('/investimentos/portfolio/ativos/lote/confirmar', {
+      itens,
+      eventosCorporativos,
+    });
     return response.data;
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Erro ao confirmar importação em lote:', error.response?.data || error.message);
+    logErroSeguro('Erro ao confirmar importação em lote', error);
     throw error;
   }
 };

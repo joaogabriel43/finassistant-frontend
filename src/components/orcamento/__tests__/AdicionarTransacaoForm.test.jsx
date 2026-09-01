@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render as renderRTL, screen, fireEvent, waitFor } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import AdicionarTransacaoForm from '../AdicionarTransacaoForm'
 import { MesOrcamentoProvider } from '../../../contexts/MesOrcamentoContext'
@@ -28,10 +28,15 @@ vi.mock('react-select/creatable', () => ({
 }))
 
 import api from '../../../services/api'
+import { ThemeProvider } from '@mui/material/styles'
+import theme from '../../../theme'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const hoje = () => new Date().toISOString().split('T')[0] // "yyyy-MM-dd"
+// Mesma fonte do componente: o helper duplicado aqui repetia o bug de UTC
+// e por isso nunca poderia flagrar a data errada no formulario.
+import { hojeLocal } from '../../../utils/dateUtils'
+const hoje = hojeLocal
 
 const renderForm = (props) =>
   render(
@@ -62,6 +67,11 @@ beforeEach(() => {
 })
 
 // ─── Testes (RED — todos devem FALHAR porque o campo de data não existe) ─────
+
+// O componente le tokens customizados do tema (palette.lines / palette.surfaces
+// / palette.series), entao precisa do ThemeProvider no teste — regra do
+// design system.
+const render = (ui) => renderRTL(<ThemeProvider theme={theme}>{ui}</ThemeProvider>)
 
 describe('AdicionarTransacaoForm — campo de data (RED)', () => {
   it('deve renderizar campo de data com valor padrão igual a hoje', () => {

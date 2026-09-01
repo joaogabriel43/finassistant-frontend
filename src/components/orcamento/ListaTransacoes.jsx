@@ -95,21 +95,21 @@ const ListaTransacoes = ({ refreshKey, onChanged }) => {
 
                     <TableContainer
                         component={Paper}
-                        sx={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px' }}
+                        sx={(t) => ({ border: `1px solid ${t.palette.lines.subtle}`, borderRadius: '12px' })}
                     >
                         <Table size="small">
                             <TableHead>
                                 <TableRow
-                                    sx={{
+                                    sx={(t) => ({
                                         '& th': {
-                                            borderBottom: '1px solid rgba(255,255,255,0.1)',
+                                            borderBottom: `1px solid ${t.palette.lines.subtle}`,
                                             fontWeight: 600,
                                             fontSize: 12,
                                             textTransform: 'uppercase',
                                             letterSpacing: 0.5,
                                             color: 'text.secondary',
                                         },
-                                    }}
+                                    })}
                                 >
                                     <TableCell>Data</TableCell>
                                     <TableCell>Descrição</TableCell>
@@ -134,10 +134,20 @@ const ListaTransacoes = ({ refreshKey, onChanged }) => {
                                             {t.tipo === 'CREDIT' ? '+ ' : '- '}{formatBRL(t.valor?.quantia ?? t.valor)}
                                         </TableCell>
                                         <TableCell align="center">
-                                            <IconButton size="small" color="primary" onClick={() => openModal(t)}>
+                                            <IconButton
+                                                size="small"
+                                                color="primary"
+                                                aria-label="Editar transação"
+                                                onClick={() => openModal(t)}
+                                            >
                                                 <EditIcon fontSize="small" />
                                             </IconButton>
-                                            <IconButton size="small" color="error" onClick={() => handleDelete(t.id)}>
+                                            <IconButton
+                                                size="small"
+                                                color="error"
+                                                aria-label="Excluir transação"
+                                                onClick={() => handleDelete(t.id)}
+                                            >
                                                 <DeleteIcon fontSize="small" />
                                             </IconButton>
                                         </TableCell>

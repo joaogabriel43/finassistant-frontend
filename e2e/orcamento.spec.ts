@@ -149,16 +149,20 @@ test.describe('Orçamento', () => {
   test('Cenário 4 — Saldo no dashboard reflete transações criadas', async ({ page }) => {
     const userId = await getUserId()
     const token = await getAuthToken(TEST_USER_EMAIL, TEST_USER_PASSWORD)
+    const descricao = `Saldo E2E ${Date.now()}`
 
     // Cria transação via API para não depender da UI neste cenário
     const ctx = await playwrightRequest.newContext({ baseURL: BACKEND_URL })
     const res = await ctx.post(`/api/orcamento/transacao/${userId}`, {
       headers: { Authorization: `Bearer ${token}` },
-      data: { valor: '1000', categoria: 'Receita', descricao: 'Saldo E2E', tipo: 'ENTRADA' },
+      data: { valor: '1000', categoria: 'Receita', descricao, tipo: 'ENTRADA' },
     })
-    expect(res.status()).toBeLessThan(300)
-    const criada = await res.json()
+    expect(res.status()).toBe(201)
     await ctx.dispose()
+
+    const transacoes = await getTransacoes(userId)
+    const criada = transacoes.find((transacao) => transacao.descricao === descricao)
+    expect(criada).toBeTruthy()
 
     // Navega para o dashboard e verifica que saldo está visível
     await page.goto('/dashboard')
@@ -180,10 +184,15 @@ test.describe('Orçamento', () => {
       headers: { Authorization: `Bearer ${token}` },
       data: { valor: 100, categoria: 'Teste', descricao: descricaoOriginal, tipo: 'SAIDA' },
     })
-    const criada = await createRes.json()
+    expect(createRes.status()).toBe(201)
     await ctx.dispose()
 
+    const transacoes = await getTransacoes(userId)
+    const criada = transacoes.find((transacao) => transacao.descricao === descricaoOriginal)
+    expect(criada).toBeTruthy()
+
     await page.goto('/orcamento')
+    await page.getByRole('tab', { name: 'Transações' }).click()
 
     // Wait for transaction to appear
     await expect(page.getByText(descricaoOriginal)).toBeVisible({ timeout: 8_000 })
@@ -224,10 +233,15 @@ test.describe('Orçamento', () => {
       headers: { Authorization: `Bearer ${token}` },
       data: { valor: 50, categoria: 'Teste', descricao, tipo: 'SAIDA' },
     })
-    const criada = await createRes.json()
+    expect(createRes.status()).toBe(201)
     await ctx.dispose()
 
+    const transacoes = await getTransacoes(userId)
+    const criada = transacoes.find((transacao) => transacao.descricao === descricao)
+    expect(criada).toBeTruthy()
+
     await page.goto('/orcamento')
+    await page.getByRole('tab', { name: 'Transações' }).click()
     await expect(page.getByText(descricao)).toBeVisible({ timeout: 8_000 })
 
     // Click delete icon

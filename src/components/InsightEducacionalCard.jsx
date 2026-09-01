@@ -4,20 +4,24 @@ import { useTheme } from '@mui/material/styles'
 import api from '../services/api'
 
 /**
- * Mapa de cores por TipoInsight — define a borda esquerda do card.
- * Valores espelham as prioridades do IrApuracaoService.java:
- * vermelho (crítico) → laranja (atenção) → azul (neutro) → verde (positivo).
+ * Rótulo legível por TipoInsight.
+ *
+ * Antes existia aqui um mapa de CORES por tipo (laranja/vermelho/azul/roxo)
+ * que pintava uma faixa lateral no card. Duas razões para trocar por texto:
+ * o ambiente Pondero não usa faixa lateral colorida, e semântica financeira
+ * nunca pode depender só de cor (WCAG 2.2 AA, 1.4.1). O tipo agora é dito
+ * por extenso — legível também por leitor de tela.
  */
-const COR_POR_TIPO = {
-  FUNDO_EMERGENCIA:         '#F59E0B', // laranja — urgente, base financeira em risco
-  SCORE_SAUDE_BAIXO:        '#EF4444', // vermelho — saúde financeira crítica
-  REGRA_50_30_20:           '#3B82F6', // azul — ajuste de comportamento
-  DIVERSIFICACAO_PORTFOLIO: '#7C3AED', // roxo — investimentos
-  CONSISTENCIA_APORTES:     '#10B981', // verde — hábito positivo
-  MAIOR_CATEGORIA_GASTO:    '#6B7280', // cinza — informativo
+const ROTULO_POR_TIPO = {
+  FUNDO_EMERGENCIA: 'Reserva de emergência',
+  SCORE_SAUDE_BAIXO: 'Saúde financeira',
+  REGRA_50_30_20: 'Equilíbrio do orçamento',
+  DIVERSIFICACAO_PORTFOLIO: 'Diversificação',
+  CONSISTENCIA_APORTES: 'Consistência de aportes',
+  MAIOR_CATEGORIA_GASTO: 'Concentração de gastos',
 }
 
-const COR_FALLBACK = '#7C6AF7' // roxo padrão FortunAI
+const ROTULO_PADRAO = 'Dica financeira'
 
 /**
  * Converte **texto** → <strong>texto</strong> no conteúdo do insight.
@@ -52,8 +56,8 @@ const InsightEducacionalCard = ({ insight, onDismiss }) => {
         elevation={0}
         sx={{
           position: 'relative',
-          borderRadius: '12px',
-          border: `1px solid ${theme.palette.divider}`,
+          borderRadius: `${theme.radius.md}px`,
+          border: `1px solid ${theme.palette.lines.subtle}`,
           p: 2,
           background: theme.palette.background.paper,
           boxShadow: 'none',
@@ -74,7 +78,7 @@ const InsightEducacionalCard = ({ insight, onDismiss }) => {
               mb: 0.5,
             }}
           >
-            💡 Dica financeira
+            Dica financeira
           </Typography>
           <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 0.75, lineHeight: 1.4 }}>
             Dica financeira
@@ -102,10 +106,11 @@ const InsightEducacionalCard = ({ insight, onDismiss }) => {
             textAlign: 'center',
             gap: 1,
             px: 3,
-            background: `${theme.palette.background.paper}CC`,
+            background: theme.palette.background.paper,
+            opacity: 0.94,
           }}
         >
-          <Typography sx={{ fontSize: 28, lineHeight: 1 }}>🔒</Typography>
+          <Typography sx={{ fontSize: 28, lineHeight: 1 }} aria-hidden="true">🔒</Typography>
           <Typography variant="body2" sx={{ color: theme.palette.text.secondary, lineHeight: 1.5, maxWidth: 320 }}>
             Dados insuficientes ainda — continue registrando para receber insights personalizados
           </Typography>
@@ -114,12 +119,16 @@ const InsightEducacionalCard = ({ insight, onDismiss }) => {
     )
   }
 
-  const cor = COR_POR_TIPO[insight.tipoInsight] ?? COR_FALLBACK
+  // O backend já respondeu `tipo` e `tipoInsight` em versões diferentes do
+  // contrato — normaliza aqui em vez de assumir uma das duas grafias.
+  const tipoDoInsight = insight.tipo ?? insight.tipoInsight ?? null
+  const rotulo = ROTULO_POR_TIPO[tipoDoInsight] ?? ROTULO_PADRAO
 
   const handleEntendi = () => {
     // 1. POST best-effort — não bloqueia UX se falhar
     if (insight?.id) {
-      api.post(`/api/insights/${insight.id}/visto`).catch(() => {})
+      // baseURL do axios já contém /api — prefixar de novo geraria /api/api.
+      api.post(`/insights/${insight.id}/visto`).catch(() => {})
     }
     // 2. Inicia animação de saída
     setVisible(false)
@@ -132,35 +141,48 @@ const InsightEducacionalCard = ({ insight, onDismiss }) => {
       <Paper
         data-testid="insight-card"
         elevation={0}
-        sx={{
-          borderLeft: `4px solid ${cor}`,
-          borderRadius: '12px',
-          border: `1px solid rgba(255,255,255,0.08)`,
-          borderLeftColor: cor,
-          borderLeftWidth: 4,
-          p: 2,
-          background: `${cor}0D`, // 5% opacity da cor do tipo
+        sx={(t) => ({
+          borderRadius: `${t.radius.md}px`,
+          border: `1px solid ${t.palette.lines.subtle}`,
+          p: { xs: 2, md: '20px 22px' },
+          // Lavagem suave do acento primário — mesma família do ambiente nos
+          // dois temas, sem placa colorida nem faixa lateral.
+          background: t.palette.accent.primarySoft,
           boxShadow: 'none',
-        }}
+        })}
       >
-        {/* Cabeçalho: label de categoria */}
+        {/* Cabeçalho: rótulo do tipo, em texto (não em cor) */}
         <Typography
           variant="caption"
-          sx={{
-            color: cor,
+          sx={(t) => ({
+            color: t.palette.primary.main,
             fontWeight: 700,
             textTransform: 'uppercase',
-            letterSpacing: 0.8,
-            fontSize: 10,
+            letterSpacing: '0.09em',
+            fontSize: 10.5,
             display: 'block',
-            mb: 0.5,
-          }}
+            mb: 0.75,
+          })}
         >
-          💡 Dica financeira
+          {rotulo}
         </Typography>
 
-        {/* Título */}
-        <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 0.75, lineHeight: 1.4 }}>
+        {/* Título — momento editorial curto, na fonte display.
+            `h2` e nao `h3`: este titulo E o cabecalho da secao, no mesmo
+            nivel dos SectionHead das demais secoes do dashboard. Um h3 aqui
+            pularia do h1 do cabecalho direto para o h3 (WCAG 2.2 AA, 1.3.1). */}
+        <Typography
+          component="h2"
+          sx={(t) => ({
+            fontFamily: t.typography.fontFamilyDisplay,
+            fontSize: 19,
+            fontWeight: 600,
+            letterSpacing: '-0.015em',
+            lineHeight: 1.3,
+            m: 0,
+            mb: 0.75,
+          })}
+        >
           {insight.titulo}
         </Typography>
 
@@ -168,7 +190,7 @@ const InsightEducacionalCard = ({ insight, onDismiss }) => {
         <Typography
           variant="body2"
           color="text.secondary"
-          sx={{ lineHeight: 1.6, mb: 1.5 }}
+          sx={{ lineHeight: 1.6, mb: 1.5, maxWidth: 620 }}
         >
           {parseBold(insight.conteudo)}
         </Typography>
@@ -179,11 +201,11 @@ const InsightEducacionalCard = ({ insight, onDismiss }) => {
             variant="text"
             size="small"
             onClick={handleEntendi}
-            sx={{
-              color: cor,
-              fontWeight: 600,
-              '&:hover': { bgcolor: `${cor}1A` },
-            }}
+            sx={(t) => ({
+              color: t.palette.primary.main,
+              fontWeight: 700,
+              '&:hover': { bgcolor: t.palette.accent.naturalSoft },
+            })}
           >
             Entendi ✓
           </Button>

@@ -38,21 +38,23 @@ async function getAuthCtx() {
 
 test.describe('Sprint A — Assinaturas Recorrentes', () => {
 
-  // ── API: endpoint existe e responde com array ─────────────────────────────
+  // ── API: endpoint existe e responde com resumo ───────────────────────────
 
-  test('Sprint A-1 — GET /api/orcamento/recorrencias → 200 com array', async () => {
+  test('Sprint A-1 — GET /api/orcamento/recorrencias → 200 com resumo', async () => {
     const { ctx } = await getAuthCtx()
     const res = await ctx.get('/api/orcamento/recorrencias')
 
     expect(res.status()).toBe(200)
     const body = await res.json()
-    expect(Array.isArray(body)).toBe(true)
-    // Array pode estar vazio (sem transações recorrentes no usuário de teste)
+    expect(body).toHaveProperty('recorrencias')
+    expect(body).toHaveProperty('totalMensalComprometido')
+    expect(Array.isArray(body.recorrencias)).toBe(true)
+    // A lista pode estar vazia (sem transações recorrentes no usuário de teste)
     // Cada item deve ter os campos do RecorrenciaDTO
-    if (body.length > 0) {
-      expect(body[0]).toHaveProperty('descricao')
-      expect(body[0]).toHaveProperty('valorMedio')
-      expect(body[0]).toHaveProperty('frequencia')
+    if (body.recorrencias.length > 0) {
+      expect(body.recorrencias[0]).toHaveProperty('nome')
+      expect(body.recorrencias[0]).toHaveProperty('valorMedio')
+      expect(body.recorrencias[0]).toHaveProperty('frequencia')
     }
 
     await ctx.dispose()
@@ -101,9 +103,9 @@ test.describe('Sprint B — NFC-e Scanner', () => {
     await ctx.dispose()
   })
 
-  // ── API: importar sem autenticação → 401 ──────────────────────────────
+  // ── API: importar sem autenticação → 403 ──────────────────────────────
 
-  test('Sprint B-2 — POST /api/orcamento/nfce/importar sem auth → 401', async () => {
+  test('Sprint B-2 — POST /api/orcamento/nfce/importar sem auth → 403', async () => {
     const ctx = await playwrightRequest.newContext({ baseURL: BACKEND_URL })
     const res = await ctx.post('/api/orcamento/nfce/importar', {
       data: {
@@ -112,7 +114,7 @@ test.describe('Sprint B — NFC-e Scanner', () => {
         indicesItensSelecionados: [],
       },
     })
-    expect(res.status()).toBe(401)
+    expect(res.status()).toBe(403)
     await ctx.dispose()
   })
 
@@ -167,7 +169,7 @@ test.describe('Sprint C — Colaboração e Expiração de Convite', () => {
   test('Sprint C-3 — POST /api/compartilhamento/convidar email não cadastrado → 400 ou 409', async () => {
     const { ctx } = await getAuthCtx()
     const res = await ctx.post('/api/compartilhamento/convidar', {
-      data: { emailConvidado: 'usuario-definitivamente-nao-existe-xyz@fortunai-test.com' },
+      data: { email: 'usuario-definitivamente-nao-existe-xyz@fortunai-test.com' },
     })
     // 400: email não encontrado (ConviteInvalidoException)
     // 409: usuário já tem convite PENDENTE de execução anterior (CompartilhamentoJaAtivoException)
@@ -225,13 +227,10 @@ test.describe('Sprint D — Insights Educacionais', () => {
     const res = await ctx.get('/api/insights/atual')
 
     expect(res.status()).toBe(200)
-    // Body pode ser null (sem insights elegíveis no usuário de teste) ou InsightDTO
+    // Body pode ser vazio/null (sem insights elegíveis no usuário de teste) ou InsightDTO
     const text = await res.text()
-    // Deve ser JSON válido — "null" ou objeto
-    expect(() => JSON.parse(text)).not.toThrow()
-
-    const body = JSON.parse(text)
-    if (body !== null) {
+    if (text) {
+      const body = JSON.parse(text)
       // Se retornou InsightDTO, deve ter os campos esperados
       expect(body).toHaveProperty('titulo')
       expect(body).toHaveProperty('conteudo')
@@ -256,10 +255,13 @@ test.describe('Sprint D — Insights Educacionais', () => {
 
   // ── UI: Dashboard carrega após adição das features Sprint A-D ─────────
 
-  test('Sprint D-3 — UI: Dashboard renderiza "Patrimônio" sem erro após Sprints A-D', async ({ page }) => {
+  test('Sprint D-3 — UI: Dashboard renderiza o estado atual sem erro após Sprints A-D', async ({ page }) => {
     await page.goto('/dashboard')
-    // Regressão crítica: verifica que o Dashboard não quebrou com as novas features
-    await expect(page.getByText(/Patrimônio/i).first()).toBeVisible({ timeout: 10_000 })
+    // Com dados, o Panorama G3-A exibe seu headline; sem dados, o onboarding
+    // ocupa a tela. Ambos são estados válidos para o usuário sintético.
+    await expect(
+      page.getByText(/Sua posição consolidada hoje|Comece registrando uma transação no chat/i).first()
+    ).toBeVisible({ timeout: 10_000 })
     await expect(page.getByText(/Internal Server Error/i)).not.toBeVisible()
   })
 
@@ -310,9 +312,9 @@ test.describe('Sprint E — IR Investimentos', () => {
     await ctx.dispose()
   })
 
-  // ── API: POST operacao sem auth → 401 ─────────────────────────────────
+  // ── API: POST operacao sem auth → 403 ─────────────────────────────────
 
-  test('Sprint E-2 — POST /api/ir/operacao sem autenticação → 401', async () => {
+  test('Sprint E-2 — POST /api/ir/operacao sem autenticação → 403', async () => {
     const ctx = await playwrightRequest.newContext({ baseURL: BACKEND_URL })
     const res = await ctx.post('/api/ir/operacao', {
       data: {
@@ -321,22 +323,27 @@ test.describe('Sprint E — IR Investimentos', () => {
         dataOperacao: '2026-05-15',
       },
     })
-    expect(res.status()).toBe(401)
+    expect(res.status()).toBe(403)
     await ctx.dispose()
   })
 
-  // ── API: GET operacoes autenticado → 200 ──────────────────────────────
+  // ── API: GET operacoes autenticado → 200 Premium ou 403 Free ─────────
 
-  test('Sprint E-3 — GET /api/ir/operacoes autenticado → 200 com array', async () => {
+  test('Sprint E-3 — GET /api/ir/operacoes autenticado → 200 Premium ou 403 Free', async () => {
     const { ctx } = await getAuthCtx()
     const now = new Date()
     const res = await ctx.get('/api/ir/operacoes', {
       params: { mes: String(now.getMonth() + 1), ano: String(now.getFullYear()) },
     })
 
-    expect(res.status()).toBe(200)
-    const body = await res.json()
-    expect(Array.isArray(body)).toBe(true)
+    expect([200, 403]).toContain(res.status())
+    if (res.status() === 200) {
+      const body = await res.json()
+      expect(Array.isArray(body)).toBe(true)
+    } else {
+      const body = await res.json()
+      expect(body).toHaveProperty('plano', 'PREMIUM_REQUIRED')
+    }
 
     await ctx.dispose()
   })

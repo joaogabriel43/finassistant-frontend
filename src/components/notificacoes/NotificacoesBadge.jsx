@@ -3,6 +3,7 @@ import { Badge, Box, Button, IconButton, Snackbar, Tooltip, Typography } from '@
 import NotificationsIcon from '@mui/icons-material/Notifications'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 import BarChartIcon from '@mui/icons-material/BarChart'
+import { alpha } from '@mui/material/styles'
 import { useNotificacoes } from '../../hooks/useNotificacoes'
 import NotificacoesDrawer from './NotificacoesDrawer'
 
@@ -66,17 +67,17 @@ export default function NotificacoesBadge() {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         sx={{ zIndex: 9500 }}
       >
-        <Box sx={{
+        <Box sx={(t) => ({
           display: 'flex', alignItems: 'center', gap: 1.5,
           px: 2.5, py: 1.5,
-          background: '#1a472a',
-          border: '1px solid rgba(74, 222, 128, 0.3)',
+          background: t.palette.surfaces.raised,
+          border: `1px solid ${alpha(t.palette.success.main, 0.35)}`,
           borderRadius: '12px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+          boxShadow: t.palette.elevation.high,
           minWidth: 300,
-        }}>
-          <EmojiEventsIcon sx={{ color: '#4ade80', fontSize: 24, flexShrink: 0 }} />
-          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)', flex: 1 }}>
+        })}>
+          <EmojiEventsIcon sx={{ color: 'success.main', fontSize: 24, flexShrink: 0 }} />
+          <Typography variant="body2" sx={{ color: 'text.primary', flex: 1 }}>
             {metaAtingidaMensagem}
           </Typography>
         </Box>
@@ -90,23 +91,23 @@ export default function NotificacoesBadge() {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         sx={{ zIndex: 9500, bottom: { xs: 80, sm: 24 } }}
       >
-        <Box sx={{
+        <Box sx={(t) => ({
           display: 'flex', alignItems: 'center', gap: 1.5,
           px: 2.5, py: 1.5,
-          background: '#0d2137',
-          border: '1px solid rgba(76, 175, 80, 0.35)',
+          background: t.palette.surfaces.raised,
+          border: `1px solid ${alpha(t.palette.info.main, 0.35)}`,
           borderRadius: '12px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+          boxShadow: t.palette.elevation.high,
           minWidth: 320,
-        }}>
-          <BarChartIcon sx={{ color: '#4caf50', fontSize: 24, flexShrink: 0 }} />
-          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)', flex: 1 }}>
+        })}>
+          <BarChartIcon sx={{ color: 'info.main', fontSize: 24, flexShrink: 0 }} />
+          <Typography variant="body2" sx={{ color: 'text.primary', flex: 1 }}>
             📊 Seu resumo semanal chegou!
           </Typography>
           <Button
             size="small"
             onClick={handleVerResumo}
-            sx={{ color: '#4caf50', fontWeight: 600, ml: 0.5, whiteSpace: 'nowrap' }}
+            sx={{ color: 'info.main', fontWeight: 600, ml: 0.5, whiteSpace: 'nowrap' }}
           >
             Ver resumo
           </Button>

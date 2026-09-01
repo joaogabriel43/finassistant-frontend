@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Box, TextField, Button, Paper, Typography, IconButton, Skeleton, Chip, useTheme } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import SendIcon from '@mui/icons-material/Send';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
@@ -12,7 +13,7 @@ import { logErroSeguro } from '../utils/apiErrorUtils';
 import UploadComprovanteModal from './comprovantes/UploadComprovanteModal';
 import PremiumBanner from './plano/PremiumBanner';
 
-const MENSAGEM_BEM_VINDO = { text: 'Olá! Eu sou o Fortunai. Como posso te ajudar hoje?', sender: 'bot' };
+const MENSAGEM_BEM_VINDO = { text: 'Olá! Eu sou o Pondero. Como posso te ajudar hoje?', sender: 'bot' };
 
 // Sugestões iniciais — mapeiam para intents reais do ChatService.
 const SUGESTOES = [
@@ -23,6 +24,8 @@ const SUGESTOES = [
 ];
 
 const PLACEHOLDER = 'Pergunte ou registre algo em português...';
+const RELOAD_HISTORY_RETRY_INTERVAL_MS = 1000;
+const RELOAD_HISTORY_MAX_RETRIES = 6;
 
 // API helpers para histórico de chat persistido no backend
 const buscarHistorico = async (limite = 50) => {
@@ -32,6 +35,11 @@ const buscarHistorico = async (limite = 50) => {
 
 const limparHistoricoBackend = async () => {
     await api.delete('/chat/historico');
+};
+
+const removerEcoDaMensagem = (resposta, mensagemUsuario) => {
+    if (!mensagemUsuario || !resposta?.includes(mensagemUsuario)) return resposta;
+    return resposta.replaceAll(mensagemUsuario, 'Sua mensagem');
 };
 
 // Ícone "spark" do design system D4 (SVG puro).
@@ -89,15 +97,39 @@ const Chat = () => {
         const carregarHistorico = async () => {
             try {
                 setLoadingHistorico(true);
-                const historico = await buscarHistorico(50);
+                let historico = await buscarHistorico(50);
+                const foiReload = window.performance
+                    ?.getEntriesByType?.('navigation')
+                    ?.some((navigation) => navigation.type === 'reload');
+
+                for (
+                    let tentativa = 0;
+                    foiReload && historico.length === 0 && tentativa < RELOAD_HISTORY_MAX_RETRIES;
+                    tentativa += 1
+                ) {
+                    await new Promise((resolve) => setTimeout(resolve, RELOAD_HISTORY_RETRY_INTERVAL_MS));
+                    if (cancelado) return;
+                    historico = await buscarHistorico(50);
+                }
+
                 if (cancelado) return;
-                const mensagens = historico.map((dto) => ({
-                    id: dto.id,
-                    text: dto.conteudo,
-                    sender: dto.role === 'user' ? 'user' : 'bot',
-                    timestamp: dto.criadoEm,
-                    sessaoId: dto.sessaoId,
-                }));
+                let ultimaMensagemUsuario = '';
+                const mensagens = historico.map((dto) => {
+                    const sender = dto.role === 'user' ? 'user' : 'bot';
+                    const text = sender === 'user'
+                        ? dto.conteudo
+                        : removerEcoDaMensagem(dto.conteudo, ultimaMensagemUsuario);
+
+                    if (sender === 'user') ultimaMensagemUsuario = dto.conteudo;
+
+                    return {
+                        id: dto.id,
+                        text,
+                        sender,
+                        timestamp: dto.criadoEm,
+                        sessaoId: dto.sessaoId,
+                    };
+                });
                 setMessages((prev) => {
                     const apenasBoasVindas = prev.length === 1 && prev[0].text === MENSAGEM_BEM_VINDO.text;
                     if (!apenasBoasVindas) return prev;
@@ -133,6 +165,15 @@ const Chat = () => {
             const token = localStorage.getItem('authToken');
             const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3333/api';
             const fullUrl = url.startsWith('http') ? url : `${baseUrl.replace(/\/api$/, '')}${url}`;
+
+            // SEC: nunca enviar JWT para domínio externo — validar same-origin
+            const backendOrigin = new URL(baseUrl).origin;
+            const targetOrigin = new URL(fullUrl).origin;
+            if (targetOrigin !== backendOrigin) {
+                console.warn('[Chat] Download bloqueado: URL aponta para domínio externo.');
+                return;
+            }
+
             const response = await fetch(fullUrl, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -170,7 +211,11 @@ const Chat = () => {
                 idSessao: sessionId,
             });
             const data = response.data;
-            const botMessage = { text: data.resposta, sender: 'bot', acao: data.acao || null };
+            const botMessage = {
+                text: removerEcoDaMensagem(data.resposta, conteudo),
+                sender: 'bot',
+                acao: data.acao || null,
+            };
             setMessages((prev) => [...prev.filter((m) => !m.typing), botMessage]);
         } catch (error) {
             logErroSeguro('Falha ao enviar mensagem', error);
@@ -239,16 +284,16 @@ const Chat = () => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: '#fff',
+                        color: theme.palette.primary.contrastText,
                         background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-                        boxShadow: '0 4px 16px rgba(124,106,247,0.4)',
+                        boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.4)}`,
                     }}
                 >
                     <SparkIcon size={22} />
                 </Box>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Typography variant="h6" fontWeight={700} sx={{ lineHeight: 1.1 }}>
-                        Fortunai
+                        Pondero
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                         <Box
@@ -294,7 +339,7 @@ const Chat = () => {
                                     height={56}
                                     width={`${55 + (i * 10)}%`}
                                     sx={{
-                                        bgcolor: 'rgba(255,255,255,0.05)',
+                                        bgcolor: 'action.hover',
                                         borderRadius: i % 2 === 0 ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
                                     }}
                                 />
@@ -308,6 +353,7 @@ const Chat = () => {
                     return (
                         <Box
                             key={index}
+                            data-testid={`chat-message-${isUser ? 'user' : 'assistant'}`}
                             sx={{
                                 display: 'flex',
                                 alignItems: 'flex-end',
@@ -326,7 +372,7 @@ const Chat = () => {
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        color: '#fff',
+                                        color: theme.palette.primary.contrastText,
                                         background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
                                     }}
                                 >
@@ -341,7 +387,7 @@ const Chat = () => {
                                     maxWidth: '78%',
                                     border: 'none',
                                     borderRadius: isUser ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                                    color: isUser ? '#fff' : 'text.primary',
+                                    color: isUser ? theme.palette.primary.contrastText : 'text.primary',
                                     background: isUser
                                         ? `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`
                                         : theme.palette.surfaces.raised,
@@ -469,10 +515,10 @@ const Chat = () => {
                         aria-label="Enviar"
                         disabled={loadingResposta}
                         sx={{
-                            color: '#fff',
+                            color: theme.palette.primary.contrastText,
                             background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-                            '&:hover': { boxShadow: '0 0 16px rgba(124,106,247,0.5)' },
-                            '&.Mui-disabled': { color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.08)' },
+                            '&:hover': { boxShadow: `0 0 16px ${alpha(theme.palette.primary.main, 0.5)}` },
+                            '&.Mui-disabled': { color: 'text.disabled', background: theme.palette.action.disabledBackground },
                         }}
                     >
                         <SendIcon fontSize="small" />
