@@ -50,6 +50,20 @@ NUNCA inverta esse contrato
 - Notificações in-app
 - Onboarding para novos usuários
 
+## Padrões do Projeto
+
+### [2026-09-01] Viabilidade de merge de branch órfã: contam os commits que tocaram os ARQUIVOS-ALVO, não o total no `main`
+**Contexto**: a branch `claude/orcamento-mes-seletor` (seletor de mês persistente do Orçamento + Cartão) ficou parada, sem push, durante todo o redesign Pondero (D4 "Bento Refinado"). Quando o redesign entrou no `main`, o instinto era descartá-la e reimplementar o conceito por cima dos componentes novos — o `main` tinha **88 commits** à frente do ponto de fork.
+**O que a métrica certa mostrou**: `git log --oneline <fork>..main -- <arquivos-alvo>` devolveu **4 commits distintos** tocando os 3 arquivos que a branch alterava, e todos cosméticos ou pontuais (substituição de cor literal por token, razão de grid 6/6 → 7/5, `labelId` de a11y, fix de fuso, texto de mensagem de sucesso). Relação sinal/ruído de **22:1** entre o total do `main` e o que de fato conflitava. O merge real produziu **1 arquivo conflitado** com 2 conflitos triviais de adjacência.
+**Como aplicar**: antes de decidir "merge vs. reimplementar", medir com `git log --oneline <base>..main -- <caminhos>` e `git diff <tip-da-branch> main -- <caminhos>`. O total de commits no `main` mede o tempo decorrido, não o custo do merge. Só o histórico filtrado pelos arquivos-alvo — e a natureza (estrutural vs. cosmética) das mudanças neles — responde a pergunta.
+**Corolário**: a decisão é barata de verificar e cara de errar. Reimplementar joga fora testes já escritos e o design de estado já validado; um `git log` filtrado custa segundos.
+
+### Disciplina de tokens é o que preserva trabalho paralelo através de um redesign
+**O que aconteceu**: o `SeletorMesOrcamento`, escrito ANTES do Pondero existir, herdou a paleta nova sem uma linha de alteração — porque nasceu lendo `theme.palette.divider`, `theme.palette.warning.main` e `theme.palette.text.secondary`, com **zero hex/rgba hardcoded**. Verificação visual confirmou: dark, light e mobile 375px, todos corretos, sem retoque.
+**Por que funciona**: um componente que só lê tokens não tem opinião sobre cor — ele delega ao tema. Trocar o tema inteiro (que é o que um redesign é) reescreve a aparência dele de graça. Um componente com `#1e1e1e` cravado teria que ser reescrito à mão, e é exatamente esse custo que faz branches paralelas "expirarem".
+**Como aplicar**: a regra 1 do Design System (cores sempre via `theme.palette.*` / `tokens.colors.*`, nunca hardcoded) não é só estética — é o que dá **prazo de validade longo** a trabalho não mergeado. Vale ainda mais para branch de feature que vai ficar parada.
+**Limite conhecido**: tokens preservam a *coerência*, não garantem *contraste* em modos que não existiam quando o componente nasceu. O chip "Mês atual" ficou legível porém de contraste baixo no light mode (que o `ColorModeContext` só introduziu depois do fork) — registrado como observação, não corrigido no merge.
+
 ## Erros Conhecidos e Como Evitá-los
 
 ### [2026-07-19] Erro: heading aninhado em DialogTitle (React 19)
@@ -82,3 +96,4 @@ O `RateLimitingFilter` do backend limita `POST /api/auth/registrar` a **5 por ho
 ## 📝 Changelog do CLAUDE.md
 - 2026-07-19: adicionadas seções "Erros Conhecidos" e "Configurações do Ambiente" (heading aninhado em DialogTitle; timeout de forks do Vitest); corrigida a contagem de testes em "Estado Atual" para os números reais medidos em clone limpo (958 backend / 441 frontend).
 - 2026-08-31: registrado o erro de `z-index` em `position: static` mascarado por `pointerEvents: 'none'` (tutorial de onboarding) e os pré-requisitos/rate limiter do E2E local de auth e tutorial.
+- 2026-09-01: adicionada a seção "Padrões do Projeto" com a métrica de viabilidade de merge de branch órfã (contam os commits que tocaram os arquivos-alvo, não o total do `main`) e a disciplina de tokens como prazo de validade de trabalho paralelo — lições do merge do seletor de mês do Orçamento sobre o redesign Pondero.
