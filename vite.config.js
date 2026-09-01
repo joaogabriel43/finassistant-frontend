@@ -100,5 +100,15 @@ export default defineConfig({
     // .claude/** exclui worktrees de agente criados dentro do repo — sem isso o
     // vitest varre a cópia inteira (specs e2e do Playwright quebram e testes duplicam)
     exclude: ['e2e/**', 'node_modules/**', '.claude/**', '**/.claude/**'],
+    // pool 'forks' (default) satura no Windows: os workers via child_process.fork
+    // travam em timeout do fork antes de iniciar quando o pool inteiro é
+    // agendado de uma vez, deixando ~34 dos 81 arquivos sem nunca rodar.
+    // 'threads' usa worker_threads (mesmo processo), sem esse limite do SO,
+    // mas ainda assim workers demais de uma vez saturam a maquina local
+    // (setup de ambiente jsdom concorrente) — maxWorkers limita isso.
+    // (test.poolOptions.threads.maxThreads foi removido no Vitest 4 — a
+    // opção agora é top-level, ver guia de migração do Vitest.)
+    pool: 'threads',
+    maxWorkers: 4,
   }
 })

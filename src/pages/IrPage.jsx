@@ -305,16 +305,16 @@ const OperacaoDialog = ({ open, onClose, onSalvar, loading }) => {
 
           <Grid size={{ xs: 12, sm: 4 }}>
             <FormControl fullWidth size="small">
-              <InputLabel>Operação</InputLabel>
-              <Select value={form.tipoOperacao} label="Operação" onChange={set('tipoOperacao')}>
+              <InputLabel id="tipo-operacao-label">Operação</InputLabel>
+              <Select id="tipo-operacao" labelId="tipo-operacao-label" value={form.tipoOperacao} label="Operação" onChange={set('tipoOperacao')}>
                 {TIPOS_OPERACAO.map((t) => <MenuItem key={t} value={t}>{t}</MenuItem>)}
               </Select>
             </FormControl>
           </Grid>
           <Grid size={{ xs: 12, sm: 4 }}>
             <FormControl fullWidth size="small">
-              <InputLabel>Trade</InputLabel>
-              <Select value={form.tipoTrade} label="Trade" onChange={set('tipoTrade')}>
+              <InputLabel id="tipo-trade-label">Trade</InputLabel>
+              <Select id="tipo-trade" labelId="tipo-trade-label" value={form.tipoTrade} label="Trade" onChange={set('tipoTrade')}>
                 <MenuItem value="SWING">Swing Trade</MenuItem>
                 <MenuItem value="DAY_TRADE">Day Trade</MenuItem>
               </Select>
@@ -322,8 +322,8 @@ const OperacaoDialog = ({ open, onClose, onSalvar, loading }) => {
           </Grid>
           <Grid size={{ xs: 12, sm: 4 }}>
             <FormControl fullWidth size="small">
-              <InputLabel>Ativo</InputLabel>
-              <Select value={form.tipoAtivo} label="Ativo" onChange={set('tipoAtivo')}>
+              <InputLabel id="tipo-ativo-op-label">Ativo</InputLabel>
+              <Select id="tipo-ativo-op" labelId="tipo-ativo-op-label" value={form.tipoAtivo} label="Ativo" onChange={set('tipoAtivo')}>
                 {TIPOS_ATIVO.map((t) => <MenuItem key={t} value={t}>{t}</MenuItem>)}
               </Select>
             </FormControl>
@@ -430,7 +430,7 @@ const TabelaOperacoes = ({ operacoes, onExcluir }) => {
                 </TableCell>
                 <TableCell sx={{ borderColor: 'lines.subtle' }}>
                   <Tooltip title="Excluir operação">
-                    <IconButton size="small" onClick={() => onExcluir(op.id)}
+                    <IconButton size="small" aria-label="excluir operação" onClick={() => onExcluir(op.id)}
                         sx={{ color: 'text.disabled', '&:hover': { color: 'error.main' } }}>
                       <DeleteOutlineIcon fontSize="small" />
                     </IconButton>
@@ -534,16 +534,16 @@ const IrPage = () => {
         {/* Seletor de período */}
         <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
           <FormControl size="small" sx={{ minWidth: 130 }}>
-            <InputLabel>Mês</InputLabel>
-            <Select value={mes} label="Mês" onChange={(e) => setMes(e.target.value)}>
+            <InputLabel id="ir-mes-label">Mês</InputLabel>
+            <Select id="ir-mes" labelId="ir-mes-label" value={mes} label="Mês" onChange={(e) => setMes(e.target.value)}>
               {MESES.map((m) => (
                 <MenuItem key={m.value} value={m.value}>{m.label}</MenuItem>
               ))}
             </Select>
           </FormControl>
           <FormControl size="small" sx={{ minWidth: 90 }}>
-            <InputLabel>Ano</InputLabel>
-            <Select value={ano} label="Ano" onChange={(e) => setAno(e.target.value)}>
+            <InputLabel id="ir-ano-label">Ano</InputLabel>
+            <Select id="ir-ano" labelId="ir-ano-label" value={ano} label="Ano" onChange={(e) => setAno(e.target.value)}>
               {ANOS.map((a) => <MenuItem key={a} value={a}>{a}</MenuItem>)}
             </Select>
           </FormControl>

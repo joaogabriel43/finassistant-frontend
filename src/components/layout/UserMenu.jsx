@@ -23,6 +23,7 @@ const UserMenu = () => {
       <Tooltip title="Conta">
         <IconButton
           data-testid="user-menu"
+          aria-label="Conta"
           onClick={(e) => setAnchor(e.currentTarget)}
           size="small"
           sx={{ ml: 0.5 }}

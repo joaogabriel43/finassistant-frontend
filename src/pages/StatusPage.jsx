@@ -62,7 +62,7 @@ const StatusPage = () => {
               Pondero - Monitoramento em tempo real
             </Typography>
           </Box>
-          <IconButton onClick={refetch} disabled={loading} data-testid="refresh-btn" sx={{ color: 'primary.main' }}>
+          <IconButton onClick={refetch} disabled={loading} aria-label="atualizar" data-testid="refresh-btn" sx={{ color: 'primary.main' }}>
             <RefreshIcon />
           </IconButton>
         </Box>
