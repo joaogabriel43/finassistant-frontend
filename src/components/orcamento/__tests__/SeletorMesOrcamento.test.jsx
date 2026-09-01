@@ -5,13 +5,15 @@ import { describe, it, expect } from 'vitest'
 import theme from '../../../theme'
 import SeletorMesOrcamento from '../SeletorMesOrcamento'
 import { MesOrcamentoProvider } from '../../../contexts/MesOrcamentoContext'
+import { hojeLocal } from '../../../utils/dateUtils'
 
 const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
 
-const hoje = new Date()
-const mesAtual = hoje.getMonth() + 1
-const anoAtual = hoje.getFullYear()
+// Mesmo relogio do MesOrcamentoContext (America/Sao_Paulo). Derivar de
+// `new Date()` leria o fuso de quem roda o teste — em CI (UTC) isso
+// divergiria do contexto entre 21h e 23h59 BRT.
+const [anoAtual, mesAtual] = hojeLocal().split('-').map(Number)
 
 const labelMesAtual = `${MESES[mesAtual - 1]} ${anoAtual}`
 

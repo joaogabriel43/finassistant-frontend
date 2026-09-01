@@ -5,6 +5,7 @@ import { ThemeProvider } from '@mui/material/styles'
 import theme from '../../../theme'
 import CartoesCard from '../CartoesCard'
 import { MesOrcamentoProvider, useMesOrcamento } from '../../../contexts/MesOrcamentoContext'
+import { hojeLocal } from '../../../utils/dateUtils'
 
 vi.mock('../../../services/api', () => ({
   default: { get: vi.fn(), post: vi.fn(), delete: vi.fn() },
@@ -58,9 +59,10 @@ describe('CartoesCard — mês de referência não-atual', () => {
     fireEvent.click(screen.getByText('ir para mês passado'))
     fireEvent.click(await screen.findByLabelText('detalhes da fatura Roxinho'))
 
-    const hojeDate = new Date()
-    const mesPassado = hojeDate.getMonth() === 0 ? 12 : hojeDate.getMonth()
-    const anoPassado = hojeDate.getMonth() === 0 ? hojeDate.getFullYear() - 1 : hojeDate.getFullYear()
+    // Mesmo relogio do contexto (America/Sao_Paulo), nao o fuso de quem roda o teste.
+    const [anoHoje, mesHoje] = hojeLocal().split('-').map(Number)
+    const mesPassado = mesHoje === 1 ? 12 : mesHoje - 1
+    const anoPassado = mesHoje === 1 ? anoHoje - 1 : anoHoje
 
     await waitFor(() => {
       expect(api.get).toHaveBeenCalledWith(`/cartoes/c1/fatura?mes=${mesPassado}&ano=${anoPassado}`)

@@ -2,10 +2,12 @@ import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 import { MesOrcamentoProvider, useMesOrcamento } from '../MesOrcamentoContext'
+import { hojeLocal } from '../../utils/dateUtils'
 
-const hoje = new Date()
-const mesAtual = hoje.getMonth() + 1
-const anoAtual = hoje.getFullYear()
+// Mesmo relogio do MesOrcamentoContext (America/Sao_Paulo). Derivar de
+// `new Date()` leria o fuso de quem roda o teste — em CI (UTC) isso
+// divergiria do contexto entre 21h e 23h59 BRT.
+const [anoAtual, mesAtual] = hojeLocal().split('-').map(Number)
 
 const pad = (n) => String(n).padStart(2, '0')
 

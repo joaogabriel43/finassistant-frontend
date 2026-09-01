@@ -28,10 +28,23 @@ vi.mock('react-select/creatable', () => ({
 }))
 
 import api from '../../../services/api'
+import { hojeLocal } from '../../../utils/dateUtils'
 
-const hoje = () => new Date().toISOString().split('T')[0]
+// Mesmo relogio do componente (America/Sao_Paulo). `new Date().toISOString()`
+// devolveria a data em UTC e quebraria estes testes entre 21h e 23h59 BRT —
+// exatamente o bug de fuso que e8e535b corrigiu no codigo de producao.
+const hoje = () => hojeLocal()
 
 const pad = (n) => String(n).padStart(2, '0')
+
+// Ultimo dia do mes anterior ao de hoje, derivado da mesma referencia de fuso.
+const ultimoDiaDoMesPassado = () => {
+  const [ano, mes] = hoje().split('-').map(Number)
+  const anoPassado = mes === 1 ? ano - 1 : ano
+  const mesPassado = mes === 1 ? 12 : mes - 1
+  const ultimoDia = new Date(anoPassado, mesPassado, 0).getDate()
+  return `${anoPassado}-${pad(mesPassado)}-${pad(ultimoDia)}`
+}
 
 // Componente auxiliar de teste — expõe navegar() do contexto real para
 // simular o usuário trocando o mês de referência pelo SeletorMesOrcamento,
@@ -82,11 +95,7 @@ describe('AdicionarTransacaoForm — mês de referência não-atual', () => {
 
     fireEvent.click(screen.getByText('ir para mês passado'))
 
-    const hojeDate = new Date()
-    const mesPassado = hojeDate.getMonth() === 0 ? 12 : hojeDate.getMonth()
-    const anoPassado = hojeDate.getMonth() === 0 ? hojeDate.getFullYear() - 1 : hojeDate.getFullYear()
-    const ultimoDia = new Date(anoPassado, mesPassado, 0).getDate()
-    const dataEsperada = `${anoPassado}-${pad(mesPassado)}-${pad(ultimoDia)}`
+    const dataEsperada = ultimoDiaDoMesPassado()
 
     const campoData = document.querySelector('input[type="date"]')
     expect(campoData.value).toBe(dataEsperada)
@@ -101,11 +110,7 @@ describe('AdicionarTransacaoForm — mês de referência não-atual', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /adicionar/i }))
 
-    const hojeDate = new Date()
-    const mesPassado = hojeDate.getMonth() === 0 ? 12 : hojeDate.getMonth()
-    const anoPassado = hojeDate.getMonth() === 0 ? hojeDate.getFullYear() - 1 : hojeDate.getFullYear()
-    const ultimoDia = new Date(anoPassado, mesPassado, 0).getDate()
-    const dataEsperada = `${anoPassado}-${pad(mesPassado)}-${pad(ultimoDia)}`
+    const dataEsperada = ultimoDiaDoMesPassado()
 
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith(
