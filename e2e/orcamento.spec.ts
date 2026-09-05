@@ -57,8 +57,9 @@ test.describe('Orçamento', () => {
     await page.getByLabel('Tipo').click()
     await page.getByRole('option', { name: 'Despesa' }).click()
 
-    // Preenche categoria via react-select (CreatableSelect)
-    const categoriaInput = page.locator('input[id*="react-select"]').first()
+    // Preenche categoria via CreatableSelect — localizado pelo rótulo acessível
+    // (inputId/aria-label), nunca pelo id interno gerado pela lib
+    const categoriaInput = page.getByLabel('Categoria')
     await categoriaInput.fill('Alimentação')
     await page.keyboard.press('Enter')
 
@@ -93,7 +94,7 @@ test.describe('Orçamento', () => {
     await page.getByLabel('Tipo').click()
     await page.getByRole('option', { name: 'Receita' }).click()
 
-    const categoriaInput = page.locator('input[id*="react-select"]').first()
+    const categoriaInput = page.getByLabel('Categoria')
     await categoriaInput.fill('Receita')
     await page.keyboard.press('Enter')
 
